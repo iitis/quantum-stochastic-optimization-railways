@@ -124,9 +124,7 @@ class lp:
 
     def add_headways(self, p):
         for (j, jp, s) in pairs_same_direction(self.train_paths):
-
-            print(j, jp, s)
-            
+  
             i = self.variables.index(f"t_{s}_{j}")
             ip = self.variables.index(f"t_{s}_{jp}")
             iy = self.variables.index(f"y_{s}_{j}_{jp}")
@@ -170,7 +168,6 @@ class lp:
         (s,j,jp) = trains_s
         (a,b) = new_range
         i = self.variables.index(f"y_{s}_{j}_{jp}")
-        print(i)
         self.bnd[i] = (a,b)
 
 
@@ -196,34 +193,40 @@ our_problem.add_headways(p)
 our_problem.add_passing_times(p)
 our_problem.add_bounds(tvar_range)
 
-print("xxxxxxxxxxxxxxxx")
-print(our_problem.obj_ofset)
-print(our_problem.obj)
+
 
 def do_calculation():
+
+    print("......  IL .........")
 
     opt = linprog(c=our_problem.obj, A_ub=our_problem.lhs_ineq, b_ub=our_problem.rhs_ineq, bounds=our_problem.bnd, method="revised simplex")
     print(our_problem.variables)
     print(our_problem.bnd)
-    print(opt)
+    print(opt["x"])
+    print(opt["fun"] - our_problem.obj_ofset)
+    print(opt["success"])
 
 
 
 # original
 do_calculation()
 
-our_problem.force_y_bonds(("MR", 1, 3), (0.999,1.0))
+our_problem.force_y_bonds(("MR", 1, 3), (1.0,1.0))
 do_calculation()
-our_problem.force_y_bonds(("CS", 1, 3), (0.999,1.0))
+our_problem.force_y_bonds(("MR", 1, 3), (1.0,1.0))
+our_problem.force_y_bonds(("CS", 1, 3), (1.0,1.0))
 do_calculation()
-our_problem.force_y_bonds(("CS", 1, 3), (0.0,0.001))
+our_problem.force_y_bonds(("MR", 1, 3), (1.0,1.0))
+our_problem.force_y_bonds(("CS", 1, 3), (0.0,0.0))
 do_calculation()
 
-our_problem.force_y_bonds(("MR", 1, 3), (0.,0.001))
+our_problem.force_y_bonds(("MR", 1, 3), (0.0,0.0))
 our_problem.force_y_bonds(("CS", 1, 3), (0.0,1.0))
 do_calculation()
-our_problem.force_y_bonds(("CS", 1, 3), (0.99,1.0))
+our_problem.force_y_bonds(("MR", 1, 3), (0.0,0.0))
+our_problem.force_y_bonds(("CS", 1, 3), (1.0,1.0))
 do_calculation()
-our_problem.force_y_bonds(("CS", 1, 3), (0.0,0.001))
+our_problem.force_y_bonds(("MR", 1, 3), (0.0,0.0))
+our_problem.force_y_bonds(("CS", 1, 3), (0.0,0.0))
 do_calculation()
 
