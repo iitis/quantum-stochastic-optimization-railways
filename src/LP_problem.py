@@ -1,4 +1,3 @@
-from scipy.optimize import linprog
 from difflib import SequenceMatcher
 import itertools
 
@@ -9,13 +8,13 @@ def match_lists(a, b):
     match = SequenceMatcher(None, a, b).find_longest_match()
     return a[match.a:match.a + match.size], match.size
 
-def common_s_same_dir(station_paths, j, jp):
+def common_s_same_dir(trains_paths, j, jp):
     stations, size = match_lists(trains_paths[j], trains_paths[jp])
     if size > 1:
         return stations
     return []
 
-def pairs_same_direction(train_paths):
+def pairs_same_direction(trains_paths):
     trains_station = []
     for [j,jp] in itertools.product(trains_paths, trains_paths):
         if jp > j:
@@ -37,14 +36,14 @@ def station_pairs(trains_paths):
 
 
 
-class parameters:
+class Parameters:
     def __init__(self):
         self.headways = 0
         self.stay = 0
         self.pass_time = {}
 
 
-class varialbes:
+class Variables:
     "stores list of variables"
 
     def __init__(self, trains_paths, penalty_at):
@@ -79,15 +78,7 @@ class varialbes:
         return y_vars
 
 
-
-trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
-penalty_at = ["MR", "CS"]
-
-v = varialbes(trains_paths, penalty_at)
-
-
-
-class lp:
+class Lp:
 
     def __init__(self, timetable, variables):
         self.obj = []
@@ -116,7 +107,7 @@ class lp:
         self.obj = obj 
 
     
-    def make_objective_ofset(self):
+    def make_objective_ofset(self, timetable):
         for s in self.timetable:
             for j in self.timetable[s]:
                 if f"t_{s}_{j}" in self.penalty_vars:
@@ -134,17 +125,17 @@ class lp:
             lhs_el_y0[ip] = -1
             lhs_el_y0[iy] = self.M
             self.lhs_ineq.append(lhs_el_y0)
-            self.rhs_ineq.append(-p.headway + self.M)
+            self.rhs_ineq.append(-p.headways + self.M)
 
             lhs_el_y1 = [0 for _ in self.variables]
             lhs_el_y1[i] = -1
             lhs_el_y1[ip] = 1
             lhs_el_y1[iy] = - self.M
             self.lhs_ineq.append(lhs_el_y1)
-            self.rhs_ineq.append(-p.headway)
+            self.rhs_ineq.append(-p.headways)
 
     
-    def add_passing_times(self, p):
+    def add_passing_times(self, p, trains_paths):
         for (j, s, sp) in station_pairs(trains_paths):
             lhs_el = [0 for _ in self.variables]
             i = self.variables.index(f"t_{s}_{j}")
@@ -155,7 +146,7 @@ class lp:
             self.rhs_ineq.append(-p.stay -p.pass_time[f"{s}_{sp}"])
 
     
-    def add_bounds(self, tvar_range):
+    def add_all_bounds(self, tvar_range):
         bound = [(0.0,1.0) for _ in self.variables]
         for s in tvar_range:
             for j in tvar_range[s]:
@@ -164,69 +155,23 @@ class lp:
         self.bnd = bound
 
     
-    def force_y_bonds(self, trains_s, new_range):
+    def set_y_value(self, trains_s, new_value):
         (s,j,jp) = trains_s
-        (a,b) = new_range
         i = self.variables.index(f"y_{s}_{j}_{jp}")
-        self.bnd[i] = (a,b)
+        self.bnd[i] = (new_value,new_value)
+
+    def reset_y_bonds(self, trains_s):
+        (s,j,jp) = trains_s
+        i = self.variables.index(f"y_{s}_{j}_{jp}")
+        self.bnd[i] = (0.0, 1.0)
 
 
 
 
-            
 
-
-timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 16}, "CS" : {1: 0 , 3: 13}}
-tvar_range =  {"PS": {1: (0., 5.)}, "MR" :{1: (3.,8.), 3: (2.,5.)}, "CS" : {1: (16.,21.) , 3: (15., 18.)}}
-p = parameters()
-p.headway = 2
-p.stay = 1
-p.pass_time = {f"PS_MR": 2, f"MR_CS": 12}
-
-
-our_problem = lp(timetable, v)
-our_problem.dmax = 5
-our_problem.M = 10
-our_problem.make_objective()
-our_problem.make_objective_ofset()
-our_problem.add_headways(p)
-our_problem.add_passing_times(p)
-our_problem.add_bounds(tvar_range)
+# presentations
 
 
 
-def do_calculation():
 
-    print("......  IL .........")
-
-    opt = linprog(c=our_problem.obj, A_ub=our_problem.lhs_ineq, b_ub=our_problem.rhs_ineq, bounds=our_problem.bnd, method="revised simplex")
-    print(our_problem.variables)
-    print(our_problem.bnd)
-    print(opt["x"])
-    print(opt["fun"] - our_problem.obj_ofset)
-    print(opt["success"])
-
-
-
-# original
-do_calculation()
-
-our_problem.force_y_bonds(("MR", 1, 3), (1.0,1.0))
-do_calculation()
-our_problem.force_y_bonds(("MR", 1, 3), (1.0,1.0))
-our_problem.force_y_bonds(("CS", 1, 3), (1.0,1.0))
-do_calculation()
-our_problem.force_y_bonds(("MR", 1, 3), (1.0,1.0))
-our_problem.force_y_bonds(("CS", 1, 3), (0.0,0.0))
-do_calculation()
-
-our_problem.force_y_bonds(("MR", 1, 3), (0.0,0.0))
-our_problem.force_y_bonds(("CS", 1, 3), (0.0,1.0))
-do_calculation()
-our_problem.force_y_bonds(("MR", 1, 3), (0.0,0.0))
-our_problem.force_y_bonds(("CS", 1, 3), (1.0,1.0))
-do_calculation()
-our_problem.force_y_bonds(("MR", 1, 3), (0.0,0.0))
-our_problem.force_y_bonds(("CS", 1, 3), (0.0,0.0))
-do_calculation()
 
