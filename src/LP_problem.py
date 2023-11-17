@@ -1,53 +1,11 @@
-from difflib import SequenceMatcher
-import itertools
-
-
-
-
-def match_lists(a, b):
-    match = SequenceMatcher(None, a, b).find_longest_match()
-    return a[match.a:match.a + match.size], match.size
-
-def common_s_same_dir(trains_paths, j, jp):
-    stations, size = match_lists(trains_paths[j], trains_paths[jp])
-    if size > 1:
-        return stations
-    return []
-
-def pairs_same_direction(trains_paths):
-    trains_station = []
-    for [j,jp] in itertools.product(trains_paths, trains_paths):
-        if jp > j:
-            stations = common_s_same_dir(trains_paths, j,jp)
-            for s in stations:
-                trains_station.append((j, jp, s))
-    return  trains_station
-
-def station_pairs(trains_paths):
-    trains_stations = []
-    for j in trains_paths:
-        stations = trains_paths[j]
-        l = len(stations)
-        for k in range(l-1):
-            s = stations[k]
-            sp = stations[k+1]
-            trains_stations.append([j,s,sp])
-    return trains_stations
-
-
-
-class Parameters:
-    def __init__(self):
-        self.headways = 0
-        self.stay = 0
-        self.pass_time = {}
+from parameters import pairs_same_direction, station_pairs
 
 
 class Variables:
     "stores list of variables"
 
     def __init__(self, trains_paths, penalty_at):
-        self.train_paths = trains_paths
+        self.trains_paths = trains_paths
         variables = []
         variables += self.make_t_vars(trains_paths)
         variables += self.make_y_vars_same_direction(trains_paths)
@@ -78,7 +36,7 @@ class Variables:
         return y_vars
 
 
-class Lp:
+class LinearPrograming:
 
     def __init__(self, timetable, variables):
         self.obj = []
@@ -92,7 +50,7 @@ class Lp:
         self.M = 0
         self.timetable = timetable
         self.variables = variables.variables
-        self.train_paths = variables.train_paths
+        self.trains_paths = variables.trains_paths
         self.penalty_vars = variables.penalty_vars
 
 
@@ -107,14 +65,14 @@ class Lp:
         self.obj = obj 
 
     
-    def make_objective_ofset(self, timetable):
+    def make_objective_ofset(self):
         for s in self.timetable:
             for j in self.timetable[s]:
                 if f"t_{s}_{j}" in self.penalty_vars:
-                    self.obj_ofset += timetable[s][j]/self.dmax
+                    self.obj_ofset += self.timetable[s][j]/self.dmax
 
     def add_headways(self, p):
-        for (j, jp, s) in pairs_same_direction(self.train_paths):
+        for (j, jp, s) in pairs_same_direction(self.trains_paths):
   
             i = self.variables.index(f"t_{s}_{j}")
             ip = self.variables.index(f"t_{s}_{jp}")
@@ -135,8 +93,8 @@ class Lp:
             self.rhs_ineq.append(-p.headways)
 
     
-    def add_passing_times(self, p, trains_paths):
-        for (j, s, sp) in station_pairs(trains_paths):
+    def add_passing_times(self, p):
+        for (j, s, sp) in station_pairs(self.trains_paths):
             lhs_el = [0 for _ in self.variables]
             i = self.variables.index(f"t_{s}_{j}")
             ip = self.variables.index(f"t_{sp}_{j}")
@@ -168,10 +126,67 @@ class Lp:
 
 
 
-
-# presentations
-
+# tests for now here
 
 
+def test_var_class():
+    trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
+    penalty_at = ["MR", "CS"]
+    v = Variables(trains_paths, penalty_at)  
+    assert v.trains_paths == trains_paths
+    assert v.make_t_vars(trains_paths) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3']
+    assert v.make_y_vars_same_direction(trains_paths) == ['y_MR_1_3', 'y_CS_1_3']
+    assert v.make_penalty_vars(trains_paths, penalty_at) == ['t_MR_1', 't_CS_1', 't_MR_3', 't_CS_3']
 
 
+def test_LP_class():
+    trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
+    penalty_at = ["MR", "CS"]
+    v = Variables(trains_paths, penalty_at)
+    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 16}, "CS" : {1: 0 , 3: 13}}    
+    example_problem = LinearPrograming(timetable, v)
+    assert example_problem.timetable == timetable
+    assert example_problem.trains_paths == trains_paths
+    assert example_problem.variables == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3', 'y_MR_1_3', 'y_CS_1_3']
+    assert example_problem.penalty_vars == ['t_MR_1', 't_CS_1', 't_MR_3', 't_CS_3']
+    example_problem.dmax = 5
+    example_problem.make_objective()
+    assert example_problem.obj == [0.0, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0]
+    example_problem.make_objective_ofset()
+    assert example_problem.obj_ofset == 6.4
+    tvar_range =  {"PS": {1: (0., 5.)}, "MR" :{1: (3.,8.), 3: (2.,5.)}, "CS" : {1: (16.,21.) , 3: (15., 18.)}}
+    example_problem.add_all_bounds(tvar_range)
+    assert example_problem.bnd == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 5.0), (15.0, 18.0), (0.0, 1.0), (0.0, 1.0)]
+    example_problem.set_y_value(('MR', 1, 3), 1)
+    assert example_problem.bnd == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 5.0), (15.0, 18.0), (1,1), (0.0, 1.0)]
+    example_problem.reset_y_bonds(('MR', 1, 3))
+    assert example_problem.bnd == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 5.0), (15.0, 18.0), (0.0, 1.0), (0.0, 1.0)]
+
+
+def test_parametrised_constrains():
+    from parameters import Parameters
+    p = Parameters()
+    p.headways = 2
+    trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
+    penalty_at = ["MR", "CS"]
+    v = Variables(trains_paths, penalty_at)
+    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 16}, "CS" : {1: 0 , 3: 13}} 
+    example_problem = LinearPrograming(timetable, v)
+    example_problem.add_headways(p)
+    assert example_problem.lhs_ineq == [[0, 1, 0, -1, 0, 0, 0], [0, -1, 0, 1, 0, 0, 0], [0, 0, 1, 0, -1, 0, 0], [0, 0, -1, 0, 1, 0, 0]]
+    assert example_problem.rhs_ineq == [-2, -2, -2, -2]
+
+    p = Parameters()
+    p.stay = 1
+    p.pass_time = {f"PS_MR": 2, f"MR_CS": 12}
+    example_problem = LinearPrograming(timetable, v)
+    example_problem.add_passing_times(p)
+    assert example_problem.lhs_ineq  == [[1, -1, 0, 0, 0, 0, 0], [0, 1, -1, 0, 0, 0, 0], [0, 0, 0, 1, -1, 0, 0]]
+    assert example_problem.rhs_ineq == [-3, -13, -13]
+
+
+
+if __name__ == "__main__":
+    test_var_class()
+    test_LP_class()
+    test_parametrised_constrains()

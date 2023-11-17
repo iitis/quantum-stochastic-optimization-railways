@@ -1,5 +1,6 @@
 from scipy.optimize import linprog
-from LP_problem import Parameters, Variables, Lp
+from parameters import Parameters
+from LP_problem import Variables, LinearPrograming
 
 def print_calculation(our_problem):
     opt = linprog(c=our_problem.obj, A_ub=our_problem.lhs_ineq, b_ub=our_problem.rhs_ineq, bounds=our_problem.bnd, method='highs')
@@ -29,13 +30,13 @@ if __name__ == "__main__":
     p.pass_time = {f"PS_MR": 2, f"MR_CS": 12}
 
     v = Variables(trains_paths, penalty_at)    
-    example_problem = Lp(timetable, v)
+    example_problem = LinearPrograming(timetable, v)
     example_problem.dmax = 5
     example_problem.M = 10
     example_problem.make_objective()
-    example_problem.make_objective_ofset(timetable)
+    example_problem.make_objective_ofset()
     example_problem.add_headways(p)
-    example_problem.add_passing_times(p, trains_paths)
+    example_problem.add_passing_times(p)
     example_problem.add_all_bounds(tvar_range)
 
 
