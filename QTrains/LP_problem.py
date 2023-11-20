@@ -1,4 +1,4 @@
-# encoding the problem into LP / ILP
+"encoding the problem into LP / ILP"
 
 from .parameters import pairs_same_direction, station_pairs
 
