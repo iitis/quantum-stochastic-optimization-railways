@@ -1,6 +1,5 @@
 from scipy.optimize import linprog
-from parameters import Parameters
-from LP_problem import Variables, LinearPrograming
+from QTrains import Parameters, Variables, LinearPrograming
 
 def print_calculation(our_problem):
     bounds = [v.range for v in our_problem.variables.values()] 
