@@ -1,4 +1,4 @@
-from QTrains import pairs_same_direction, station_pairs
+from .parameters import pairs_same_direction, station_pairs
 
 class Variable():
 
