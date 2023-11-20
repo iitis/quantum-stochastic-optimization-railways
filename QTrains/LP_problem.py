@@ -1,5 +1,6 @@
 "encoding the problem into LP / ILP"
-
+from docplex.mp.model import Model
+from docplex.mp.solution import SolveSolution
 from .parameters import pairs_same_direction, station_pairs
 
 class Variable():
@@ -148,3 +149,4 @@ class LinearPrograming(Variables):
         "reset bonds for y variable to (0,1)"
         (s,j,jp) = trains_s
         self.variables[f"y_{s}_{j}_{jp}"].reset_initial_range()
+

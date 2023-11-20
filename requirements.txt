@@ -1,3 +1,4 @@
+docplex==2.23.222
 pylint==2.16.3
 pytest==6.2.5
 pytest-cov==4.0.0

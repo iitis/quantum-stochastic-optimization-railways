@@ -1,24 +1,26 @@
 from scipy.optimize import linprog
 from QTrains import Parameters, Variables, LinearPrograming
 
-def print_calculation(our_problem):
-    bounds = [v.range for v in our_problem.variables.values()] 
-    opt = linprog(c=our_problem.obj, A_ub=our_problem.lhs_ineq, b_ub=our_problem.rhs_ineq, bounds=bounds, method='highs')
+def print_calculation(example_problem):
+    bounds = [v.range for v in example_problem.variables.values()] 
+    opt = linprog(c=example_problem.obj, A_ub=example_problem.lhs_ineq, b_ub=example_problem.rhs_ineq, bounds=bounds, method='highs')
     if opt.success:
         print("var.", "val.", "range", "...................")
-        for count, variable in enumerate( our_problem.variables ):
-            print(variable, opt["x"][count], our_problem.variables[variable].range)
-        print("objective = ", opt["fun"] - our_problem.obj_ofset)
+        for count, variable in enumerate( example_problem.variables ):
+            print(variable, opt["x"][count], example_problem.variables[variable].range)
+        print("objective = ", opt["fun"] - example_problem.obj_ofset)
     else:
         print("var.", "range", "...................")
         print("solution not feasible")
-        for count, variable in enumerate( our_problem.variables ):
-            print(variable, our_problem.variables[variable].range)
+        for count, variable in enumerate( example_problem.variables ):
+            print(variable, example_problem.variables[variable].range)
 
 
 
 
 if __name__ == "__main__":
+
+    print("make tree")
 
     trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
     penalty_at = ["MR", "CS"]
@@ -57,3 +59,38 @@ if __name__ == "__main__":
     print_calculation(example_problem)
     example_problem.set_y_value(("CS", 1, 3), 0)
     print_calculation(example_problem)
+
+
+
+
+    print("Solve ILP by DOCPLEX")
+
+    example_problem.reset_y_bonds(("CS", 1, 3))
+    example_problem.reset_y_bonds(("MR", 1, 3))
+
+    from docplex.mp.model import Model
+    from docplex.mp.solution import SolveSolution
+
+    model = Model(name='linear_programing_QTrains')
+
+
+    lower_bounds = [v.range[0] for v in example_problem.variables.values()] 
+    upper_bounds = [v.range[1] for v in example_problem.variables.values()] 
+
+    variables = model.integer_var_dict(example_problem.variables.keys(), lb=lower_bounds, ub=upper_bounds, name=example_problem.variables.keys())
+
+    for index, row in enumerate(example_problem.lhs_ineq):
+        model.add_constraint(
+            sum([variables[v.label]  * row[v.count] for v in example_problem.variables.values()]) <= example_problem.rhs_ineq[index])
+    
+    model.minimize(sum([variables[v.label] * example_problem.obj[v.count] for v in example_problem.variables.values()]))
+    sol = model.solve()
+
+    for var in model.iter_variables():
+        print(var, sol.get_var_value(var))
+
+    print(example_problem.obj_ofset)
+
+
+
+    
