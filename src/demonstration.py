@@ -3,17 +3,18 @@ from parameters import Parameters
 from LP_problem import Variables, LinearPrograming
 
 def print_calculation(our_problem):
-    opt = linprog(c=our_problem.obj, A_ub=our_problem.lhs_ineq, b_ub=our_problem.rhs_ineq, bounds=our_problem.bnd, method='highs')
+    bounds = [v.range for v in our_problem.variables.values()] 
+    opt = linprog(c=our_problem.obj, A_ub=our_problem.lhs_ineq, b_ub=our_problem.rhs_ineq, bounds=bounds, method='highs')
     if opt.success:
         print("var.", "val.", "range", "...................")
         for count, variable in enumerate( our_problem.variables ):
-            print(variable, opt["x"][count], our_problem.bnd[count])
+            print(variable, opt["x"][count], our_problem.variables[variable].range)
         print("objective = ", opt["fun"] - our_problem.obj_ofset)
     else:
         print("var.", "range", "...................")
         print("solution not feasible")
         for count, variable in enumerate( our_problem.variables ):
-            print(variable, our_problem.bnd[count])
+            print(variable, our_problem.variables[variable].range)
 
 
 
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     p.pass_time = {f"PS_MR": 2, f"MR_CS": 12}
 
     v = Variables(trains_paths, penalty_at)    
-    example_problem = LinearPrograming(timetable, v)
+    example_problem = LinearPrograming(v, timetable)
     example_problem.dmax = 5
     example_problem.M = 10
     example_problem.make_objective()
