@@ -12,7 +12,7 @@ def test_var_class():
     vars = {}
     v.make_y_vars_same_direction(trains_paths, vars)
     assert list(vars.keys()) == ['y_MR_1_3', 'y_CS_1_3']
-    assert v.make_penalty_vars(trains_paths, penalty_at) == ['t_MR_1', 't_CS_1', 't_MR_3', 't_CS_3']
+    assert v.make_penalty_vars(trains_paths, penalty_at) == [1,2,3,4]
 
 
 def test_LP_class():
@@ -24,7 +24,7 @@ def test_LP_class():
     assert example_problem.timetable == timetable
     assert example_problem.trains_paths == trains_paths
     assert list(example_problem.variables.keys()) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3', 'y_MR_1_3', 'y_CS_1_3']
-    assert example_problem.penalty_vars == ['t_MR_1', 't_CS_1', 't_MR_3', 't_CS_3']
+    assert example_problem.penalty_vars == [1,2,3,4]
     example_problem.dmax = 5
     example_problem.make_objective()
     assert example_problem.obj == [0.0, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0]
