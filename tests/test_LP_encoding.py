@@ -4,7 +4,7 @@ def test_var_class():
     trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
     penalty_at = ["MR", "CS"]
     v = Variables(trains_paths, penalty_at) 
-    assert v.count_y_vars == 2
+    assert v.y_vars == ['y_MR_1_3', 'y_CS_1_3']
     assert v.trains_paths == trains_paths
     vars = {}
     v.make_t_vars(trains_paths, vars)
@@ -19,6 +19,10 @@ def test_LP_class():
     trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
     penalty_at = ["MR", "CS"]
     v = Variables(trains_paths, penalty_at)
+    assert v.variables['t_PS_1'].count == 0
+    assert v.variables['t_PS_1'].type == int
+    assert v.variables['t_CS_1'].count == 2
+    assert v.variables['t_PS_1'].type == int
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 16}, "CS" : {1: 0 , 3: 13}}    
     example_problem = LinearPrograming(v, timetable)
     assert example_problem.timetable == timetable
@@ -38,6 +42,10 @@ def test_LP_class():
     example_problem.reset_y_bonds(('MR', 1, 3))
     assert [v.range for v in example_problem.variables.values()]  == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 5.0), (15.0, 18.0), (0.0, 1.0), (0.0, 1.0)]
 
+    example_problem.relax_integer_req()
+    assert example_problem.variables['t_PS_1'].type == float
+    example_problem.restore_integer_req()
+    assert example_problem.variables['t_PS_1'].type == int
 
 def test_parametrised_constrains():
     p = Parameters()

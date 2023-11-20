@@ -10,7 +10,7 @@ class Variable():
         self.label = label
         self.range = (0,1)
         self.value = None
-        self.type = None
+        self.type = int
 
     def set_value(self, value):
         "set the particular value by the range with the same limits"
@@ -25,12 +25,12 @@ class Variables():
 
     def __init__(self, trains_paths, penalty_at):
         self.trains_paths = trains_paths
-        self.count_y_vars = 0
-        variables1 = {}
-        self.make_t_vars(trains_paths, variables1)
-        self.make_y_vars_same_direction(trains_paths, variables1)
+        self.y_vars = []
+        variables = {}
+        self.make_t_vars(trains_paths, variables)
+        self.make_y_vars_same_direction(trains_paths, variables)
         #y_vars_od =
-        self.variables = variables1
+        self.variables = variables
         self.penalty_vars = self.make_penalty_vars(trains_paths, penalty_at)
 
 
@@ -57,7 +57,7 @@ class Variables():
         "create order variables for trais going the same direction"
         count = len(variables)
         for (j, jp, s) in pairs_same_direction(trains_paths):
-            self.count_y_vars += 1
+            self.y_vars.append(f"y_{s}_{j}_{jp}")
             variables[f"y_{s}_{j}_{jp}"] =  Variable(count, f"y_{s}_{j}_{jp}")
             count += 1
 
@@ -145,8 +145,19 @@ class LinearPrograming(Variables):
         (s,j,jp) = trains_s
         self.variables[f"y_{s}_{j}_{jp}"].set_value(new_value)
 
+
     def reset_y_bonds(self, trains_s):
         "reset bonds for y variable to (0,1)"
         (s,j,jp) = trains_s
         self.variables[f"y_{s}_{j}_{jp}"].reset_initial_range()
+
+    def relax_integer_req(self):
+        for v in self.variables.values():
+            v.type = float
+
+    def restore_integer_req(self):
+        for v in self.variables.values():
+            v.type = int
+
+
 
