@@ -53,9 +53,9 @@ def test_qubo_small():
     solution = [1,0,0,1,0,0,0,1,0,0,0,1]
     assert q.check_broken_constrains(solution) == (0, 0, 0)
 
-    print(q.qubo2int(solution))
+    # s,j,t
 
-    assert 1 == 2
+    assert q.qubo2int(solution) == [['A', 1, 0], ['A', 3, 2], ['B', 1, 2], ['B', 3, 5]]
 
     solution = [1,0,0,1,0,0,0,1,0,0,0,0]
     assert q.check_broken_constrains(solution) == (1, 0, 0)

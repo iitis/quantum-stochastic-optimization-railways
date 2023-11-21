@@ -131,8 +131,10 @@ class QuboVars:
 
     def qubo2int(self, var_list):
         print("s,j,t")
+        sjt = []
         for i in find_indices(var_list, 1):
-            print(self.vars_indexing[i])
+            sjt.append(self.vars_indexing[i])
+        return sjt
 
 
 
