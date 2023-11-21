@@ -127,6 +127,14 @@ class QuboVars:
                     broken_pass += 1
                 # TODO other
         return int(self.sum_ofset/self.psum - broken_sum), int(broken_headways/2), int(broken_pass/2)
+    
+
+    def qubo2int(self, var_list):
+        print("s,j,t")
+        for i in find_indices(var_list, 1):
+            print(self.vars_indexing[i])
+
+
 
 
 
