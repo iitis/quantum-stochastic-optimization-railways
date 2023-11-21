@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
     penalty_at = ["MR", "CS"]
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 16}, "CS" : {1: 0 , 3: 13}}
+    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}} 
     tvar_range =  {"PS": {1: (0., 5.)}, "MR" :{1: (3.,8.), 3: (2.,5.)}, "CS" : {1: (16.,21.) , 3: (15., 18.)}}
     p = Parameters()
     p.headways = 2

@@ -23,7 +23,7 @@ def test_LP_class():
     assert v.variables['t_PS_1'].type == int
     assert v.variables['t_CS_1'].count == 2
     assert v.variables['t_PS_1'].type == int
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 16}, "CS" : {1: 0 , 3: 13}}    
+    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}    
     example_problem = LinearPrograming(v, timetable)
     assert example_problem.timetable == timetable
     assert example_problem.trains_paths == trains_paths
