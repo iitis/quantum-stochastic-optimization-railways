@@ -5,6 +5,12 @@ try:
 except:
     from parameters import pairs_same_direction, station_pairs, Parameters
 
+
+
+def find_indices(list_to_check, item_to_find):
+    return [idx for idx, value in enumerate(list_to_check) if value == item_to_find]
+
+
 class QuboVars:
 
     def __init__(self, tvar_range):
@@ -37,10 +43,7 @@ class QuboVars:
         penalty = {}
         for s in penalty_at:
             for j in self.station_indexing[s]:
-                print(s)
-                print(j)
                 l_bound = int(timetable[s][j])
-                print(l_bound)
                 for t in self.station_indexing[s][j]:
                     k = self.station_indexing[s][j][t]
                     penalty[(k,k)] = (t - l_bound)/self.dmax
@@ -75,8 +78,8 @@ class QuboVars:
                     k = self.station_indexing[s][j][t]
                     for tp in self.station_indexing[s][jp]:
                         kp = self.station_indexing[s][jp][tp]
-                        lb = max([t - p.headways, self.tvar_range[s][j][0]])
-                        ub = min([t + p.headways, self.tvar_range[s][j][1]])
+                        lb = max([t - p.headways, self.tvar_range[s][j][0] - 1 ] )
+                        ub = min([t + p.headways, self.tvar_range[s][j][1] + 1 ] )
                         if lb < tp < ub:
                             headway_constrain[(k,kp)] = self.ppair
                             headway_constrain[(kp,k)] = self.ppair
@@ -99,53 +102,36 @@ class QuboVars:
         self.passing_time_constrain = passing_time_constrain
 
 
+    def make_qubo(self):
+        qubo = {}
+        qubo.update( self.objective_dict )
+        qubo.update( self.sum_constrain_dict )
+        qubo.update( self.headway_constrain )
+        qubo.update( self.passing_time_constrain )
+        self.qubo = dict(sorted(qubo.items()))
+        # TODO add other constraints
 
 
 
-
+    def check_broken_constrains(self, var_list):
+        broken_sum = 0
+        broken_headways = 0
+        broken_pass = 0
+        for i in find_indices(var_list, 1):
+            for j in find_indices(var_list, 1):
+                if (i,j) in self.sum_constrain_dict:
+                    broken_sum += 1
+                if (i,j) in self.headway_constrain:
+                    broken_headways += 1
+                if (i,j) in self.passing_time_constrain:
+                    broken_pass += 1
+                # TODO other
+        return int(self.sum_ofset/self.psum - broken_sum), int(broken_headways/2), int(broken_pass/2)
 
 
 
     
 
-
-        
-
-
-
-
-def mulit_indexing_variables():
-    0
-
-if __name__ == "__main__":
-
-    tvar_range =  {"PS": {1: (0., 5.)}, "MR" :{1: (3.,8.), 3: (2.,5.)}, "CS" : {1: (16.,21.) , 3: (15., 18.)}}
-
-    q = QuboVars(tvar_range)
-
-    q.dmax = 5
-    q.psum = 2
-    q.ppair = 2
-
-    penalty_at = ["MR", "CS"]
-
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}} 
-
-
-    trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
-
-    p = Parameters()
-    p.stay = 1
-    p.headways = 2
-    p.pass_time = {f"PS_MR": 2, f"MR_CS": 12}
-
-    q.add_passing_time_and_stay_constrain(p, trains_paths)
-
-    assert len(q.passing_time_constrain) == 72
-
-    for (k, kp) in q.passing_time_constrain:
-        if "CS" in [ q.vars_indexing[k][0],  q.vars_indexing[kp][0] ]:
-           assert -13 < q.vars_indexing[k][2] - q.vars_indexing[kp][2] < 13 
 
 
 

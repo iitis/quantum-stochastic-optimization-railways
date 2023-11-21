@@ -2,7 +2,69 @@ from QTrains import QuboVars, Parameters
 
 
 
-def test_qubo_vars_creation():
+def test_qubo_small():
+
+    tvar_range =  {"A" :{1: (0.,2.), 3: (2.,4.)}, "B" : {1: (1.,3.) , 3: (3., 5.)}}
+
+    q = QuboVars(tvar_range)
+
+    assert q.station_indexing['A'] == {1: {0:0, 1:1, 2:2}, 3: {2:3, 3:4, 4:5}}
+    
+    q.dmax = 2
+    q.psum = 2
+    q.ppair = 2
+
+    penalty_at = ["B"]
+
+    timetable = {"A": {1:0, 3:2}, "B": {1:1 , 3:3}}
+
+    q.add_objective(penalty_at, timetable)
+
+
+    assert q.vars_indexing == {0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3], 5: ['A', 3, 4], 6: ['B', 1, 1], 7: ['B', 1, 2], 8: ['B', 1, 3], 9: ['B', 3, 3], 10: ['B', 3, 4], 11: ['B', 3, 5]}
+
+    assert q.objective_dict == {(6, 6): 0.0, (7, 7): 0.5, (8, 8): 1.0, (9, 9): 0.0, (10, 10): 0.5, (11, 11): 1.0}
+
+    q.add_sum_to_one_constrain()
+
+    assert q.sum_constrain_dict == {(0, 0): -2, (0, 1): 2, (0, 2): 2, (1, 1): -2, (1, 0): 2, (1, 2): 2, (2, 2): -2, (2, 0): 2, (2, 1): 2, (3, 3): -2, (3, 4): 2, (3, 5): 2, (4, 4): -2, (4, 3): 2, (4, 5): 2, (5, 5): -2, (5, 3): 2, (5, 4): 2, (6, 6): -2, (6, 7): 2, (6, 8): 2, (7, 7): -2, (7, 6): 2, (7, 8): 2, (8, 8): -2, (8, 6): 2, (8, 7): 2, (9, 9): -2, (9, 10): 2, (9, 11): 2, (10, 10): -2, (10, 9): 2, (10, 11): 2, (11, 11): -2, (11, 9): 2, (11, 10): 2}
+
+    p = Parameters()
+    p.stay = 1
+    p.headways = 1
+    p.pass_time = {f"A_B": 1, f"A_B": 1}
+
+    trains_paths = {1: ["A", "B"], 3: ["A", "B"]} 
+    q.add_headway_constrain(p, trains_paths)
+
+    assert q.headway_constrain == {(2, 3): 2, (3, 2): 2, (8, 9): 2, (9, 8): 2}
+
+    q.add_passing_time_and_stay_constrain(p, trains_paths)
+
+    assert q.passing_time_constrain == {(0, 6): 2, (6, 0): 2, (1, 6): 2, (6, 1): 2, (1, 7): 2, (7, 1): 2, (2, 6): 2, (6, 2): 2, (2, 7): 2, (7, 2): 2, (3, 9): 2, (9, 3): 2, (4, 9): 2, (9, 4): 2, (4, 10): 2, (10, 4): 2, (5, 9): 2, (9, 5): 2, (5, 10): 2, (10, 5): 2}
+
+    q.make_qubo()
+
+    assert len(q.qubo) == 60
+
+    # 0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3], 5: ['A', 3, 4],
+    #  6: ['B', 1, 1], 7: ['B', 1, 2], 8: ['B', 1, 3], 9: ['B', 3, 3], 10: ['B', 3, 4], 11: ['B', 3, 5]
+    #           0,1,2,3,4,5,6,7,8,9,10,11
+    solution = [1,0,0,1,0,0,0,1,0,0,0,1]
+    assert q.check_broken_constrains(solution) == (0, 0, 0)
+
+    solution = [1,0,0,1,0,0,0,1,0,0,0,0]
+    assert q.check_broken_constrains(solution) == (1, 0, 0)
+
+     #          0,1,2,3,4,5,6,7,8,9,10,11
+    solution = [0,0,1,1,0,0,0,0,1,0,0,1]
+    assert q.check_broken_constrains(solution) == (0, 1, 0)
+
+     #          0,1,2,3,4,5,6,7,8,9,10,11
+    solution = [1,0,0,1,0,0,0,1,0,1,0,0]
+    assert q.check_broken_constrains(solution) == (0, 0, 1)
+
+def test_qubo_large():
 
     tvar_range =  {"PS": {1: (0., 5.)}, "MR" :{1: (3.,8.), 3: (2.,5.)}, "CS" : {1: (16.,21.) , 3: (15., 18.)}}
 
@@ -44,7 +106,7 @@ def test_qubo_vars_creation():
 
     q.add_headway_constrain(p, trains_paths)
 
-    assert len(q.headway_constrain) == 24
+    assert len(q.headway_constrain) == 32
 
     for (k, kp) in q.headway_constrain:
         assert -2 < q.vars_indexing[k][2] - q.vars_indexing[kp][2] < 2
@@ -59,3 +121,6 @@ def test_qubo_vars_creation():
            assert -13 < q.vars_indexing[k][2] - q.vars_indexing[kp][2] < 13 
         if "PS" in [ q.vars_indexing[k][0],  q.vars_indexing[kp][0] ]:
            assert -3 < q.vars_indexing[k][2] - q.vars_indexing[kp][2] < 3
+
+    
+    q.make_qubo()
