@@ -58,6 +58,9 @@ def test_parametrised_constrains():
     example_problem.add_headways(p)
     assert example_problem.lhs_ineq == [[0, 1, 0, -1, 0, 0, 0], [0, -1, 0, 1, 0, 0, 0], [0, 0, 1, 0, -1, 0, 0], [0, 0, -1, 0, 1, 0, 0]]
     assert example_problem.rhs_ineq == [-2, -2, -2, -2]
+    tvar_range =  {"PS": {1: (0., 5.)}, "MR" :{1: (3.,8.), 3: (2.,5.)}, "CS" : {1: (16.,21.) , 3: (15., 18.)}}
+    example_problem.add_all_bounds(tvar_range)
+    assert example_problem.variables["t_MR_1"].range == (3,8)
 
     p = Parameters()
     p.stay = 1
