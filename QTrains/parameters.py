@@ -87,7 +87,6 @@ class Railway_input:
                         trains_paths[j].append(s)
                     else:
                         trains_paths[j].insert(0, s)
-                    # TODO sorting is necessary here
         return trains_paths
     
 
