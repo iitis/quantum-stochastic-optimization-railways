@@ -13,20 +13,20 @@ def find_indices(list_to_check, item_to_find):
 
 class QuboVars:
 
-    def __init__(self, tvar_range):
-        self.tvar_range = tvar_range
+    def __init__(self, Railway_input):
+        self.tvar_range = Railway_input.var_range
         count = 0
         vars_index = {}
-        station_indexing = copy.deepcopy(tvar_range)
+        station_indexing = copy.deepcopy(Railway_input.var_range)
         trains = []
-        for s in tvar_range:
-            for j in tvar_range[s]:
+        for s in Railway_input.var_range:
+            for j in Railway_input.var_range[s]:
                 if j not in trains:
                     trains.append(j)
                 by_t = {}
                 #TODO ints if rounding may couse problems
-                l_bound = int(tvar_range[s][j][0])
-                u_bound = int(tvar_range[s][j][1])
+                l_bound = int(Railway_input.var_range[s][j][0])
+                u_bound = int(Railway_input.var_range[s][j][1])
                 for t in range(l_bound, u_bound + 1):
                     by_t[t] = count
                     vars_index[count] = [s,j,t]
@@ -39,14 +39,14 @@ class QuboVars:
 
 
 
-    def add_objective(self, penalty_at, timetable):
+    def add_objective(self, Parameters, Railway_input):
         penalty = {}
-        for s in penalty_at:
+        for s in Railway_input.penalty_at:
             for j in self.station_indexing[s]:
-                l_bound = int(timetable[s][j])
+                l_bound = int(Railway_input.timetable[s][j])
                 for t in self.station_indexing[s][j]:
                     k = self.station_indexing[s][j][t]
-                    penalty[(k,k)] = (t - l_bound)/self.dmax
+                    penalty[(k,k)] = (t - l_bound)/Parameters.dmax
         self.objective_dict = penalty
 
 
@@ -69,17 +69,17 @@ class QuboVars:
         self.sum_constrain_dict = sum_constrain
 
 
-    def add_headway_constrain(self, p, trains_paths):
+    def add_headway_constrain(self, Parameters, Railway_input):
         headway_constrain = {}
-        for (j, jp, s) in pairs_same_direction(trains_paths):
+        for (j, jp, s) in pairs_same_direction(Railway_input.trains_paths):
             js = self.station_indexing[s]
             if j in js and jp in js:
                 for t in self.station_indexing[s][j]:
                     k = self.station_indexing[s][j][t]
                     for tp in self.station_indexing[s][jp]:
                         kp = self.station_indexing[s][jp][tp]
-                        lb = max([t - p.headways, self.tvar_range[s][j][0] - 1 ] )
-                        ub = min([t + p.headways, self.tvar_range[s][j][1] + 1 ] )
+                        lb = max([t - Parameters.headways, self.tvar_range[s][j][0] - 1 ] )
+                        ub = min([t + Parameters.headways, self.tvar_range[s][j][1] + 1 ] )
                         if lb < tp < ub:
                             headway_constrain[(k,kp)] = self.ppair
                             headway_constrain[(kp,k)] = self.ppair
@@ -87,13 +87,13 @@ class QuboVars:
 
 
 
-    def add_passing_time_and_stay_constrain(self, p, trains_paths):
+    def add_passing_time_and_stay_constrain(self, Parameters, Railway_input):
         passing_time_constrain = {}
-        for (j, s, sp) in station_pairs(trains_paths):
+        for (j, s, sp) in station_pairs(Railway_input.trains_paths):
             for t in self.station_indexing[s][j]:
                 for tp in self.station_indexing[sp][j]:
                     lb = self.tvar_range[sp][j][0]
-                    ub = min([t + p.stay + p.pass_time[f"{s}_{sp}"], self.tvar_range[sp][j][1]])
+                    ub = min([t + Parameters.stay + Parameters.pass_time[f"{s}_{sp}"], self.tvar_range[sp][j][1] + 1])
                     if lb <= tp < ub:
                         k = self.station_indexing[s][j][t]
                         kp = self.station_indexing[sp][j][tp]
@@ -101,15 +101,36 @@ class QuboVars:
                         passing_time_constrain[(kp,k)] = self.ppair
         self.passing_time_constrain = passing_time_constrain
 
+    
+    def add_circ_constrain(self, Parameters, Railway_input):
+        circ_constrain = {}
+        for _, (s, (j,jp)) in enumerate(Railway_input.circulation.items()):
+            for t in self.station_indexing[s][j]:
+                for tp in self.station_indexing[s][jp]:
+                    lb = self.tvar_range[s][jp][0]
+                    ub = min([t + Parameters.stay + Parameters.preparation_t, self.tvar_range[s][jp][1] + 1])
+                    if lb <= tp < ub:
+                        k = self.station_indexing[s][j][t]
+                        kp = self.station_indexing[s][jp][tp]
+                        circ_constrain[(k,kp)] = self.ppair
+                        circ_constrain[(kp,k)] = self.ppair
+        self.circ_constrain = circ_constrain
+             
 
-    def make_qubo(self):
+
+    def make_qubo(self, Parameters, Railway_input):
+        self.add_objective(Parameters, Railway_input)
+        self.add_sum_to_one_constrain()
+        self.add_headway_constrain(Parameters, Railway_input)
+        self.add_passing_time_and_stay_constrain(Parameters, Railway_input)
+        self.add_circ_constrain(Parameters, Railway_input)
         qubo = {}
         qubo.update( self.objective_dict )
         qubo.update( self.sum_constrain_dict )
         qubo.update( self.headway_constrain )
         qubo.update( self.passing_time_constrain )
+        qubo.update( self.circ_constrain)
         self.qubo = dict(sorted(qubo.items()))
-        # TODO add other constraints
 
 
 
