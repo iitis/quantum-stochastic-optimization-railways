@@ -83,7 +83,10 @@ class Railway_input:
                 if j not in trains_paths:
                     trains_paths[j] = [s]
                 else:
-                    trains_paths[j].append(s)
+                    if (j % 2) == 1:
+                        trains_paths[j].append(s)
+                    else:
+                        trains_paths[j].insert(0, s)
                     # TODO sorting is necessary here
         return trains_paths
     

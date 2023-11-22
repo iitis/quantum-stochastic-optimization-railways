@@ -86,18 +86,18 @@ def test_parametrised_constrains():
     assert example_problem.rhs_ineq == [-3, -13, -13]
 
 
-    penalty_at = ["B"]
-    timetable = {"A": {1:0, 3:8}, "B": {1:2 , 3:6}}
+    penalty_at = ["A", "B"]
+    timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
     par = Parameters(timetable, dmax = 4, headways = 1)
     input = Railway_input(par, penalty_at, delays = {1:0})
-    input.circulation = {"B": (1,3)}
+    input.circulation = {"B": (1,2)}
     v = Variables(input)
-    assert v.trains_paths == {1: ["A", "B"], 3: ["B", "A"]}
+    assert v.trains_paths == {1: ["A", "B"], 2: ["B", "A"]}
     example_problem = LinearPrograming(v, par, M = 10)
     example_problem.lhs_ineq = []
     example_problem.rhs_ineq = []
     example_problem.add_circ_constrain(par, input)
-    assert  example_problem.lhs_ineq  == [[0, 1, 0, -1, 0, 0]]  #TODO chck these
+    assert  example_problem.lhs_ineq  == [[0, 1, -1, 0]]  #TODO chck these
     assert example_problem.rhs_ineq == [-4]
 
     example_problem = LinearPrograming(v, par, M = 10)
@@ -118,7 +118,7 @@ def test_parametrised_constrains():
             print(key, opt["x"][variable.count], variable.range)
             variable.value = opt["x"][variable.count]
         print("objective", example_problem.compute_objective())
-    #assert 1 == 2
+
 
 
 

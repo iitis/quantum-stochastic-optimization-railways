@@ -93,7 +93,10 @@ class QuboVars:
             for t in self.station_indexing[s][j]:
                 for tp in self.station_indexing[sp][j]:
                     lb = self.tvar_range[sp][j][0]
-                    ub = min([t + Parameters.stay + Parameters.pass_time[f"{s}_{sp}"], self.tvar_range[sp][j][1] + 1])
+                    try:
+                        ub = min([t + Parameters.stay + Parameters.pass_time[f"{s}_{sp}"], self.tvar_range[sp][j][1] + 1])
+                    except:
+                        ub = min([t + Parameters.stay + Parameters.pass_time[f"{sp}_{s}"], self.tvar_range[s][j][1] + 1])
                     if lb <= tp < ub:
                         k = self.station_indexing[s][j][t]
                         kp = self.station_indexing[sp][j][tp]

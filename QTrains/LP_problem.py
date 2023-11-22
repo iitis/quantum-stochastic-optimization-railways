@@ -149,7 +149,10 @@ class LinearPrograming():
             lhs_el[i] = 1
             lhs_el[ip] = -1
             self.lhs_ineq.append(lhs_el)
-            self.rhs_ineq.append(-parameters.stay -parameters.pass_time[f"{s}_{sp}"])
+            try:
+                self.rhs_ineq.append(-parameters.stay -parameters.pass_time[f"{s}_{sp}"])
+            except:
+                self.rhs_ineq.append(-parameters.stay -parameters.pass_time[f"{sp}_{s}"])
 
     def add_circ_constrain(self, parameters, input):
         for _, (s, (j,jp)) in enumerate(input.circulation.items()):

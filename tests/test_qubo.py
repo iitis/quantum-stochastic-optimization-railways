@@ -86,14 +86,14 @@ def test_qubo_large():
 def test_qubo_circ():
 
     penalty_at = ["B"]
-    timetable = {"A": {1:0, 3:8}, "B": {1:2 , 3:6}}
+    timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
     par = Parameters(timetable, dmax = 2, headways = 1)
     input = Railway_input(par, penalty_at, delays = {1:0})
-    input.circulation = {"B": (1,3)}
+    input.circulation = {"B": (1,2)}
 
     q = QuboVars(input)
     q.ppair = 2
     q.add_circ_constrain(par, input)
-    assert q.vars_indexing == {0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 8], 4: ['A', 3, 9], 5: ['A', 3, 10], 6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4], 9: ['B', 3, 6], 10: ['B', 3, 7], 11: ['B', 3, 8]}
+    assert q.vars_indexing == {0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 2, 8], 4: ['A', 2, 9], 5: ['A', 2, 10], 6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4], 9: ['B', 2, 6], 10: ['B', 2, 7], 11: ['B', 2, 8]}
     assert q.circ_constrain == {(7, 9): 2, (9, 7): 2, (8, 9): 2, (9, 8): 2, (8, 10): 2, (10, 8): 2}
 
