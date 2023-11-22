@@ -1,9 +1,9 @@
 "encoding problem as QUBO"
 import copy
 try:
-    from .parameters import pairs_same_direction, station_pairs, Parameters
+    from .parameters import pairs_same_direction, station_pairs
 except:
-    from parameters import pairs_same_direction, station_pairs, Parameters
+    from parameters import pairs_same_direction, station_pairs
 
 
 
@@ -135,6 +135,16 @@ class QuboVars:
         for i in find_indices(var_list, 1):
             sjt.append(self.vars_indexing[i])
         return sjt
+    
+    def objective_val(self, var_list):
+        objective = 0
+        for i in find_indices(var_list, 1):
+            if (i,i) in self.objective_dict:
+                objective += self.objective_dict[(i,i)]
+        return objective
+
+
+
 
 
 

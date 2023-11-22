@@ -47,11 +47,15 @@ def test_qubo_small():
 
     assert len(q.qubo) == 60
 
+    # this should be pickled ....
+
     # 0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3], 5: ['A', 3, 4],
     #  6: ['B', 1, 1], 7: ['B', 1, 2], 8: ['B', 1, 3], 9: ['B', 3, 3], 10: ['B', 3, 4], 11: ['B', 3, 5]
     #           0,1,2,3,4,5,6,7,8,9,10,11
     solution = [1,0,0,1,0,0,0,1,0,0,0,1]
     assert q.check_broken_constrains(solution) == (0, 0, 0)
+
+    assert q.objective_val(solution) == 1.5
 
     # s,j,t
 

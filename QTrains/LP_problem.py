@@ -99,6 +99,16 @@ class LinearPrograming(Variables):
                 if self.variables[f"t_{s}_{j}"].count in self.penalty_vars:
                     self.obj_ofset += self.timetable[s][j]/self.dmax
 
+    def compute_objective(self):
+        obj = 0
+        for s in self.timetable:
+            for j in self.timetable[s]:
+                v = self.variables[f"t_{s}_{j}"]
+                if v.count in self.penalty_vars:
+                    obj += v.value/self.dmax
+        return obj - self.obj_ofset
+
+
     def add_headways(self, p):
         "add headway constrain to the inequality matrix"
         for (j, jp, s) in pairs_same_direction(self.trains_paths):

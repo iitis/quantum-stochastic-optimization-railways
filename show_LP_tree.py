@@ -13,13 +13,15 @@ def print_calculation_LP(prob):
     opt = linprog(c=prob.obj, A_ub=prob.lhs_ineq, b_ub=prob.rhs_ineq, bounds=bounds, method='highs', integrality = integrality)
     if opt.success:
         print("var.", "val.", "range", "...................")
-        for count, variable in enumerate( prob.variables ):
-            print(variable, opt["x"][count], prob.variables[variable].range)
-        print("objective = ", opt["fun"] - prob.obj_ofset)
+        for key in prob.variables.keys():
+            variable  = prob.variables[key]
+            print(key, opt["x"][variable.count], variable.range)
+            variable.value = opt["x"][variable.count]
+        print("objective", prob.compute_objective())
     else:
         print("var.", "range", "...................")
         print("solution not feasible")
-        for count, variable in enumerate( prob.variables ):
+        for variable in prob.variables:
             print(variable, prob.variables[variable].range)
 
 
@@ -107,12 +109,17 @@ if __name__ == "__main__":
 
     sol = model.solve()
 
-    print(example_problem.obj_ofset)
-    print(sol)
-    
-    
+    print("xxxxxxxxxxxxxxxxxx")
+
     for var in model.iter_variables():
         print(var, sol.get_var_value(var))
+
+    for var in model.iter_variables():
+        example_problem.variables[str(var)].value = sol.get_var_value(var)
+
+    print ("objective", example_problem.compute_objective()  )
+
+
 
     
 
