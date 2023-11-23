@@ -35,6 +35,11 @@ class QuboVars:
         
         self.station_indexing = station_indexing
         self.vars_indexing = vars_index
+        self.objective = {}
+        self.sum_constrain = {}
+        self.headway_constrain = {}
+        self.passing_time_constrain = {}
+        self.circ_constrain = {}
         #self.trains_indexing = {key:{k:station_indexing[k][key] for k in station_indexing if key in station_indexing[k]} for key in trains}
 
 
@@ -47,7 +52,7 @@ class QuboVars:
                 for t in self.station_indexing[s][j]:
                     k = self.station_indexing[s][j][t]
                     penalty[(k,k)] = (t - l_bound)/Railway_input.dmax
-        self.objective_dict = penalty
+        self.objective = penalty
 
 
 
@@ -66,7 +71,7 @@ class QuboVars:
                         if t != tp:
                             sum_constrain[(k, kp)] = self.psum
         
-        self.sum_constrain_dict = sum_constrain
+        self.sum_constrain = sum_constrain
 
 
     def add_headway_constrain(self, Railway_input):
@@ -128,8 +133,8 @@ class QuboVars:
         self.add_passing_time_and_stay_constrain( Railway_input)
         self.add_circ_constrain( Railway_input)
         qubo = {}
-        qubo.update( self.objective_dict )
-        qubo.update( self.sum_constrain_dict )
+        qubo.update( self.objective )
+        qubo.update( self.sum_constrain )
         qubo.update( self.headway_constrain )
         qubo.update( self.passing_time_constrain )
         qubo.update( self.circ_constrain)
@@ -143,7 +148,7 @@ class QuboVars:
         broken_pass = 0
         for i in find_indices(var_list, 1):
             for j in find_indices(var_list, 1):
-                if (i,j) in self.sum_constrain_dict:
+                if (i,j) in self.sum_constrain:
                     broken_sum += 1
                 if (i,j) in self.headway_constrain:
                     broken_headways += 1
@@ -163,8 +168,8 @@ class QuboVars:
     def objective_val(self, var_list):
         objective = 0
         for i in find_indices(var_list, 1):
-            if (i,i) in self.objective_dict:
-                objective += self.objective_dict[(i,i)]
+            if (i,i) in self.objective:
+                objective += self.objective[(i,i)]
         return objective
 
 
