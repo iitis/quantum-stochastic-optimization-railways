@@ -1,46 +1,44 @@
+""" testing ILP solver"""
 from scipy.optimize import linprog
-
-
-from QTrains import Variables, LinearPrograming, Parameters, Railway_input, make_ilp_docplex
+from QTrains import Variables, LinearPrograming, Parameters, Railway_input
 
 def test_var_class():
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}} 
+    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
     objective_stations = ["MR", "CS"]
 
     p = Parameters(timetable, dmax = 5)
     i = Railway_input(p, objective_stations, delays = {3:2})
-    v = Variables(i) 
+    v = Variables(i)
     assert v.y_vars == ['y_MR_1_3', 'y_CS_1_3']
     trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
     assert v.trains_paths == trains_paths
-    vars = {}
-    v.add_t_vars(trains_paths, vars)
-    assert list(vars.keys()) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3']
+    out_vars = {}
+    v.add_t_vars(trains_paths, out_vars)
+    assert list(out_vars.keys()) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3']
 
-    v.add_y_vars_same_direction(i, vars)
-    assert list(vars.keys()) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3', 'y_MR_1_3', 'y_CS_1_3']
+    v.add_y_vars_same_direction(i, out_vars)
+    assert list(out_vars.keys()) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3', 'y_MR_1_3', 'y_CS_1_3']
     assert v.indices_objective_vars(i) == [1,2,3,4]
 
 
 def test_LP_class():
-    
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}  
+
+    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
     objective_stations = ["MR", "CS"]
     p = Parameters(timetable, dmax = 5)
     i = Railway_input(p, objective_stations, delays = {3:2})
     v = Variables(i)
-    
+
     assert v.variables['t_PS_1'].count == 0
     assert v.variables['t_PS_1'].type == int
     assert v.variables['t_CS_1'].count == 2
     assert v.variables['t_PS_1'].type == int
-      
+ 
     example_problem = LinearPrograming(v, p)
 
 
     assert list(example_problem.variables.keys()) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3', 'y_MR_1_3', 'y_CS_1_3']
     assert example_problem.penalty_vars == [1,2,3,4]
-    
     assert example_problem.obj == [0.0, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0]
     assert example_problem.obj_ofset == 6.4
 
@@ -58,13 +56,13 @@ def test_LP_class():
     assert example_problem.variables['t_PS_1'].type == int
 
 def test_parametrised_constrains():
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}  
+    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
     objective_stations = ["MR", "CS"]
 
     p = Parameters(timetable, dmax = 5)
     input = Railway_input(p, objective_stations, delays = {2:3})
     v = Variables(input)
-    
+
     example_problem = LinearPrograming(v, p, M = 10)
     assert example_problem.variables["t_MR_1"].range == (3,8)
 
@@ -74,17 +72,14 @@ def test_parametrised_constrains():
     example_problem.add_headways(p)
     assert example_problem.lhs_ineq == [[0, 1, 0, -1, 0, 10, 0], [0, -1, 0, 1, 0, -10, 0], [0, 0, 1, 0, -1, 0, 10], [0, 0, -1, 0, 1, 0, -10]]
     assert example_problem.rhs_ineq == [8, -2, 8, -2]
-    
-    
-    
+     
     # testing only passing times
     example_problem.lhs_ineq = []
     example_problem.rhs_ineq = []
     example_problem.add_passing_times(p)
-    
+
     assert example_problem.lhs_ineq  == [[1, -1, 0, 0, 0, 0, 0], [0, 1, -1, 0, 0, 0, 0], [0, 0, 0, 1, -1, 0, 0]]
     assert example_problem.rhs_ineq == [-3, -13, -13]
-
 
     objective_stations = ["A", "B"]
     timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
@@ -97,7 +92,8 @@ def test_parametrised_constrains():
     example_problem.lhs_ineq = []
     example_problem.rhs_ineq = []
     example_problem.add_circ_constrain(par, input)
-    assert  example_problem.lhs_ineq  == [[0, 1, -1, 0]]  #TODO chck these
+    assert list(v.variables.keys()) == ['t_A_1', 't_B_1', 't_B_2', 't_A_2'] 
+    assert example_problem.lhs_ineq  == [[0, 1, -1, 0]]
     assert example_problem.rhs_ineq == [-4]
 
     example_problem = LinearPrograming(v, par, M = 10)
@@ -131,8 +127,6 @@ def test_parametrised_constrains():
     assert opt["x"][variable.count] == 9.0
 
     assert example_problem.compute_objective() == 1.0
-
-
 
 
 

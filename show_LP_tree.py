@@ -1,6 +1,5 @@
+""" computation of single problem, create the tree for B & B with int var relaxation """
 from scipy.optimize import linprog
-from docplex.mp.model import Model
-from docplex.mp.solution import SolveSolution
 from QTrains import Parameters, Variables, LinearPrograming, Railway_input, make_ilp_docplex
 
 def print_calculation_LP(prob):
@@ -31,14 +30,14 @@ if __name__ == "__main__":
     print("make tree")
 
     penalty_at = ["MR", "CS"]
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}} 
+    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
     p = Parameters(timetable, dmax = 5)
     i = Railway_input(p, penalty_at, delays = {3:2})
-    v = Variables(i)    
+    r_var = Variables(i)
 
-    example_problem = LinearPrograming(v, p, M = 10)
+    example_problem = LinearPrograming(r_var, p, M = 10)
     example_problem.relax_integer_req()
-    
+
 
     print("general LP")
 
@@ -78,11 +77,5 @@ if __name__ == "__main__":
         example_problem.variables[str(var)].value = sol.get_var_value(var)
 
     print ("objective", example_problem.compute_objective()  )
-
-
-
-    
-
-
 
     

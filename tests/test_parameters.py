@@ -11,8 +11,8 @@ def test_helpers():
     assert station_pairs(trains_paths) == [[1, 'PS', 'MR'], [1, 'MR', 'CS'], [3, 'MR', 'CS']]
 
     trains_paths = {1: ["PS", "MR", "CS"], 2: ["CS", "MR"]}
-    assert common_s_same_dir(trains_paths, 1, 2) == []
-    assert pairs_same_direction(trains_paths)  == []
+    assert not common_s_same_dir(trains_paths, 1, 2)
+    assert not pairs_same_direction(trains_paths)
 
 def test_par_class():
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
@@ -34,8 +34,5 @@ def test_initial_conditions():
     i = Railway_input(p, objective_stations, delays)
     assert i.trains_paths == {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]} 
     assert i.tvar_range ==  {"PS": {1: (0., 5.)}, "MR" :{1: (3.,8.), 3: (2.,5.)}, "CS" : {1: (16.,21.) , 3: (15., 18.)}}
-
-
-
 
 
