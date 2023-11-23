@@ -9,7 +9,7 @@ def match_lists(a, b):
     return a[match.a:match.a + match.size], match.size
 
 def common_s_same_dir(trains_paths, j, jp):
-    "helper teritns the series of stations two trains follow going in the same direction"
+    "helper returns the list of series of stations two trains follow going in the same direction"
     stations, size = match_lists(trains_paths[j], trains_paths[jp])
     if size > 1:
         return stations
@@ -44,53 +44,57 @@ class Parameters:
         self.preparation_t = preparation_t
         self.dmax = dmax
         self.timetable = timetable
-        self.make_passing_times()
-
-    
-    def make_passing_times(self):
-        pass_time = {}
-        stations = [el for el in self.timetable]
-        for i in range(len(stations) - 1):
-            a = stations[i]
-            b = stations[i+1]
-            for j in self.timetable[a]:
-                if j in self.timetable[b]:
-                    passing_time = abs(self.timetable[b][j] - self.timetable[a][j]) - self.stay
-                    if f"{a}_{b}" in pass_time:
-                        assert pass_time[f"{a}_{b}"] == passing_time
-                    elif "{a}_{b}" in pass_time:
-                        assert pass_time[f"{b}_{a}"] == passing_time
-                    else:
-                     pass_time[f"{a}_{b}"] = passing_time
-       
-        self.pass_time = pass_time
-
-
-
-class Railway_input:
-    def __init__(self, parameters, penalty_at, delays):
-        self.timetable = parameters.timetable
-        self.penalty_at = penalty_at
         self.trains_paths = self.make_trains_paths()
-        self.add_initial_delays(parameters, delays)
-        self.circulation = {}
+        self.make_passing_times()
 
 
     def make_trains_paths(self):
+        """ return dict of trains and keys and array of subsequent stations"""
         trains_paths = {}
         for s in self.timetable:
             for j in self.timetable[s].keys():
                 if j not in trains_paths:
                     trains_paths[j] = [s]
+                elif (j % 2) == 1:
+                    trains_paths[j].append(s)
                 else:
-                    if (j % 2) == 1:
-                        trains_paths[j].append(s)
-                    else:
-                        trains_paths[j].insert(0, s)
+                    trains_paths[j].insert(0, s)
         return trains_paths
+
+    
+    def make_passing_times(self):
+        pass_time = {}
+        for (j,s,sp) in station_pairs(self.trains_paths):
+
+            passing_time = abs(self.timetable[sp][j] - self.timetable[s][j]) - self.stay
+            if f"{s}_{sp}" in pass_time:
+                assert pass_time[f"{s}_{sp}"] == passing_time
+            elif f"{sp}_{s}" in pass_time:
+                assert pass_time[f"{sp}_{s}"] == passing_time
+            else:
+                pass_time[f"{s}_{sp}"] = passing_time
+       
+        self.pass_time = pass_time
+
+
+
+class Railway_input(Parameters):
+    def __init__(self, parameters, objective_stations, delays):
+        self.headways = parameters.headways
+        self.stay = parameters.stay
+        self.preparation_t = parameters.preparation_t
+        self.dmax = parameters.dmax
+        self.timetable = parameters.timetable
+        self.trains_paths = parameters.trains_paths
+        self.pass_time = parameters.pass_time
+        self.objective_stations = objective_stations
+        self.add_tvar_ranges(parameters, delays)
+        self.circulation = {}
+
     
 
-    def add_initial_delays(self, parameters, delays):
+    def add_tvar_ranges(self, parameters, delays):
+        """ add the field of ranges of tvar in the form of dict of dict   stations -> trains -> rnge tuple """
         var_range = copy.deepcopy(self.timetable) 
         for s in var_range:
             for j in var_range[s]:
@@ -101,8 +105,7 @@ class Railway_input:
                 b = var_range[s][j]+parameters.dmax
                 assert a <= b
                 var_range[s][j] = (a,b)
-        self.var_range = var_range
-
+        self.tvar_range = var_range
 
 
 

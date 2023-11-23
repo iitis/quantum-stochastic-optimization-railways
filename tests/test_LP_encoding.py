@@ -5,10 +5,10 @@ from QTrains import Variables, LinearPrograming, Parameters, Railway_input, make
 
 def test_var_class():
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}} 
-    penalty_at = ["MR", "CS"]
+    objective_stations = ["MR", "CS"]
 
     p = Parameters(timetable, dmax = 5)
-    i = Railway_input(p, penalty_at, delays = {3:2})
+    i = Railway_input(p, objective_stations, delays = {3:2})
     v = Variables(i) 
     assert v.y_vars == ['y_MR_1_3', 'y_CS_1_3']
     trains_paths = {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
@@ -16,18 +16,18 @@ def test_var_class():
     vars = {}
     v.add_t_vars(trains_paths, vars)
     assert list(vars.keys()) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3']
-    vars = {}
-    v.add_y_vars_same_direction(trains_paths, vars)
-    assert list(vars.keys()) == ['y_MR_1_3', 'y_CS_1_3']
-    assert v.make_penalty_vars(trains_paths, penalty_at) == [1,2,3,4]
+
+    v.add_y_vars_same_direction(i, vars)
+    assert list(vars.keys()) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3', 'y_MR_1_3', 'y_CS_1_3']
+    assert v.indices_objective_vars(i) == [1,2,3,4]
 
 
 def test_LP_class():
     
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}  
-    penalty_at = ["MR", "CS"]
+    objective_stations = ["MR", "CS"]
     p = Parameters(timetable, dmax = 5)
-    i = Railway_input(p, penalty_at, delays = {3:2})
+    i = Railway_input(p, objective_stations, delays = {3:2})
     v = Variables(i)
     
     assert v.variables['t_PS_1'].count == 0
@@ -59,10 +59,10 @@ def test_LP_class():
 
 def test_parametrised_constrains():
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}  
-    penalty_at = ["MR", "CS"]
+    objective_stations = ["MR", "CS"]
 
     p = Parameters(timetable, dmax = 5)
-    input = Railway_input(p, penalty_at, delays = {2:3})
+    input = Railway_input(p, objective_stations, delays = {2:3})
     v = Variables(input)
     
     example_problem = LinearPrograming(v, p, M = 10)
@@ -86,10 +86,10 @@ def test_parametrised_constrains():
     assert example_problem.rhs_ineq == [-3, -13, -13]
 
 
-    penalty_at = ["A", "B"]
+    objective_stations = ["A", "B"]
     timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
     par = Parameters(timetable, dmax = 4, headways = 1)
-    input = Railway_input(par, penalty_at, delays = {1:0})
+    input = Railway_input(par, objective_stations, delays = {1:1})
     input.circulation = {"B": (1,2)}
     v = Variables(input)
     assert v.trains_paths == {1: ["A", "B"], 2: ["B", "A"]}
@@ -111,13 +111,28 @@ def test_parametrised_constrains():
 
     opt = linprog(c=example_problem.obj, A_ub=example_problem.lhs_ineq, b_ub=example_problem.rhs_ineq, bounds=bounds, method='highs', integrality = integrality)
 
-    if opt.success:
-        print("var.", "val.", "range", "...................")
-        for key in example_problem.variables.keys():
-            variable  = example_problem.variables[key]
-            print(key, opt["x"][variable.count], variable.range)
-            variable.value = opt["x"][variable.count]
-        print("objective", example_problem.compute_objective())
+
+    print("var.", "val.", "range", "...................")
+
+    for key in example_problem.variables.keys():
+        variable  = example_problem.variables[key]
+        variable.value = opt["x"][variable.count]
+
+    variable  = example_problem.variables["t_A_1"]
+    assert opt["x"][variable.count] == 1.0
+
+    variable  = example_problem.variables["t_B_1"]
+    assert opt["x"][variable.count] == 3.0
+
+    variable  = example_problem.variables["t_B_2"]
+    assert opt["x"][variable.count] == 7.0
+
+    variable  = example_problem.variables["t_A_2"]
+    assert opt["x"][variable.count] == 9.0
+
+    assert example_problem.compute_objective() == 1.0
+
+
 
 
 

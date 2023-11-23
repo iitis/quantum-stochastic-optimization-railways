@@ -25,14 +25,14 @@ class Variables():
 
     def __init__(self, Railway_input):
         self.trains_paths = Railway_input.trains_paths
-        self.var_range = Railway_input.var_range
+        self.tvar_range = Railway_input.tvar_range
         self.y_vars = []
         variables = {}
         self.add_t_vars(Railway_input.trains_paths, variables)
-        self.add_y_vars_same_direction(Railway_input.trains_paths, variables)
+        self.add_y_vars_same_direction(Railway_input, variables)
 
         self.variables = variables
-        self.penalty_vars = self.make_penalty_vars(Railway_input.trains_paths, Railway_input.penalty_at)
+        self.penalty_vars = self.indices_objective_vars(Railway_input)
 
 
     def add_t_vars(self, trains_paths, variables):
@@ -43,21 +43,28 @@ class Variables():
                 variables[f"t_{s}_{j}"] =  Variable(count, f"t_{s}_{j}")
                 count += 1
 
-    def add_y_vars_same_direction(self, trains_paths, variables):
+    def add_y_vars_same_direction(self, Railway_input, variables):
         "create order variables for trais going the same direction"
         count = len(variables)
-        for (j, jp, s) in pairs_same_direction(trains_paths):
-            self.y_vars.append(f"y_{s}_{j}_{jp}")
-            variables[f"y_{s}_{j}_{jp}"] =  Variable(count, f"y_{s}_{j}_{jp}")
-            count += 1
+        for (j, jp, s) in pairs_same_direction(self.trains_paths):
+            v = variables[f"t_{s}_{j}"]
+            vp = variables[f"t_{s}_{jp}"]
+
+            p = Railway_input.headways 
+            if v.range[1] + p >= vp.range[0] and vp.range[1] + p >= v.range[0]:
+                # to not create redundant variables
+        
+                self.y_vars.append(f"y_{s}_{j}_{jp}")
+                variables[f"y_{s}_{j}_{jp}"] =  Variable(count, f"y_{s}_{j}_{jp}")
+                count += 1
 
 
-    def make_penalty_vars(self, trains_paths, penalty_at):
+    def indices_objective_vars(self, Railway_input):
         "list index of penalties for which penalties are computed"
         penalty_vars = []
-        for j in trains_paths:
-            for s in trains_paths[j]:
-                if s in penalty_at:
+        for j in self.trains_paths:
+            for s in self.trains_paths[j]:
+                if s in Railway_input.objective_stations:
                     penalty_vars.append(self.variables[f"t_{s}_{j}"].count)
         return penalty_vars
 
@@ -65,25 +72,25 @@ class Variables():
 
 class LinearPrograming():
     "linera programing (perhaps integer) functions are implemented there"
-    def __init__(self, variables, parameters, M = 10):
+    def __init__(self, variables, railway_input, M = 10):
         self.obj = []
         self.obj_ofset = 0
         self.lhs_ineq = []
         self.rhs_ineq  = []
         self.lhs_eq = []
         self.rhs_eq = []
-        self.dmax = parameters.dmax
+        self.dmax = railway_input.dmax
         self.M = M
-        self.var_range = variables.var_range
-        self.timetable = parameters.timetable
+        self.tvar_range = variables.tvar_range
+        self.timetable = railway_input.timetable
         self.variables = variables.variables
         self.trains_paths = variables.trains_paths
         self.penalty_vars = variables.penalty_vars
 
         self.make_objective()
         self.make_objective_ofset()
-        self.add_headways(parameters)
-        self.add_passing_times(parameters)
+        self.add_headways(railway_input)
+        self.add_passing_times(railway_input)
         self.add_all_bounds()
         # add circulation constrin
         # y constrain ????
@@ -121,23 +128,31 @@ class LinearPrograming():
     def add_headways(self, parameters):
         "add headway constrain to the inequality matrix"
         for (j, jp, s) in pairs_same_direction(self.trains_paths):
-            i = self.variables[f"t_{s}_{j}"].count
-            ip = self.variables[f"t_{s}_{jp}"].count
-            iy = self.variables[f"y_{s}_{j}_{jp}"].count
+            v = self.variables[f"t_{s}_{j}"]
+            vp = self.variables[f"t_{s}_{jp}"]
+            vy =self.variables[f"y_{s}_{j}_{jp}"]
+            i = v.count
+            ip = vp.count
+            iy = vy.count
 
-            lhs_el_y0 = [0 for _ in self.variables]
-            lhs_el_y0[i] = 1
-            lhs_el_y0[ip] = -1
-            lhs_el_y0[iy] = self.M
-            self.lhs_ineq.append(lhs_el_y0)
-            self.rhs_ineq.append(-parameters.headways + self.M)
+            p = parameters.headways 
 
-            lhs_el_y1 = [0 for _ in self.variables]
-            lhs_el_y1[i] = -1
-            lhs_el_y1[ip] = 1
-            lhs_el_y1[iy] = - self.M
-            self.lhs_ineq.append(lhs_el_y1)
-            self.rhs_ineq.append(-parameters.headways)
+            if v.range[1] + p >= vp.range[0] and vp.range[1] + p >= v.range[0]:
+                # do not count traind with no dependencies
+
+                lhs_el_y0 = [0 for _ in self.variables]
+                lhs_el_y0[i] = 1
+                lhs_el_y0[ip] = -1
+                lhs_el_y0[iy] = self.M
+                self.lhs_ineq.append(lhs_el_y0)
+                self.rhs_ineq.append(-p + self.M)
+
+                lhs_el_y1 = [0 for _ in self.variables]
+                lhs_el_y1[i] = -1
+                lhs_el_y1[ip] = 1
+                lhs_el_y1[iy] = - self.M
+                self.lhs_ineq.append(lhs_el_y1)
+                self.rhs_ineq.append(-p)
 
 
     def add_passing_times(self, parameters):
@@ -149,9 +164,9 @@ class LinearPrograming():
             lhs_el[i] = 1
             lhs_el[ip] = -1
             self.lhs_ineq.append(lhs_el)
-            try:
+            if (j % 2) == 1:
                 self.rhs_ineq.append(-parameters.stay -parameters.pass_time[f"{s}_{sp}"])
-            except:
+            else:
                 self.rhs_ineq.append(-parameters.stay -parameters.pass_time[f"{sp}_{s}"])
 
     def add_circ_constrain(self, parameters, input):
@@ -168,9 +183,9 @@ class LinearPrograming():
 
     def add_all_bounds(self):
         "add bonds to all t variables"
-        for s in self.var_range:
-            for j in self.var_range[s]:
-                self.variables[f"t_{s}_{j}"].range = self.var_range[s][j]
+        for s in self.tvar_range:
+            for j in self.tvar_range[s]:
+                self.variables[f"t_{s}_{j}"].range = self.tvar_range[s][j]
 
 
     def set_y_value(self, trains_s, new_value):
