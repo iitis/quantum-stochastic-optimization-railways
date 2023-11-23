@@ -60,10 +60,10 @@ def test_parametrised_constrains():
     objective_stations = ["MR", "CS"]
 
     p = Parameters(timetable, dmax = 5)
-    input = Railway_input(p, objective_stations, delays = {2:3})
-    v = Variables(input)
+    r_input = Railway_input(p, objective_stations, delays = {2:3})
+    v = Variables(r_input)
 
-    example_problem = LinearPrograming(v, input, M = 10)
+    example_problem = LinearPrograming(v, r_input, M = 10)
     assert example_problem.variables["t_MR_1"].range == (3,8)
 
     # testing only headways
@@ -72,7 +72,7 @@ def test_parametrised_constrains():
     example_problem.add_headways(p)
     assert example_problem.lhs_ineq == [[0, 1, 0, -1, 0, 10, 0], [0, -1, 0, 1, 0, -10, 0], [0, 0, 1, 0, -1, 0, 10], [0, 0, -1, 0, 1, 0, -10]]
     assert example_problem.rhs_ineq == [8, -2, 8, -2]
-     
+
     # testing only passing times
     example_problem.lhs_ineq = []
     example_problem.rhs_ineq = []
@@ -94,7 +94,7 @@ def test_parametrised_constrains():
     example_problem.lhs_ineq = []
     example_problem.rhs_ineq = []
     example_problem.add_circ_constrain(input)
-    assert list(v.variables.keys()) == ['t_A_1', 't_B_1', 't_B_2', 't_A_2'] 
+    assert list(v.variables.keys()) == ['t_A_1', 't_B_1', 't_B_2', 't_A_2']
     assert example_problem.lhs_ineq  == [[0, 1, -1, 0]]
     assert example_problem.rhs_ineq == [-4]
 
@@ -128,7 +128,4 @@ def test_parametrised_constrains():
     assert opt["x"][variable.count] == 9.0
 
     assert example_problem.compute_objective() == 1.0
-
-
-
 
