@@ -61,7 +61,7 @@ class Parameters:
                     trains_paths[j].insert(0, s)
         return trains_paths
 
-    
+
     def make_passing_times(self):
         pass_time = {}
         for (j,s,sp) in station_pairs(self.trains_paths):
@@ -73,12 +73,11 @@ class Parameters:
                 assert pass_time[f"{sp}_{s}"] == passing_time
             else:
                 pass_time[f"{s}_{sp}"] = passing_time
-       
         self.pass_time = pass_time
 
 
 
-class Railway_input(Parameters):
+class Railway_input():
     def __init__(self, parameters, objective_stations, delays):
         self.headways = parameters.headways
         self.stay = parameters.stay
@@ -91,11 +90,10 @@ class Railway_input(Parameters):
         self.add_tvar_ranges(parameters, delays)
         self.circulation = {}
 
-    
 
     def add_tvar_ranges(self, parameters, delays):
         """ add the field of ranges of tvar in the form of dict of dict   stations -> trains -> rnge tuple """
-        var_range = copy.deepcopy(self.timetable) 
+        var_range = copy.deepcopy(self.timetable)
         for s in var_range:
             for j in var_range[s]:
                 a = var_range[s][j]
@@ -106,8 +104,5 @@ class Railway_input(Parameters):
                 assert a <= b
                 var_range[s][j] = (a,b)
         self.tvar_range = var_range
-
-
-
 
  

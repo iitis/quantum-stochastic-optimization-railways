@@ -34,7 +34,7 @@ def test_LP_class():
     assert v.variables['t_CS_1'].count == 2
     assert v.variables['t_PS_1'].type == int
  
-    example_problem = LinearPrograming(v, p)
+    example_problem = LinearPrograming(v, i)
 
 
     assert list(example_problem.variables.keys()) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3', 'y_MR_1_3', 'y_CS_1_3']
@@ -63,7 +63,7 @@ def test_parametrised_constrains():
     input = Railway_input(p, objective_stations, delays = {2:3})
     v = Variables(input)
 
-    example_problem = LinearPrograming(v, p, M = 10)
+    example_problem = LinearPrograming(v, input, M = 10)
     assert example_problem.variables["t_MR_1"].range == (3,8)
 
     # testing only headways
@@ -88,16 +88,17 @@ def test_parametrised_constrains():
     input.circulation = {"B": (1,2)}
     v = Variables(input)
     assert v.trains_paths == {1: ["A", "B"], 2: ["B", "A"]}
-    example_problem = LinearPrograming(v, par, M = 10)
+    example_problem = LinearPrograming(v, input, M = 10)
+
+    # testing only circ
     example_problem.lhs_ineq = []
     example_problem.rhs_ineq = []
-    example_problem.add_circ_constrain(par, input)
+    example_problem.add_circ_constrain(input)
     assert list(v.variables.keys()) == ['t_A_1', 't_B_1', 't_B_2', 't_A_2'] 
     assert example_problem.lhs_ineq  == [[0, 1, -1, 0]]
     assert example_problem.rhs_ineq == [-4]
 
-    example_problem = LinearPrograming(v, par, M = 10)
-    example_problem.add_circ_constrain(par, input)
+    example_problem = LinearPrograming(v, input, M = 10)
 
     bounds = [(0,0) for _ in example_problem.variables]
     integrality = [1 for _ in example_problem.variables]

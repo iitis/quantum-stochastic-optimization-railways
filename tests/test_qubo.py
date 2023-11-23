@@ -37,22 +37,22 @@ def test_qubo_small():
     # 7: ['B', 1, 3], 8: ['B', 1, 4], 9: ['B', 3, 4], 10: ['B', 3, 5], 11: ['B', 3, 6]
     #           0,1,2,3,4,5,6,7,8,9,10,11
     solution = [1,0,0,1,0,0,0,1,0,0,0,1]
-    assert q.check_broken_constrains(solution) == (0, 0, 0)
+    assert q.check_broken_constrains(solution) == (0, 0, 0,0)
     assert q.objective_val(solution) == 1.5
 
     # s,j,t
     assert q.qubo2int(solution) == [['A', 1, 0], ['A', 3, 2], ['B', 1, 3], ['B', 3, 6]]
 
     solution = [1,0,0,1,0,0,0,1,0,0,0,0]
-    assert q.check_broken_constrains(solution) == (1, 0, 0)
+    assert q.check_broken_constrains(solution) == (1, 0, 0, 0)
 
      #          0,1,2,3,4,5,6,7,8,9,10,11
     solution = [0,0,1,1,0,0,0,0,1,0,0,1]
-    assert q.check_broken_constrains(solution) == (0, 1, 0)
+    assert q.check_broken_constrains(solution) == (0, 1, 0, 0)
 
      #          0,1,2,3,4,5,6,7,8,9,10,11
     solution = [1,0,0,0,0,1,0,1,0,1,0,0]
-    assert q.check_broken_constrains(solution) == (0, 0, 1)
+    assert q.check_broken_constrains(solution) == (0, 0, 1, 0)
 
 def test_qubo_large():
 

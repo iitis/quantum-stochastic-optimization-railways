@@ -1,6 +1,5 @@
 "encoding the problem into LP / ILP"
 from docplex.mp.model import Model
-from docplex.mp.solution import SolveSolution
 from .parameters import pairs_same_direction, station_pairs
 
 class Variable():
@@ -50,10 +49,9 @@ class Variables():
             v = variables[f"t_{s}_{j}"]
             vp = variables[f"t_{s}_{jp}"]
 
-            p = Railway_input.headways 
+            p = Railway_input.headways
             if v.range[1] + p >= vp.range[0] and vp.range[1] + p >= v.range[0]:
-                # to not create redundant variables
-        
+                # not create redundant variables
                 self.y_vars.append(f"y_{s}_{j}_{jp}")
                 variables[f"y_{s}_{j}_{jp}"] =  Variable(count, f"y_{s}_{j}_{jp}")
                 count += 1
@@ -92,8 +90,7 @@ class LinearPrograming():
         self.add_headways(railway_input)
         self.add_passing_times(railway_input)
         self.add_all_bounds()
-        # add circulation constrin
-        # y constrain ????
+        self.add_circ_constrain(railway_input)
 
 
 
@@ -125,7 +122,7 @@ class LinearPrograming():
         return obj - self.obj_ofset
 
 
-    def add_headways(self, parameters):
+    def add_headways(self, railway_input):
         "add headway constrain to the inequality matrix"
         for (j, jp, s) in pairs_same_direction(self.trains_paths):
             v = self.variables[f"t_{s}_{j}"]
@@ -135,8 +132,7 @@ class LinearPrograming():
             ip = vp.count
             iy = vy.count
 
-            p = parameters.headways 
-
+            p = railway_input.headways
             if v.range[1] + p >= vp.range[0] and vp.range[1] + p >= v.range[0]:
                 # do not count traind with no dependencies
 
@@ -155,7 +151,7 @@ class LinearPrograming():
                 self.rhs_ineq.append(-p)
 
 
-    def add_passing_times(self, parameters):
+    def add_passing_times(self, railway_input):
         "ad passing time constrain to inequality matrix"
         for (j, s, sp) in station_pairs(self.trains_paths):
             lhs_el = [0 for _ in self.variables]
@@ -165,19 +161,19 @@ class LinearPrograming():
             lhs_el[ip] = -1
             self.lhs_ineq.append(lhs_el)
             if (j % 2) == 1:
-                self.rhs_ineq.append(-parameters.stay -parameters.pass_time[f"{s}_{sp}"])
+                self.rhs_ineq.append(-railway_input.stay -railway_input.pass_time[f"{s}_{sp}"])
             else:
-                self.rhs_ineq.append(-parameters.stay -parameters.pass_time[f"{sp}_{s}"])
+                self.rhs_ineq.append(-railway_input.stay -railway_input.pass_time[f"{sp}_{s}"])
 
-    def add_circ_constrain(self, parameters, input):
-        for _, (s, (j,jp)) in enumerate(input.circulation.items()):
+    def add_circ_constrain(self, rail_input):
+        for _, (s, (j,jp)) in enumerate(rail_input.circulation.items()):
             lhs_el = [0 for _ in self.variables]
             i = self.variables[f"t_{s}_{j}"].count
             ip = self.variables[f"t_{s}_{jp}"].count
             lhs_el[i] = 1
             lhs_el[ip] = -1
             self.lhs_ineq.append(lhs_el)
-            self.rhs_ineq.append(-parameters.stay -parameters.preparation_t)
+            self.rhs_ineq.append(-rail_input.stay -rail_input.preparation_t)
 
 
 
@@ -216,18 +212,18 @@ def make_ilp_docplex(prob):
 
     for v in prob.variables.values():
         lower_bounds[v.count] = v.range[0]
-        upper_bounds[v.count] = v.range[1] 
+        upper_bounds[v.count] = v.range[1]
 
     variables = model.integer_var_dict(prob.variables.keys(), lb=lower_bounds, ub=upper_bounds, name=prob.variables.keys())
 
     for index, row in enumerate(prob.lhs_ineq):
         model.add_constraint(
-            sum([variables[v.label]  * row[v.count] for v in prob.variables.values()]) <= prob.rhs_ineq[index])
-     
+            sum(variables[v.label] * row[v.count] for v in prob.variables.values()) <= prob.rhs_ineq[index])
+
     for index, row in enumerate(prob.lhs_eq):
         model.add_constraint(
-            sum([variables[v.label]  * row[v.count] for v in prob.variables.values()]) == prob.rhs_eq[index])
-    
-    model.minimize(sum([variables[v.label] * prob.obj[v.count] for v in prob.variables.values()]))
+            sum(variables[v.label] * row[v.count] for v in prob.variables.values()) == prob.rhs_eq[index])
+
+    model.minimize(sum(variables[v.label] * prob.obj[v.count] for v in prob.variables.values()))
 
     return model

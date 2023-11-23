@@ -146,6 +146,7 @@ class QuboVars:
         broken_sum = 0
         broken_headways = 0
         broken_pass = 0
+        broken_circ = 0
         for i in find_indices(var_list, 1):
             for j in find_indices(var_list, 1):
                 if (i,j) in self.sum_constrain:
@@ -154,8 +155,9 @@ class QuboVars:
                     broken_headways += 1
                 if (i,j) in self.passing_time_constrain:
                     broken_pass += 1
-                # TODO other
-        return int(self.sum_ofset/self.psum - broken_sum), int(broken_headways/2), int(broken_pass/2)
+                if (i,j) in self.circ_constrain:
+                    broken_circ += 1
+        return int(self.sum_ofset/self.psum - broken_sum), int(broken_headways/2), int(broken_pass/2), int(broken_circ/2)
     
 
     def qubo2int(self, var_list):
