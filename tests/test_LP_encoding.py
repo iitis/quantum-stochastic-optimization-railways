@@ -163,9 +163,9 @@ def test_optimization_simple_circ():
 def test_optimization_larger_headways_circ():
     """ test simple example with headways """
     # add train number are going one way and even the other way
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
+    timetable =  {"PS": {1: 0, 4:33}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
     objective_stations = ["MR", "CS"]
-    p = Parameters(timetable, dmax = 2)
+    p = Parameters(timetable, dmax = 10)
     r_input = Railway_input(p, objective_stations, delays = {3:2})
     r_input.circulation = {"CS": (3,4)}
     v = Variables(r_input)
@@ -185,5 +185,5 @@ def test_optimization_larger_headways_circ():
     for i, var in enumerate( all_vars ):
         assert example_problem.variables[var].value == arr_times[i]
 
-    assert example_problem.compute_objective() == pytest.approx(6.0)
+    assert example_problem.compute_objective() == pytest.approx(1.2)
 

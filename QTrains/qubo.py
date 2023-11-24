@@ -145,6 +145,7 @@ class QuboVars:
         qubo.update( self.passing_time_constrain )
         qubo.update( self.circ_constrain)
         self.qubo = dict(sorted(qubo.items()))
+        self.noqubits = list(self.qubo.keys())[-1][0]  + 1
 
 
 

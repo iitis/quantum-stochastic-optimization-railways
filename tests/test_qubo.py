@@ -32,6 +32,7 @@ def test_qubo_small():
                                         (4, 9): 2, (9, 4): 2, (5, 9): 2, (9, 5): 2, (5, 10): 2, (10, 5): 2}
     assert not q.circ_constrain
     assert len(q.qubo) == 52
+    assert q.noqubits == 12
 
 
     # 0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3], 5: ['A', 3, 4], 6: ['B', 1, 2],
@@ -55,7 +56,25 @@ def test_qubo_small():
     solution = [1,0,0,0,0,1,0,1,0,1,0,0]
     assert q.count_broken_constrains(solution) == (0, 0, 1, 0)
 
-def test_qubo_large():
+
+def test_qubo_circ():
+    objective_stations = ["B"]
+    timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
+    par = Parameters(timetable, dmax = 2, headways = 1)
+    r_input = Railway_input(par, objective_stations, delays = {1:0})
+    r_input.circulation = {"B": (1,2)}
+
+    q = QuboVars(r_input)
+    q.ppair = 2
+    q.add_circ_constrain(r_input)
+    assert q.vars_indexing == {0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2],
+                               3: ['A', 2, 8], 4: ['A', 2, 9], 5: ['A', 2, 10],
+                               6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4],
+                               9: ['B', 2, 6], 10: ['B', 2, 7], 11: ['B', 2, 8]}
+    assert q.circ_constrain == {(7, 9): 2, (9, 7): 2, (8, 9): 2, (9, 8): 2, (8, 10): 2, (10, 8): 2}
+
+
+def test_qubo_larger():
 
     objective_stations = ["MR", "CS"]
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
@@ -77,9 +96,11 @@ def test_qubo_large():
 
     q.psum = 2
     q.ppair = 2
-
     q.make_qubo(i)
 
+    assert len(q.qubo) == 244
+    assert q.noqubits == 26
+    
     assert q.objective == {(6, 6): 0.0, (7, 7): 0.2, (8, 8): 0.4, (9, 9): 0.6,
                            (10, 10): 0.8, (11, 11): 1.0, (12, 12): 0.4, (13, 13): 0.6,
                            (14, 14): 0.8, (15, 15): 1.0, (16, 16): 0.0, (17, 17): 0.2,
@@ -126,18 +147,17 @@ def test_qubo_large():
             assert -3 < q.vars_indexing[k][2] - q.vars_indexing[kp][2] < 3
 
 
-def test_qubo_circ():
-    objective_stations = ["B"]
-    timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
-    par = Parameters(timetable, dmax = 2, headways = 1)
-    r_input = Railway_input(par, objective_stations, delays = {1:0})
-    r_input.circulation = {"B": (1,2)}
-
+def test_qubo_large():
+    timetable =  {"PS": {1: 0, 4:33}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
+    objective_stations = ["MR", "CS"]
+    p = Parameters(timetable, dmax = 10)
+    r_input = Railway_input(p, objective_stations, delays = {3:2})
+    r_input.circulation = {"CS": (3,4)}
     q = QuboVars(r_input)
+
+    q.psum = 2
     q.ppair = 2
-    q.add_circ_constrain(r_input)
-    assert q.vars_indexing == {0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2],
-                               3: ['A', 2, 8], 4: ['A', 2, 9], 5: ['A', 2, 10],
-                               6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4],
-                               9: ['B', 2, 6], 10: ['B', 2, 7], 11: ['B', 2, 8]}
-    assert q.circ_constrain == {(7, 9): 2, (9, 7): 2, (8, 9): 2, (9, 8): 2, (8, 10): 2, (10, 8): 2}
+    q.make_qubo(r_input)
+
+    assert len(q.qubo) == 2008
+    assert q.noqubits == 106
