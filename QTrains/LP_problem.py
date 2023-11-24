@@ -15,7 +15,8 @@ class Variable():
         "set the particular value by the range with the same limits"
         self.range = (value, value)
 
-    def reset_initial_range(self):
+    def reset_initial_range_y(self):
+        "reset initial range of y variable"
         self.range = (0,1)
 
 
@@ -194,7 +195,7 @@ class LinearPrograming():
     def reset_y_bonds(self, trains_s):
         "reset range of y variable to (0,1)"
         (s,j,jp) = trains_s
-        self.variables[f"y_{s}_{j}_{jp}"].reset_initial_range()
+        self.variables[f"y_{s}_{j}_{jp}"].reset_initial_range_y()
 
     def relax_integer_req(self):
         "relax integer requirements for all variables"

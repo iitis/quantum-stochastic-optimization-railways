@@ -1,6 +1,7 @@
 "module for dispatching parameters and conditions"
 from difflib import SequenceMatcher
-import itertools, copy
+import itertools
+import copy
 
 
 def match_lists(a, b):
@@ -38,6 +39,7 @@ def station_pairs(trains_paths):
     return trains_stations
 
 class Parameters:
+    "class of railway traffic parameters tied to timetable and technical specifics"
     def __init__(self, timetable, stay = 1, headways = 2, preparation_t = 3, dmax = 2):
         self.headways = headways
         self.stay = stay
@@ -45,7 +47,7 @@ class Parameters:
         self.dmax = dmax
         self.timetable = timetable
         self.trains_paths = self.make_trains_paths()
-        self.make_passing_times()
+        self.compute_passing_times()
 
 
     def make_trains_paths(self):
@@ -62,7 +64,8 @@ class Parameters:
         return trains_paths
 
 
-    def make_passing_times(self):
+    def compute_passing_times(self):
+        "compute and add passing time parameter given timetable"
         pass_time = {}
         for (j,s,sp) in station_pairs(self.trains_paths):
 
@@ -78,6 +81,8 @@ class Parameters:
 
 
 class Railway_input():
+    """ class of railway input computed from Parameters class and initial conditions
+    such as initial delays """
     def __init__(self, parameters, objective_stations, delays):
         self.headways = parameters.headways
         self.stay = parameters.stay
@@ -92,7 +97,8 @@ class Railway_input():
 
 
     def add_tvar_ranges(self, parameters, delays):
-        """ add the field of ranges of tvar in the form of dict of dict   stations -> trains -> rnge tuple """
+        """ add the field of ranges of tvar in the form of dict of dict 
+            stations -> trains -> rnge tuple """
         var_range = copy.deepcopy(self.timetable)
         for s in var_range:
             for j in var_range[s]:
@@ -104,5 +110,3 @@ class Railway_input():
                 assert a <= b
                 var_range[s][j] = (a,b)
         self.tvar_range = var_range
-
- 
