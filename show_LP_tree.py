@@ -3,6 +3,7 @@ from scipy.optimize import linprog
 from QTrains import Parameters, Variables, LinearPrograming, Railway_input, make_ilp_docplex
 
 def print_calculation_LP(prob):
+    "make the LP / ILP optimisation and print results"
     bounds = [(0,0) for _ in prob.variables]
     integrality = [1 for _ in prob.variables]
     for v in prob.variables.values():
