@@ -31,7 +31,7 @@ class QuboVars:
                     vars_index[count] = [s,j,t]
                     count += 1
                 station_indexing[s][j] = by_t
-    
+        self.sum_ofset = 0
         self.station_indexing = station_indexing
         self.vars_indexing = vars_index
         self.objective = {}
@@ -39,6 +39,7 @@ class QuboVars:
         self.headway_constrain = {}
         self.passing_time_constrain = {}
         self.circ_constrain = {}
+        self.qubo = {}
 
 
 

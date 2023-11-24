@@ -77,5 +77,3 @@ if __name__ == "__main__":
         example_problem.variables[str(var)].value = sol.get_var_value(var)
 
     print ("objective", example_problem.compute_objective()  )
-
-    

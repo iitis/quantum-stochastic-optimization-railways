@@ -33,7 +33,7 @@ def test_LP_class():
     assert v.variables['t_PS_1'].type == int
     assert v.variables['t_CS_1'].count == 2
     assert v.variables['t_PS_1'].type == int
- 
+
     example_problem = LinearPrograming(v, i)
 
 
@@ -128,4 +128,3 @@ def test_parametrised_constrains():
     assert opt["x"][variable.count] == 9.0
 
     assert example_problem.compute_objective() == 1.0
-
