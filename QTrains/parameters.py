@@ -39,7 +39,9 @@ def station_pairs(trains_paths):
     return trains_stations
 
 class Parameters:
-    "class of railway traffic parameters tied to timetable and technical specifics"
+    """class of railway traffic parameters tied to timetable and technical specifics
+    IMPORTANT in timetable odd train numbers are going one way and even train numbers 
+    are going the other ways"""
     def __init__(self, timetable, stay = 1, headways = 2, preparation_t = 3, dmax = 2):
         self.headways = headways
         self.stay = stay
