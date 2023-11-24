@@ -111,7 +111,7 @@ def test_optimization_simple_headways():
     # add train number are going one way and even the other way
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
     objective_stations = ["MR", "CS"]
-    p = Parameters(timetable, dmax = 5)
+    p = Parameters(timetable, dmax = 10)
     r_input = Railway_input(p, objective_stations, delays = {3:2})
     v = Variables(r_input)
     example_problem = LinearPrograming(v, r_input, M = 10)
@@ -129,7 +129,7 @@ def test_optimization_simple_headways():
     for i, var in enumerate( all_vars ):
         assert example_problem.variables[var].value == arr_times[i]
 
-    assert example_problem.compute_objective() == pytest.approx(1.2)
+    assert example_problem.compute_objective() == pytest.approx(0.6)
 
 
 def test_optimization_simple_circ():
@@ -137,7 +137,7 @@ def test_optimization_simple_circ():
     # add train number are going one way and even the other way
     objective_stations = ["A", "B"]
     timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
-    par = Parameters(timetable, dmax = 4, headways = 1)
+    par = Parameters(timetable, dmax = 10, headways = 1)
     r_input = Railway_input(par, objective_stations, delays = {1:1})
     r_input.circulation = {"B": (1,2)}
     v = Variables(r_input)
@@ -156,7 +156,7 @@ def test_optimization_simple_circ():
     for i, var in enumerate( all_vars ):
         assert example_problem.variables[var].value == arr_times[i]
 
-    assert example_problem.compute_objective() == pytest.approx(1.0)
+    assert example_problem.compute_objective() == pytest.approx(0.4)
 
 
 
