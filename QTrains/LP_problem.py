@@ -21,7 +21,6 @@ class Variable():
 
 class Variables():
     "stores list of variables"
-
     def __init__(self, Railway_input):
         self.trains_paths = Railway_input.trains_paths
         self.tvar_range = Railway_input.tvar_range
@@ -113,6 +112,7 @@ class LinearPrograming():
                     self.obj_ofset += self.timetable[s][j]/self.dmax
 
     def compute_objective(self):
+        "given the values of variables, returns the objective"
         obj = 0
         for s in self.timetable:
             for j in self.timetable[s]:
@@ -134,7 +134,7 @@ class LinearPrograming():
 
             p = railway_input.headways
             if v.range[1] + p >= vp.range[0] and vp.range[1] + p >= v.range[0]:
-                # do not count traind with no dependencies
+                # do not count trains with no dependencies
 
                 lhs_el_y0 = [0 for _ in self.variables]
                 lhs_el_y0[i] = 1
@@ -166,6 +166,7 @@ class LinearPrograming():
                 self.rhs_ineq.append(-railway_input.stay -railway_input.pass_time[f"{sp}_{s}"])
 
     def add_circ_constrain(self, rail_input):
+        "ass rolling stock circulation constrain into the inequality matrix"
         for _, (s, (j,jp)) in enumerate(rail_input.circulation.items()):
             lhs_el = [0 for _ in self.variables]
             i = self.variables[f"t_{s}_{j}"].count
@@ -178,7 +179,7 @@ class LinearPrograming():
 
 
     def add_all_bounds(self):
-        "add bonds to all t variables"
+        "add ranges to  t variables"
         for s in self.tvar_range:
             for j in self.tvar_range[s]:
                 self.variables[f"t_{s}_{j}"].range = self.tvar_range[s][j]
@@ -191,20 +192,23 @@ class LinearPrograming():
 
 
     def reset_y_bonds(self, trains_s):
-        "reset bonds for y variable to (0,1)"
+        "reset range of y variable to (0,1)"
         (s,j,jp) = trains_s
         self.variables[f"y_{s}_{j}_{jp}"].reset_initial_range()
 
     def relax_integer_req(self):
+        "relax integer requirements for all variables"
         for v in self.variables.values():
             v.type = float
 
     def restore_integer_req(self):
+        "reset integer requirements for all variables"
         for v in self.variables.values():
             v.type = int
 
 
 def make_ilp_docplex(prob):
+    "create the docplex model return the docplex model object"
     model = Model(name='linear_programing_QTrains')
 
     lower_bounds = [0 for _ in prob.variables]

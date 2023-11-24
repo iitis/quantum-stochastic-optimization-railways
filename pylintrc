@@ -183,7 +183,7 @@ preferred-modules=
 [DESIGN]
 
 # Maximum number of arguments for function / method.
-max-args=10
+max-args=5
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes=7
@@ -243,5 +243,5 @@ valid-metaclass-classmethod-first-arg=cls
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "BaseException, Exception".
-overgeneral-exceptions=BaseException,
-                       Exception
+overgeneral-exceptions=builtins.BaseException,
+                       builtins.Exception
