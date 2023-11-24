@@ -84,21 +84,21 @@ def test_parametrised_constrains():
     objective_stations = ["A", "B"]
     timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
     par = Parameters(timetable, dmax = 4, headways = 1)
-    input = Railway_input(par, objective_stations, delays = {1:1})
-    input.circulation = {"B": (1,2)}
-    v = Variables(input)
+    r_input = Railway_input(par, objective_stations, delays = {1:1})
+    r_input.circulation = {"B": (1,2)}
+    v = Variables(r_input)
     assert v.trains_paths == {1: ["A", "B"], 2: ["B", "A"]}
-    example_problem = LinearPrograming(v, input, M = 10)
+    example_problem = LinearPrograming(v, r_input, M = 10)
 
     # testing only circ
     example_problem.lhs_ineq = []
     example_problem.rhs_ineq = []
-    example_problem.add_circ_constrain(input)
+    example_problem.add_circ_constrain(r_input)
     assert list(v.variables.keys()) == ['t_A_1', 't_B_1', 't_B_2', 't_A_2']
     assert example_problem.lhs_ineq  == [[0, 1, -1, 0]]
     assert example_problem.rhs_ineq == [-4]
 
-    example_problem = LinearPrograming(v, input, M = 10)
+    example_problem = LinearPrograming(v, r_input, M = 10)
 
     bounds = [(0,0) for _ in example_problem.variables]
     integrality = [1 for _ in example_problem.variables]
