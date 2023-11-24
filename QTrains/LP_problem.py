@@ -27,18 +27,18 @@ class Variables():
         self.tvar_range = Railway_input.tvar_range
         self.y_vars = []
         variables = {}
-        self.add_t_vars(Railway_input.trains_paths, variables)
+        self.add_t_vars(Railway_input, variables)
         self.add_y_vars_same_direction(Railway_input, variables)
 
         self.variables = variables
         self.penalty_vars = self.indices_objective_vars(Railway_input)
 
 
-    def add_t_vars(self, trains_paths, variables):
+    def add_t_vars(self, Railway_input, variables):
         "creates time variables"
         count = len(variables)
-        for j in trains_paths:
-            for s in trains_paths[j]:
+        for j in Railway_input.trains_paths:
+            for s in Railway_input.trains_paths[j]:
                 variables[f"t_{s}_{j}"] =  Variable(count, f"t_{s}_{j}")
                 count += 1
 
@@ -190,12 +190,14 @@ class LinearPrograming():
         "set particular value for y variable"
         (s,j,jp) = trains_s
         self.variables[f"y_{s}_{j}_{jp}"].set_value(new_value)
+        print(f"setting y_{s}_{j}_{jp} to {new_value}")
 
 
     def reset_y_bonds(self, trains_s):
         "reset range of y variable to (0,1)"
         (s,j,jp) = trains_s
         self.variables[f"y_{s}_{j}_{jp}"].reset_initial_range_y()
+        print(f"reseting y_{s}_{j}_{jp} to (0,1)")
 
     def relax_integer_req(self):
         "relax integer requirements for all variables"
@@ -206,6 +208,28 @@ class LinearPrograming():
         "reset integer requirements for all variables"
         for v in self.variables.values():
             v.type = int
+
+    def bonds_and_integrality(self):
+        """ partial input for linprog return a range of variables
+         and the type 0 - float, 1 - int """
+        bounds = [(0,0) for _ in self.variables]
+        integrality = [1 for _ in self.variables]
+        for v in self.variables.values():
+            bounds[v.count] = v.range
+            integrality[v.count] = int(v.type == int)
+        return bounds, integrality
+    
+    def linprog2vars(self, linprogopt):
+        """ write results of linprog optimization 
+        to values of variables """
+        for key in self.variables.keys():
+            variable  = self.variables[key]
+            variable.value = linprogopt["x"][variable.count]
+
+    def docplex2vars(self, model, sol):
+        """ write doclpex (model, sol) output to variables """
+        for var in model.iter_variables():
+            self.variables[str(var)].value = sol.get_var_value(var)
 
 
 def make_ilp_docplex(prob):
@@ -232,3 +256,4 @@ def make_ilp_docplex(prob):
     model.minimize(sum(variables[v.label] * prob.obj[v.count] for v in prob.variables.values()))
 
     return model
+
