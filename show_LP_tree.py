@@ -56,4 +56,4 @@ if __name__ == "__main__":
 
     for var in example_problem.variables.values():
         print(var.label, var.value, var.range)
-    print ("objective", example_problem.compute_objective()  )
+    print ("objective", example_problem.compute_objective(i)  )

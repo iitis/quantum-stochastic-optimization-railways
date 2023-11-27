@@ -3,13 +3,18 @@ from docplex.mp.model import Model
 from .parameters import pairs_same_direction, station_pairs
 
 class Variable():
-    "stres single variable"
-    def __init__(self, count, label):
-        self.count = count
-        self.label = label
-        self.range = (0,1)
+    """single variable
+        - self.int_id:: unique integer id
+        - self.str_id:: unique string id (includeing stations and trains)
+        - self.cluster::  id of the cluster, all variables in the cluster are supossed to be equal
+    """
+    def __init__(self, count, label, cluster = None):
+        self.int_id = count
+        self.str_id = label
+        self.range = None
         self.value = None
         self.type = int
+        self.cluster = cluster
 
     def set_value(self, value):
         "set the particular value by the range with the same limits"
@@ -21,170 +26,54 @@ class Variable():
 
 
 class Variables():
-    "stores list of variables"
+    """stores all variables
+        - self. tvar_range - ranges of t variables dict  
+        - self.variables dict where keys are string identifier (inclyding trains and stations) and values are Variable objects:
+            {"t_s_j": Variable(...) ....., "y_s_j_jp": Variable (...), }
+        - self.obj_vars vector of int_id if variables that are in the objective
+    """
     def __init__(self, Railway_input):
-        self.trains_paths = Railway_input.trains_paths
-        self.tvar_range = Railway_input.tvar_range
-        self.y_vars = []
-        variables = {}
-        self.add_t_vars(Railway_input, variables)
-        self.add_y_vars_same_direction(Railway_input, variables)
-
-        self.variables = variables
-        self.penalty_vars = self.indices_objective_vars(Railway_input)
+        #self.trains_paths = Railway_input.trains_paths
+        self.variables = {}
+        self.add_t_vars(Railway_input)
+        self.add_y_vars_same_direction(Railway_input)
+        self.obj_vars = self.indices_objective_vars(Railway_input)
 
 
-    def add_t_vars(self, Railway_input, variables):
-        "creates time variables"
-        count = len(variables)
+    def add_t_vars(self, Railway_input):
+        "create time variables"
+        count = len(self.variables)
         for j in Railway_input.trains_paths:
             for s in Railway_input.trains_paths[j]:
-                variables[f"t_{s}_{j}"] =  Variable(count, f"t_{s}_{j}")
+                self.variables[f"t_{s}_{j}"] =  Variable(count, f"t_{s}_{j}")
                 count += 1
+                self.variables[f"t_{s}_{j}"].range = Railway_input.tvar_range[s][j]
 
-    def add_y_vars_same_direction(self, Railway_input, variables):
-        "create order variables for trais going the same direction"
-        count = len(variables)
-        for (j, jp, s) in pairs_same_direction(self.trains_paths):
-            v = variables[f"t_{s}_{j}"]
-            vp = variables[f"t_{s}_{jp}"]
+    def add_y_vars_same_direction(self, Railway_input):
+        "create order variables for trais going in the same direction"
+        count = len(self.variables)
+        for (j, jp, s) in pairs_same_direction(Railway_input.trains_paths):
+            v = self.variables[f"t_{s}_{j}"]
+            vp = self.variables[f"t_{s}_{jp}"]
 
             p = Railway_input.headways
             if v.range[1] + p >= vp.range[0] and vp.range[1] + p >= v.range[0]:
-                # not create redundant variables
-                self.y_vars.append(f"y_{s}_{j}_{jp}")
-                variables[f"y_{s}_{j}_{jp}"] =  Variable(count, f"y_{s}_{j}_{jp}")
+                # do not create redundant variables
+                #self.y_vars.append(f"y_{s}_{j}_{jp}")
+                self.variables[f"y_{s}_{j}_{jp}"] =  Variable(count, f"y_{s}_{j}_{jp}", (j,jp))
+                self.variables[f"y_{s}_{j}_{jp}"].range = (0,1)
                 count += 1
 
 
     def indices_objective_vars(self, Railway_input):
         "list index of penalties for which penalties are computed"
         penalty_vars = []
-        for j in self.trains_paths:
-            for s in self.trains_paths[j]:
+        for j in Railway_input.trains_paths:
+            for s in Railway_input.trains_paths[j]:
                 if s in Railway_input.objective_stations:
-                    penalty_vars.append(self.variables[f"t_{s}_{j}"].count)
+                    penalty_vars.append(self.variables[f"t_{s}_{j}"].int_id)
         return penalty_vars
-
-
-
-class LinearPrograming():
-    "linera programing (perhaps integer) functions are implemented there"
-    def __init__(self, variables, railway_input, M = 10):
-        self.obj = []
-        self.obj_ofset = 0
-        self.lhs_ineq = []
-        self.rhs_ineq  = []
-        self.lhs_eq = []
-        self.rhs_eq = []
-        self.dmax = railway_input.dmax
-        self.M = M
-        self.tvar_range = variables.tvar_range
-        self.timetable = railway_input.timetable
-        self.variables = variables.variables
-        self.trains_paths = variables.trains_paths
-        self.penalty_vars = variables.penalty_vars
-
-        self.make_objective()
-        self.make_objective_ofset()
-        self.add_headways(railway_input)
-        self.add_passing_times(railway_input)
-        self.add_all_bounds()
-        self.add_circ_constrain(railway_input)
-
-
-
-    def make_objective(self):
-        "create the vector for objective"
-        obj = []
-        for v in self.variables.values():
-            if v.count in self.penalty_vars:
-                obj.append(1/self.dmax)
-            else:
-                obj.append(0.0)
-        self.obj = obj
-
-
-    def make_objective_ofset(self):
-        "returns float the ofset for objective"
-        for s in self.timetable:
-            for j in self.timetable[s]:
-                if self.variables[f"t_{s}_{j}"].count in self.penalty_vars:
-                    self.obj_ofset += self.timetable[s][j]/self.dmax
-
-    def compute_objective(self):
-        "given the values of variables, returns the objective"
-        obj = 0
-        for s in self.timetable:
-            for j in self.timetable[s]:
-                v = self.variables[f"t_{s}_{j}"]
-                if v.count in self.penalty_vars:
-                    obj += v.value/self.dmax
-        return obj - self.obj_ofset
-
-
-    def add_headways(self, railway_input):
-        "add headway constrain to the inequality matrix"
-        for (j, jp, s) in pairs_same_direction(self.trains_paths):
-            v = self.variables[f"t_{s}_{j}"]
-            vp = self.variables[f"t_{s}_{jp}"]
-            vy =self.variables[f"y_{s}_{j}_{jp}"]
-            i = v.count
-            ip = vp.count
-            iy = vy.count
-
-            p = railway_input.headways
-            if v.range[1] + p >= vp.range[0] and vp.range[1] + p >= v.range[0]:
-                # do not count trains with no dependencies
-
-                lhs_el_y0 = [0 for _ in self.variables]
-                lhs_el_y0[i] = 1
-                lhs_el_y0[ip] = -1
-                lhs_el_y0[iy] = self.M
-                self.lhs_ineq.append(lhs_el_y0)
-                self.rhs_ineq.append(-p + self.M)
-
-                lhs_el_y1 = [0 for _ in self.variables]
-                lhs_el_y1[i] = -1
-                lhs_el_y1[ip] = 1
-                lhs_el_y1[iy] = - self.M
-                self.lhs_ineq.append(lhs_el_y1)
-                self.rhs_ineq.append(-p)
-
-
-    def add_passing_times(self, railway_input):
-        "ad passing time constrain to inequality matrix"
-        for (j, s, sp) in station_pairs(self.trains_paths):
-            lhs_el = [0 for _ in self.variables]
-            i = self.variables[f"t_{s}_{j}"].count
-            ip = self.variables[f"t_{sp}_{j}"].count
-            lhs_el[i] = 1
-            lhs_el[ip] = -1
-            self.lhs_ineq.append(lhs_el)
-            if (j % 2) == 1:
-                self.rhs_ineq.append(-railway_input.stay -railway_input.pass_time[f"{s}_{sp}"])
-            else:
-                self.rhs_ineq.append(-railway_input.stay -railway_input.pass_time[f"{sp}_{s}"])
-
-    def add_circ_constrain(self, rail_input):
-        "ass rolling stock circulation constrain into the inequality matrix"
-        for _, (s, (j,jp)) in enumerate(rail_input.circulation.items()):
-            lhs_el = [0 for _ in self.variables]
-            i = self.variables[f"t_{s}_{j}"].count
-            ip = self.variables[f"t_{s}_{jp}"].count
-            lhs_el[i] = 1
-            lhs_el[ip] = -1
-            self.lhs_ineq.append(lhs_el)
-            self.rhs_ineq.append(-rail_input.stay -rail_input.preparation_t)
-
-
-
-    def add_all_bounds(self):
-        "add ranges to  t variables"
-        for s in self.tvar_range:
-            for j in self.tvar_range[s]:
-                self.variables[f"t_{s}_{j}"].range = self.tvar_range[s][j]
-
+    
 
     def set_y_value(self, trains_s, new_value):
         "set particular value for y variable"
@@ -215,21 +104,138 @@ class LinearPrograming():
         bounds = [(0,0) for _ in self.variables]
         integrality = [1 for _ in self.variables]
         for v in self.variables.values():
-            bounds[v.count] = v.range
-            integrality[v.count] = int(v.type == int)
+            bounds[v.int_id] = v.range
+            integrality[v.int_id] = int(v.type == int)
         return bounds, integrality
-    
+
     def linprog2vars(self, linprogopt):
         """ write results of linprog optimization 
         to values of variables """
         for key in self.variables.keys():
             variable  = self.variables[key]
-            variable.value = linprogopt["x"][variable.count]
+            variable.value = linprogopt["x"][variable.int_id]
 
     def docplex2vars(self, model, sol):
         """ write doclpex (model, sol) output to variables """
         for var in model.iter_variables():
             self.variables[str(var)].value = sol.get_var_value(var)
+
+
+
+class LinearPrograming():
+    """
+    linera programing (perhaps integer) functions are implemented there
+    - self.obj:: a vector which elements are weights to objective of corresponding variables
+    - self.obj_ofset:: float - ofset due to constant term in the objective
+    - self.lhs_ineq - vector of vectors of the lhs of inequality problem
+    - self.rhs_ineq - vector of rhs part of ineqiality problem
+    we use scipy.optimize.linprog encoding  
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linprog.html
+    for_k sum_i v_i lhs_{i,k} <= rhs_k
+    - self.lhs_eq  / self.rhs_eq - similar but with equality
+    - M - parameter of LP
+
+    """
+    def __init__(self, Variables, Railway_input, M = 10):
+        self.obj = []
+        self.obj_ofset = 0
+        self.lhs_ineq = []
+        self.rhs_ineq  = []
+        self.lhs_eq = []
+        self.rhs_eq = []
+        self.M = M
+
+        self.make_objective(Variables, Railway_input)
+        self.make_objective_ofset(Variables, Railway_input)
+        self.add_headways(Variables, Railway_input)
+        self.add_passing_times(Variables, Railway_input)
+        self.add_circ_constrain(Variables, Railway_input)
+
+
+
+    def make_objective(self, Variables, Railway_input):
+        "create the vector for objective"
+        obj = []
+        for v in Variables.variables.values():
+            if v.int_id in Variables.obj_vars:
+                obj.append(1/Railway_input.dmax)
+            else:
+                obj.append(0.0)
+        self.obj = obj
+
+
+    def make_objective_ofset(self, Variables, Railway_input):
+        "returns float the ofset for objective"
+        for s in Railway_input.timetable:
+            for j in Railway_input.timetable[s]:
+                if Variables.variables[f"t_{s}_{j}"].int_id in Variables.obj_vars:
+                    self.obj_ofset += Railway_input.timetable[s][j]/Railway_input.dmax
+
+    def compute_objective(self, Variables, Railway_input):
+        "given the values of variables, returns the objective"
+        obj = 0
+        for s in Railway_input.timetable:
+            for j in Railway_input.timetable[s]:
+                v = Variables.variables[f"t_{s}_{j}"]
+                if v.int_id in Variables.obj_vars:
+                    obj += v.value/Railway_input.dmax
+        return obj - self.obj_ofset
+
+
+    def add_headways(self, Variables, Railway_input):
+        "add headway constrain to the inequality matrix"
+        for (j, jp, s) in pairs_same_direction(Railway_input.trains_paths):
+            v = Variables.variables[f"t_{s}_{j}"]
+            vp = Variables.variables[f"t_{s}_{jp}"]
+            vy = Variables.variables[f"y_{s}_{j}_{jp}"]
+            i = v.int_id
+            ip = vp.int_id
+            iy = vy.int_id
+
+            p = Railway_input.headways
+            if v.range[1] + p >= vp.range[0] and vp.range[1] + p >= v.range[0]:
+                # do not count trains with no dependencies
+
+                lhs_el_y0 = [0 for _ in Variables.variables]
+                lhs_el_y0[i] = 1
+                lhs_el_y0[ip] = -1
+                lhs_el_y0[iy] = self.M
+                self.lhs_ineq.append(lhs_el_y0)
+                self.rhs_ineq.append(-p + self.M)
+
+                lhs_el_y1 = [0 for _ in Variables.variables]
+                lhs_el_y1[i] = -1
+                lhs_el_y1[ip] = 1
+                lhs_el_y1[iy] = - self.M
+                self.lhs_ineq.append(lhs_el_y1)
+                self.rhs_ineq.append(-p)
+
+
+    def add_passing_times(self, Variables, Railway_input):
+        "ad passing time constrain to inequality matrix"
+        for (j, s, sp) in station_pairs(Railway_input.trains_paths):
+            lhs_el = [0 for _ in Variables.variables]
+            i = Variables.variables[f"t_{s}_{j}"].int_id
+            ip = Variables.variables[f"t_{sp}_{j}"].int_id
+            lhs_el[i] = 1
+            lhs_el[ip] = -1
+            self.lhs_ineq.append(lhs_el)
+            if (j % 2) == 1:
+                self.rhs_ineq.append(-Railway_input.stay -Railway_input.pass_time[f"{s}_{sp}"])
+            else:
+                self.rhs_ineq.append(-Railway_input.stay -Railway_input.pass_time[f"{sp}_{s}"])
+
+    def add_circ_constrain(self, Variables, Railway_input):
+        "ass rolling stock circulation constrain into the inequality matrix"
+        for _, ((j,jp), s) in enumerate(Railway_input.circulation.items()):
+            lhs_el = [0 for _ in Variables.variables]
+            i = Variables.variables[f"t_{s}_{j}"].int_id
+            ip = Variables.variables[f"t_{s}_{jp}"].int_id
+            lhs_el[i] = 1
+            lhs_el[ip] = -1
+            self.lhs_ineq.append(lhs_el)
+            self.rhs_ineq.append(-Railway_input.stay -Railway_input.preparation_t)
+    
 
 
 def make_ilp_docplex(prob):
@@ -240,20 +246,20 @@ def make_ilp_docplex(prob):
     upper_bounds = [0 for _ in prob.variables]
 
     for v in prob.variables.values():
-        lower_bounds[v.count] = v.range[0]
-        upper_bounds[v.count] = v.range[1]
+        lower_bounds[v.int_id] = v.range[0]
+        upper_bounds[v.int_id] = v.range[1]
 
     variables = model.integer_var_dict(prob.variables.keys(), lb=lower_bounds, ub=upper_bounds, name=prob.variables.keys())
 
     for index, row in enumerate(prob.lhs_ineq):
         model.add_constraint(
-            sum(variables[v.label] * row[v.count] for v in prob.variables.values()) <= prob.rhs_ineq[index])
+            sum(variables[v.str_id] * row[v.int_id] for v in prob.variables.values()) <= prob.rhs_ineq[index])
 
     for index, row in enumerate(prob.lhs_eq):
         model.add_constraint(
-            sum(variables[v.label] * row[v.count] for v in prob.variables.values()) == prob.rhs_eq[index])
+            sum(variables[v.str_id] * row[v.int_id] for v in prob.variables.values()) == prob.rhs_eq[index])
 
-    model.minimize(sum(variables[v.label] * prob.obj[v.count] for v in prob.variables.values()))
+    model.minimize(sum(variables[v.str_id] * prob.obj[v.int_id] for v in prob.variables.values()))
 
     return model
 

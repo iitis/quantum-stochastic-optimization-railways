@@ -41,7 +41,20 @@ def station_pairs(trains_paths):
 class Parameters:
     """class of railway traffic parameters tied to timetable and technical specifics
     IMPORTANT in timetable odd train numbers are going one way and even train numbers 
-    are going the other ways"""
+    are going the other ways
+    
+    - self.headways - int minimal headway between trians,
+    - self.stay - int (minimal) stay on the station
+    - self.preparation_t -in minimal preparation time when "going around"
+    - self.dmax - maximal delay
+    - self timetable of trains arriving stations in the dict of dict form:
+        e.g. {s1 : {j1:t1, j2:t2...}, s2 : {j1:t1, j2:t2...}, ... } 
+    - self.trains_paths:: stores dict where trains are kays and seqience (vector of stations) are values
+            e.g. {j1 : [s1, s2, s3] ...}
+    - self pass_time - passing time between stations in the dict form {"s1_s1": t12, "s2_s3": t23, ...}
+    - self: circulation - dict {(j,jp): s, ... }  where j ands at s and then starts back as jp
+    """
+
     def __init__(self, timetable, stay = 1, headways = 2, preparation_t = 3, dmax = 2):
         self.headways = headways
         self.stay = stay
@@ -49,7 +62,8 @@ class Parameters:
         self.dmax = dmax
         self.timetable = timetable
         self.trains_paths = self.make_trains_paths()
-        self.compute_passing_times()
+        self.pass_time = self.compute_passing_times()
+        self.circulation = {}
 
 
     def make_trains_paths(self):
@@ -78,27 +92,36 @@ class Parameters:
                 assert pass_time[f"{sp}_{s}"] == passing_time
             else:
                 pass_time[f"{s}_{sp}"] = passing_time
-        self.pass_time = pass_time
+        return pass_time
 
 
 
 class Railway_input():
     """ class of railway input computed from Parameters class and initial conditions
-    such as initial delays """
-    def __init__(self, parameters, objective_stations, delays):
-        self.headways = parameters.headways
-        self.stay = parameters.stay
-        self.preparation_t = parameters.preparation_t
-        self.dmax = parameters.dmax
-        self.timetable = parameters.timetable
-        self.trains_paths = parameters.trains_paths
-        self.pass_time = parameters.pass_time
+    such as initial delays 
+    - fields as in Parameters
+    additional field is initial condition dependent:
+    - self.tvar_range - dict: {s: {j: (tmin, tmax), j1: (t1min, t1max), ...}, s1: ...}
+    - self.bojective_station - vec of stations on which objective is computed
+
+            """
+    def __init__(self, Parameters, objective_stations, delays):
+        # form parameters
+        self.headways = Parameters.headways
+        self.stay = Parameters.stay
+        self.preparation_t = Parameters.preparation_t
+        self.dmax = Parameters.dmax
+        self.timetable = Parameters.timetable
+        self.trains_paths = Parameters.trains_paths
+        self.pass_time = Parameters.pass_time
+        self.circulation = Parameters.circulation
+
+        # additinal fields
         self.objective_stations = objective_stations
-        self.add_tvar_ranges(parameters, delays)
-        self.circulation = {}
+        self.add_tvar_ranges(Parameters, delays)
 
 
-    def add_tvar_ranges(self, parameters, delays):
+    def add_tvar_ranges(self, Parameters, delays):
         """ add the field of ranges of tvar in the form of dict of dict 
             stations -> trains -> rnge tuple """
         var_range = copy.deepcopy(self.timetable)
@@ -108,7 +131,7 @@ class Railway_input():
                 if j in delays:
                     if s in self.trains_paths[j]:
                         a = a + delays[j]
-                b = var_range[s][j]+parameters.dmax
+                b = var_range[s][j]+Parameters.dmax
                 assert a <= b
                 var_range[s][j] = (a,b)
         self.tvar_range = var_range

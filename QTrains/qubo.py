@@ -118,7 +118,7 @@ class QuboVars:
         """ add rolling stock circulation constrain to QuboVars class in the form of 
         dict {..., (k,kp): ppair, (kp,k): ppair,  ...} """
         circ_constrain = {}
-        for _, (s, (j,jp)) in enumerate(Railway_input.circulation.items()):
+        for _, ((j,jp), s) in enumerate(Railway_input.circulation.items()):
             for t in self.station_indexing[s][j]:
                 for tp in self.station_indexing[s][jp]:
                     lb = self.tvar_range[s][jp][0]

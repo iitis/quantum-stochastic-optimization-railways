@@ -61,8 +61,8 @@ def test_qubo_circ():
     objective_stations = ["B"]
     timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
     par = Parameters(timetable, dmax = 2, headways = 1)
+    par.circulation = {(1,2): "B"}
     r_input = Railway_input(par, objective_stations, delays = {1:0})
-    r_input.circulation = {"B": (1,2)}
 
     q = QuboVars(r_input)
     q.ppair = 2
@@ -152,8 +152,8 @@ def test_qubo_1():
     objective_stations = ["B"]
     timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
     par = Parameters(timetable, dmax = 10, headways = 1)
+    par.circulation = {(1,2): "B"}
     r_input = Railway_input(par, objective_stations, delays = {1:0})
-    r_input.circulation = {"B": (1,2)}
     q = QuboVars(r_input)
     q.psum = 2
     q.ppair = 2
@@ -180,8 +180,8 @@ def test_qubo_3():
     timetable =  {"PS": {1: 0, 4:33}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
     objective_stations = ["MR", "CS"]
     p = Parameters(timetable, dmax = 10)
+    p.circulation = {(3,4): "CS"}
     r_input = Railway_input(p, objective_stations, delays = {3:2})
-    r_input.circulation = {"CS": (3,4)}
     q = QuboVars(r_input)
 
     q.psum = 2
