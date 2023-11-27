@@ -55,7 +55,7 @@ class Parameters:
     - self: circulation - dict {(j,jp): s, ... }  where j ands at s and then starts back as jp
     """
 
-    def __init__(self, timetable, stay = 1, headways = 2, preparation_t = 3, dmax = 2):
+    def __init__(self, timetable, stay = 1, headways = 2, preparation_t = 3, dmax = 2, circulation = {}):
         self.headways = headways
         self.stay = stay
         self.preparation_t = preparation_t
@@ -63,7 +63,7 @@ class Parameters:
         self.timetable = timetable
         self.trains_paths = self.make_trains_paths()
         self.pass_time = self.compute_passing_times()
-        self.circulation = {}
+        self.circulation = circulation
 
 
     def make_trains_paths(self):

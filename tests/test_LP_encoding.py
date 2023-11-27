@@ -6,9 +6,9 @@ from QTrains import Variables, LinearPrograming, Parameters, Railway_input
 def test_variables_class():
     """ test class Variables """
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
-    objective_stations = ["MR", "CS"]
 
     p = Parameters(timetable, dmax = 5)
+    objective_stations = ["MR", "CS"]
     i = Railway_input(p, objective_stations, delays = {3:2})
     assert i.trains_paths == {1: ["PS", "MR", "CS"], 3: ["MR", "CS"]}
     v = Variables(i)
@@ -25,7 +25,7 @@ def test_variables_class():
     assert v.variables['t_CS_1'].int_id == 2
     assert v.variables['t_PS_1'].type == int
 
-    #example_problem.add_all_bounds()
+    #problem.add_all_bounds()
     assert [v.range for v in v.variables.values()] == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 5.0), (15.0, 18.0), (0.0, 1.0), (0.0, 1.0)]
     v.set_y_value(('MR', 1, 3), 1)
     assert [v.range for v in v.variables.values()] == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 5.0), (15.0, 18.0), (1,1), (0.0, 1.0)]
@@ -43,60 +43,60 @@ def test_variables_class():
 def test_LP_class():
     """test LinearPrograming class"""
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
-    objective_stations = ["MR", "CS"]
     p = Parameters(timetable, dmax = 5)
+
+    objective_stations = ["MR", "CS"]
     i = Railway_input(p, objective_stations, delays = {3:2})
     v = Variables(i)
-    example_problem = LinearPrograming(v, i)
+    problem = LinearPrograming(v, i)
 
-    assert example_problem.obj == [0.0, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0]
-    assert example_problem.obj_ofset == 6.4
+    assert problem.obj == [0.0, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0]
+    assert problem.obj_ofset == 6.4
 
 def test_constrains():
     """test encoding particular particular constrains"""
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
-    objective_stations = ["MR", "CS"]
-
     p = Parameters(timetable, dmax = 5)
+
+    objective_stations = ["MR", "CS"]
     r_input = Railway_input(p, objective_stations, delays = {2:3})
     v = Variables(r_input)
     assert v.variables["t_MR_1"].range == (3,8)
     
-    example_problem = LinearPrograming(v, r_input, M = 10)
+    problem = LinearPrograming(v, r_input, M = 10)
 
     # testing only headways
-    example_problem.lhs_ineq = []
-    example_problem.rhs_ineq = []
-    example_problem.add_headways(v, r_input)
-    assert example_problem.lhs_ineq == [[0, 1, 0, -1, 0, 10, 0], [0, -1, 0, 1, 0, -10, 0], [0, 0, 1, 0, -1, 0, 10], [0, 0, -1, 0, 1, 0, -10]]
-    assert example_problem.rhs_ineq == [8, -2, 8, -2]
+    problem.lhs_ineq = []
+    problem.rhs_ineq = []
+    problem.add_headways(v, r_input)
+    assert problem.lhs_ineq == [[0, 1, 0, -1, 0, 10, 0], [0, -1, 0, 1, 0, -10, 0], [0, 0, 1, 0, -1, 0, 10], [0, 0, -1, 0, 1, 0, -10]]
+    assert problem.rhs_ineq == [8, -2, 8, -2]
 
     # testing only passing times
-    example_problem.lhs_ineq = []
-    example_problem.rhs_ineq = []
-    example_problem.add_passing_times(v, r_input)
+    problem.lhs_ineq = []
+    problem.rhs_ineq = []
+    problem.add_passing_times(v, r_input)
 
-    assert example_problem.lhs_ineq  == [[1, -1, 0, 0, 0, 0, 0], [0, 1, -1, 0, 0, 0, 0], [0, 0, 0, 1, -1, 0, 0]]
-    assert example_problem.rhs_ineq == [-3, -13, -13]
+    assert problem.lhs_ineq  == [[1, -1, 0, 0, 0, 0, 0], [0, 1, -1, 0, 0, 0, 0], [0, 0, 0, 1, -1, 0, 0]]
+    assert problem.rhs_ineq == [-3, -13, -13]
+
+    timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
+    par = Parameters(timetable, dmax = 4, headways = 1, circulation = {(1,2): "B"})
 
     objective_stations = ["A", "B"]
-    timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
-    par = Parameters(timetable, dmax = 4, headways = 1)
-    par.circulation = {(1,2): "B"}
-
     r_input = Railway_input(par, objective_stations, delays = {1:1})
     assert r_input.trains_paths == {1: ["A", "B"], 2: ["B", "A"]}
 
     v = Variables(r_input)
-    example_problem = LinearPrograming(v, r_input, M = 10)
+    problem = LinearPrograming(v, r_input, M = 10)
 
     # testing only circ
-    example_problem.lhs_ineq = []
-    example_problem.rhs_ineq = []
-    example_problem.add_circ_constrain(v, r_input)
+    problem.lhs_ineq = []
+    problem.rhs_ineq = []
+    problem.add_circ_constrain(v, r_input)
     assert list(v.variables.keys()) == ['t_A_1', 't_B_1', 't_B_2', 't_A_2']
-    assert example_problem.lhs_ineq  == [[0, 1, -1, 0]]
-    assert example_problem.rhs_ineq == [-4]
+    assert problem.lhs_ineq  == [[0, 1, -1, 0]]
+    assert problem.rhs_ineq == [-4]
 
     bounds, integrality = v.bonds_and_integrality()
     assert bounds == [(1, 4), (3, 6), (6, 10), (8, 12)]
@@ -107,16 +107,17 @@ def test_optimization_simple_headways():
     """ test simple example with headways """
     # add train number are going one way and even the other way
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
-    objective_stations = ["MR", "CS"]
     p = Parameters(timetable, dmax = 10)
+
+    objective_stations = ["MR", "CS"]
     r_input = Railway_input(p, objective_stations, delays = {3:2})
     v = Variables(r_input)
     bounds, integrality = v.bonds_and_integrality()
 
-    example_problem = LinearPrograming(v, r_input, M = 10)
+    problem = LinearPrograming(v, r_input, M = 10)
 
-    opt = linprog(c=example_problem.obj, A_ub=example_problem.lhs_ineq, 
-                  b_ub=example_problem.rhs_ineq, bounds=bounds, method='highs',
+    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq, 
+                  b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
 
     v.linprog2vars(opt)
@@ -127,25 +128,25 @@ def test_optimization_simple_headways():
     for i, var in enumerate( all_vars ):
         assert v.variables[var].value == arr_times[i]
 
-    assert example_problem.compute_objective(v, r_input) == pytest.approx(0.6)
+    assert problem.compute_objective(v, r_input) == pytest.approx(0.6)
 
 
 def test_optimization_simple_circ():
     """ test simple example with circulation """
     # add train number are going one way and even the other way
-    objective_stations = ["A", "B"]
     timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
-    par = Parameters(timetable, dmax = 10, headways = 1)
-    par.circulation = {(1,2): "B"}
+    par = Parameters(timetable, dmax = 10, headways = 1, circulation = {(1,2): "B"})
+
+    objective_stations = ["A", "B"]
     r_input = Railway_input(par, objective_stations, delays = {1:1})
 
     v = Variables(r_input)
     bounds, integrality = v.bonds_and_integrality()
 
-    example_problem = LinearPrograming(v, r_input, M = 10)
+    problem = LinearPrograming(v, r_input, M = 10)
 
-    opt = linprog(c=example_problem.obj, A_ub=example_problem.lhs_ineq, 
-                  b_ub=example_problem.rhs_ineq, bounds=bounds, method='highs',
+    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq, 
+                  b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
 
     v.linprog2vars(opt)
@@ -156,7 +157,7 @@ def test_optimization_simple_circ():
     for i, var in enumerate( all_vars ):
         assert v.variables[var].value == arr_times[i]
 
-    assert example_problem.compute_objective(v, r_input) == pytest.approx(0.4)
+    assert problem.compute_objective(v, r_input) == pytest.approx(0.4)
 
 
 
@@ -164,18 +165,18 @@ def test_optimization_larger_headways_circ():
     """ test simple example with headways """
     # add train number are going one way and even the other way
     timetable =  {"PS": {1: 0, 4:33}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
+    p = Parameters(timetable, dmax = 10, circulation = {(3,4): "CS"})
+
     objective_stations = ["MR", "CS"]
-    p = Parameters(timetable, dmax = 10)
-    p.circulation = {(3,4): "CS"}
     r_input = Railway_input(p, objective_stations, delays = {3:2})
     v = Variables(r_input)
     bounds, integrality = v.bonds_and_integrality()
 
-    example_problem = LinearPrograming(v, r_input, M = 10)
+    problem = LinearPrograming(v, r_input, M = 10)
 
 
-    opt = linprog(c=example_problem.obj, A_ub=example_problem.lhs_ineq, 
-                  b_ub=example_problem.rhs_ineq, bounds=bounds, method='highs',
+    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq, 
+                  b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
 
     v.linprog2vars(opt)
@@ -187,5 +188,7 @@ def test_optimization_larger_headways_circ():
     for i, var in enumerate( all_vars ):
         assert v.variables[var].value == arr_times[i]
 
-    assert example_problem.compute_objective(v, r_input) == pytest.approx(1.2)
+    v.check_clusters()
+
+    assert problem.compute_objective(v, r_input) == pytest.approx(1.2)
 

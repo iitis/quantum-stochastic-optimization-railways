@@ -2,4 +2,4 @@
 
 from .parameters import (match_lists, common_s_same_dir, pairs_same_direction, station_pairs, Parameters, Railway_input)
 from .LP_problem import (Variables, LinearPrograming, make_ilp_docplex)
-from .qubo import QuboVars
+from .qubo import (QuboVars, add_update, find_ones)

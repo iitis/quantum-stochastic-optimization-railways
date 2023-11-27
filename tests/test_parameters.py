@@ -24,12 +24,11 @@ def test_par_class():
 
 
 def test_initial_conditions():
-
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
-    objective_stations = ["MR", "CS"]
+    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}} 
     delays = {3:2}  # train:delay
     p = Parameters(timetable, dmax = 5)
 
+    objective_stations = ["MR", "CS"]
     i = Railway_input(p, objective_stations, delays)
     assert i.tvar_range ==  {"PS": {1: (0., 5.)}, "MR" :{1: (3.,8.), 3: (2.,5.)}, "CS" : {1: (16.,21.) , 3: (15., 18.)}}
     assert i.objective_stations == ['MR', 'CS']

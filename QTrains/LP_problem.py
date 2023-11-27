@@ -107,6 +107,19 @@ class Variables():
             bounds[v.int_id] = v.range
             integrality[v.int_id] = int(v.type == int)
         return bounds, integrality
+    
+    def check_clusters(self):
+        "check if all variables in givem cluster are the same"
+        clusters = {}
+        for var in self.variables.values():
+            if var.cluster:
+                if var.cluster in clusters:
+                    assert var.value == clusters[var.cluster], f"Error Message: {var.str_id} not in cluster"
+                else:
+                    clusters[var.cluster] = var.value
+
+
+
 
     def linprog2vars(self, linprogopt):
         """ write results of linprog optimization 
@@ -171,16 +184,6 @@ class LinearPrograming():
                 if Variables.variables[f"t_{s}_{j}"].int_id in Variables.obj_vars:
                     self.obj_ofset += Railway_input.timetable[s][j]/Railway_input.dmax
 
-    def compute_objective(self, Variables, Railway_input):
-        "given the values of variables, returns the objective"
-        obj = 0
-        for s in Railway_input.timetable:
-            for j in Railway_input.timetable[s]:
-                v = Variables.variables[f"t_{s}_{j}"]
-                if v.int_id in Variables.obj_vars:
-                    obj += v.value/Railway_input.dmax
-        return obj - self.obj_ofset
-
 
     def add_headways(self, Variables, Railway_input):
         "add headway constrain to the inequality matrix"
@@ -235,31 +238,43 @@ class LinearPrograming():
             lhs_el[ip] = -1
             self.lhs_ineq.append(lhs_el)
             self.rhs_ineq.append(-Railway_input.stay -Railway_input.preparation_t)
+
+    # these requires values of variables
+    
+    def compute_objective(self, Variables, Railway_input):
+        "given the values of variables, returns the objective"
+        obj = 0
+        for s in Railway_input.timetable:
+            for j in Railway_input.timetable[s]:
+                v = Variables.variables[f"t_{s}_{j}"]
+                if v.int_id in Variables.obj_vars:
+                    obj += v.value/Railway_input.dmax
+        return obj - self.obj_ofset
     
 
 
-def make_ilp_docplex(prob):
+def make_ilp_docplex(prob, var):
     "create the docplex model return the docplex model object"
     model = Model(name='linear_programing_QTrains')
 
-    lower_bounds = [0 for _ in prob.variables]
-    upper_bounds = [0 for _ in prob.variables]
+    lower_bounds = [0 for _ in var.variables]
+    upper_bounds = [0 for _ in var.variables]
 
-    for v in prob.variables.values():
+    for v in var.variables.values():
         lower_bounds[v.int_id] = v.range[0]
         upper_bounds[v.int_id] = v.range[1]
 
-    variables = model.integer_var_dict(prob.variables.keys(), lb=lower_bounds, ub=upper_bounds, name=prob.variables.keys())
+    variables = model.integer_var_dict(var.variables.keys(), lb=lower_bounds, ub=upper_bounds, name=var.variables.keys())
 
     for index, row in enumerate(prob.lhs_ineq):
         model.add_constraint(
-            sum(variables[v.str_id] * row[v.int_id] for v in prob.variables.values()) <= prob.rhs_ineq[index])
+            sum(variables[v.str_id] * row[v.int_id] for v in var.variables.values()) <= prob.rhs_ineq[index])
 
     for index, row in enumerate(prob.lhs_eq):
         model.add_constraint(
-            sum(variables[v.str_id] * row[v.int_id] for v in prob.variables.values()) == prob.rhs_eq[index])
+            sum(variables[v.str_id] * row[v.int_id] for v in var.variables.values()) == prob.rhs_eq[index])
 
-    model.minimize(sum(variables[v.str_id] * prob.obj[v.int_id] for v in prob.variables.values()))
+    model.minimize(sum(variables[v.str_id] * prob.obj[v.int_id] for v in var.variables.values()))
 
     return model
 
