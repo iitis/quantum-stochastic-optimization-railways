@@ -40,10 +40,10 @@ def test_qubo_small():
     assert len(q.qubo) == 52
     assert q.noqubits == 12
 
-    assert q.qbit_inds == { 0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3], 
+    assert q.qbit_inds == { 0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3],
                          5: ['A', 3, 4], 6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4], 9: ['B', 3, 4],
-                         10: ['B', 3, 5], 11: ['B', 3, 6]} 
-    
+                         10: ['B', 3, 5], 11: ['B', 3, 6]}
+
     #           0,1,2,3,4,5,6,7,8,9,10,11
     solution = [1,0,0,1,0,0,1,0,0,0,0,1]
     assert q.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2, ('B',3): 6}
@@ -127,7 +127,7 @@ def test_qubo_larger():
 
     assert len(q.qubo) == 244
     assert q.noqubits == 26
-    
+
     assert q.objective == {(6, 6): 0.0, (7, 7): 0.2, (8, 8): 0.4, (9, 9): 0.6,
                            (10, 10): 0.8, (11, 11): 1.0, (12, 12): 0.4, (13, 13): 0.6,
                            (14, 14): 0.8, (15, 15): 1.0, (16, 16): 0.0, (17, 17): 0.2,
@@ -183,7 +183,7 @@ def test_qubo_1():
     r_input = Railway_input(par, objective_stations, delays = {1:0})
     q = QuboVars(r_input)
     q.make_qubo(r_input)
-    
+
     assert len(q.qubo) == 812
     assert q.noqubits == 44
 
@@ -196,14 +196,14 @@ def test_qubo_2():
     r_input = Railway_input(p, objective_stations, delays = {3:2})
     q = QuboVars(r_input)
     q.make_qubo(r_input)
-    
+
     assert len(q.qubo) == 909
     assert q.noqubits == 51
 
 def test_qubo_3():
     timetable =  {"PS": {1: 0, 4:33}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
     p = Parameters(timetable, dmax = 10, circulation = {(3,4): "CS"})
-    
+
     objective_stations = ["MR", "CS"]
     r_input = Railway_input(p, objective_stations, delays = {3:2})
     q = QuboVars(r_input)

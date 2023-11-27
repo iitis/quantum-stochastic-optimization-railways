@@ -62,7 +62,7 @@ def test_constrains():
     r_input = Railway_input(p, objective_stations, delays = {2:3})
     v = Variables(r_input)
     assert v.variables["t_MR_1"].range == (3,8)
-    
+
     problem = LinearPrograming(v, r_input, M = 10)
 
     # testing only headways
@@ -116,7 +116,7 @@ def test_optimization_simple_headways():
 
     problem = LinearPrograming(v, r_input, M = 10)
 
-    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq, 
+    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
                   b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
 
@@ -145,7 +145,7 @@ def test_optimization_simple_circ():
 
     problem = LinearPrograming(v, r_input, M = 10)
 
-    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq, 
+    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
                   b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
 
@@ -175,7 +175,7 @@ def test_optimization_larger_headways_circ():
     problem = LinearPrograming(v, r_input, M = 10)
 
 
-    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq, 
+    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
                   b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
 
@@ -191,4 +191,3 @@ def test_optimization_larger_headways_circ():
     v.check_clusters()
 
     assert problem.compute_objective(v, r_input) == pytest.approx(1.2)
-

@@ -19,10 +19,9 @@ def add_update(d1, d2):
         if key in d1:
             d1[key] += d2[key]
         else:
-           d1[key] = d2[key] 
+            d1[key] = d2[key]
     return d1
-        
-    
+ 
 
 
 class QuboVars:
@@ -59,7 +58,7 @@ class QuboVars:
                     vars_index[count] = [s,j,t]
                     count += 1
                 station_indexing[s][j] = by_t
-        
+
         self.sjt_inds = station_indexing
         self.qbit_inds = vars_index
 
@@ -71,6 +70,7 @@ class QuboVars:
         self.circ_constrain = {}
 
         self.qubo = {}
+        self.noqubits = 0
 
 
 
@@ -197,7 +197,7 @@ class QuboVars:
                 if (i,j) in self.circ_constrain:
                     broken_circ += 1
         return round(self.sum_ofset/self.psum - broken_sum), round(broken_headways/2), round(broken_pass/2), round(broken_circ/2)
-    
+
 
     def broken_MO_conditions(self, Railway_input, var_list):
         """ checks MO situations that are problematic """
@@ -213,8 +213,8 @@ class QuboVars:
                     no_MO +=1
             else:
                 pair = (j,jp)
-                our_sign = np.sign(t1 - t2)        
-        return no_MO        
+                our_sign = np.sign(t1 - t2)
+        return no_MO
 
 
 

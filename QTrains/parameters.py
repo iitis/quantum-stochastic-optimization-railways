@@ -105,23 +105,23 @@ class Railway_input():
     - self.bojective_station - vec of stations on which objective is computed
 
             """
-    def __init__(self, Parameters, objective_stations, delays):
+    def __init__(self, parameters, objective_stations, delays):
         # form parameters
-        self.headways = Parameters.headways
-        self.stay = Parameters.stay
-        self.preparation_t = Parameters.preparation_t
-        self.dmax = Parameters.dmax
-        self.timetable = Parameters.timetable
-        self.trains_paths = Parameters.trains_paths
-        self.pass_time = Parameters.pass_time
-        self.circulation = Parameters.circulation
+        self.headways = parameters.headways
+        self.stay = parameters.stay
+        self.preparation_t = parameters.preparation_t
+        self.dmax = parameters.dmax
+        self.timetable = parameters.timetable
+        self.trains_paths = parameters.trains_paths
+        self.pass_time = parameters.pass_time
+        self.circulation = parameters.circulation
 
         # additinal fields
         self.objective_stations = objective_stations
-        self.add_tvar_ranges(Parameters, delays)
+        self.add_tvar_ranges(parameters, delays)
 
 
-    def add_tvar_ranges(self, Parameters, delays):
+    def add_tvar_ranges(self, parameters, delays):
         """ add the field of ranges of tvar in the form of dict of dict 
             stations -> trains -> rnge tuple """
         var_range = copy.deepcopy(self.timetable)
@@ -131,7 +131,7 @@ class Railway_input():
                 if j in delays:
                     if s in self.trains_paths[j]:
                         a = a + delays[j]
-                b = var_range[s][j]+Parameters.dmax
+                b = var_range[s][j]+parameters.dmax
                 assert a <= b
                 var_range[s][j] = (a,b)
         self.tvar_range = var_range
