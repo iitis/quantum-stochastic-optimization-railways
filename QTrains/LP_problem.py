@@ -124,8 +124,7 @@ class Variables():
     def linprog2vars(self, linprogopt):
         """ write results of linprog optimization 
         to values of variables """
-        for key in self.variables:
-            variable  = self.variables[key]
+        for variable in self.variables.values():
             variable.value = linprogopt["x"][variable.int_id]
 
     def docplex2vars(self, model, sol):

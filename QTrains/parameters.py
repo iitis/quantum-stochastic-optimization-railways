@@ -24,7 +24,7 @@ def pairs_same_direction(trains_paths):
             stations = common_s_same_dir(trains_paths, j,jp)
             for s in stations:
                 trains_station.append((j, jp, s))
-    return  trains_station
+    return trains_station
 
 def station_pairs(trains_paths):
     "list of tripples, in each train and the pair of two subsequent stations"
@@ -55,7 +55,7 @@ class Parameters:
     - self: circulation - dict {(j,jp): s, ... }  where j ands at s and then starts back as jp
     """
 
-    def __init__(self, timetable, stay = 1, headways = 2, preparation_t = 3, dmax = 2, circulation = {}):
+    def __init__(self, timetable, stay = 1, headways = 2, preparation_t = 3, dmax = 2, circulation = None):
         self.headways = headways
         self.stay = stay
         self.preparation_t = preparation_t
@@ -63,7 +63,10 @@ class Parameters:
         self.timetable = timetable
         self.trains_paths = self.make_trains_paths()
         self.pass_time = self.compute_passing_times()
-        self.circulation = circulation
+        if circulation:
+            self.circulation = circulation
+        else: 
+            self.circulation = {}
 
 
     def make_trains_paths(self):

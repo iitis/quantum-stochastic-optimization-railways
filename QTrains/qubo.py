@@ -21,7 +21,6 @@ def add_update(d1, d2):
         else:
             d1[key] = d2[key]
     return d1
- 
 
 
 class QuboVars:
