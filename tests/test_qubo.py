@@ -81,6 +81,7 @@ def test_qubo_small():
     rail_input = Railway_input(p, objective_stations, delays)
     q = QuboVars(rail_input)
     dict = q.store_in_dict(rail_input)
+    
     qubo_to_analyze = Analyze_qubo(dict)
 
     solution = [0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,1]
