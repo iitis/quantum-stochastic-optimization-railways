@@ -1,5 +1,7 @@
 import pickle
-from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, add_update, find_ones, plot_train_diagrams
+from scipy.optimize import linprog
+from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
+from QTrains import add_update, find_ones, compare_qubo_and_lp, plot_train_diagrams
 
 
 
@@ -239,3 +241,48 @@ def test_qubo_3():
 
     assert len(q.qubo) == 2008
     assert q.noqubits == 106
+
+
+def test_qubo_vs_LP():
+    timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
+    delays = {3:0}
+
+    p = Parameters(timetable, dmax = 2, headways = 1)
+    objective_stations = ["B"]
+    rail_input = Railway_input(p, objective_stations, delays)
+
+    #QUBO
+    q = QuboVars(rail_input)
+    q.make_qubo(rail_input)
+    dict = q.store_in_dict(rail_input)
+    qubo_to_analyze = Analyze_qubo(dict)
+    solution = [1,0,0,1,0,0,1,0,0,0,0,1]
+    vq = qubo_to_analyze.qubo2int_vars(solution)
+    assert vq['t_A_1'].value == 0
+    assert vq['t_A_3'].value == 2
+    assert vq['t_B_1'].value == 2
+    assert vq['t_B_3'].value == 6
+    assert qubo_to_analyze.objective_val(solution) == 1.0
+
+    # LP
+    v = Variables(rail_input)
+    bounds, integrality = v.bonds_and_integrality()
+    problem = LinearPrograming(v, rail_input, M = 10)
+    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
+                  b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
+                  integrality = integrality)
+    v.linprog2vars(opt)
+    vl = v.variables
+    assert vl['t_A_1'].value == 0
+    assert vl['t_A_3'].value == 2
+    assert vl['t_B_1'].value == 2
+    assert vl['t_B_3'].value == 4
+    assert problem.compute_objective(v, rail_input) == 0.0
+
+    td, over_station = compare_qubo_and_lp(vl, vq, qubo_to_analyze.trains_paths)
+    assert td == {1: {'A': 0.0, 'B': 0.0}, 3: {'A': 0.0, 'B': 2.0}}
+    assert over_station == {'A': [0.0, 0.0], 'B': [0.0, 2.0]}
+
+
+
+

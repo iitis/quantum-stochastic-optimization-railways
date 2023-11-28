@@ -292,3 +292,20 @@ class Analyze_qubo():
             if (i,i) in self.objective:
                 objective += self.objective[(i,i)]
         return objective
+    
+def compare_qubo_and_lp(lp_results, qubo_results, trains_paths):
+    time_differences = {}
+    over_station = {}
+    for j in trains_paths:
+        temp = {}
+        for s in trains_paths[j]:
+            v = f"t_{s}_{j}"
+            temp[s] = qubo_results[v].value - lp_results[v].value
+            if s in over_station:
+                over_station[s].append(temp[s])
+            else:
+                over_station[s] = [temp[s]]
+        time_differences[j] = temp
+    return time_differences, over_station
+
+
