@@ -61,6 +61,10 @@ def prepare_qubo(timetable, objective_stations, circulation, delays, dmax, ppair
     q.make_qubo(rail_input)
     dict = q.store_in_dict(rail_input)
 
+    print(rail_input.tvar_range)
+
+    print( rail_input.pass_time )
+
     file1 = f"{file}_{dmax}_{ppair}_{psum}.json"
     with open(file1, 'wb') as fp:
         pickle.dump(dict, fp)
@@ -81,7 +85,7 @@ def solve_qubo(dmax, ppair, psum, file):
     file = file.replace(".json", "_sim.json")
     s = neal.SimulatedAnnealingSampler()
     sampleset = s.sample_qubo(
-        Q, beta_range = (0.1, 10), num_sweeps = 10, num_reads = 10, beta_schedule_type="geometric"
+        Q, beta_range = (0.001, 50), num_sweeps = 500, num_reads = 10, beta_schedule_type="geometric"
     )
 
     if False: # real annelaing
@@ -131,10 +135,21 @@ def analyze_qubo(dmax, ppair, psum, file):
         if qubo_to_analyze.count_broken_constrains(sol) == (0,0,0,0):
             if qubo_to_analyze.broken_MO_conditions(sol) == 0:
                 print("objective", qubo_to_analyze.objective_val(sol) )
-
                 vq = qubo_to_analyze.qubo2int_vars(sol)
                 _, over_station = compare_qubo_and_lp(lp_sol["variables"], vq, qubo_to_analyze.trains_paths)
                 
+                for j in qubo_to_analyze.trains_paths:
+                    for s in qubo_to_analyze.trains_paths[j]:
+                        v = f"t_{s}_{j}"
+                        print("s", s, "j", j)
+                        print("qubo", vq[v].value)
+
+                        print("lp", lp_sol["variables"][v].value)
+
+                #print( sol )
+                print(over_station)
+                #print(qubo_to_analyze.passing_time_constrain)
+
                 for s in over_station:
                     hist[s] = hist[s] + list(over_station[s])
 

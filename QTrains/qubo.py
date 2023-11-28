@@ -115,9 +115,7 @@ class QuboVars:
                     k = self.sjt_inds[s][j][t]
                     for tp in self.sjt_inds[s][jp]:
                         kp = self.sjt_inds[s][jp][tp]
-                        lb = max([t - Railway_input.headways, Railway_input.tvar_range[s][j][0] - 1 ] )
-                        ub = min([t + Railway_input.headways, Railway_input.tvar_range[s][j][1] + 1 ] )
-                        if lb < tp < ub:
+                        if t - Railway_input.headways < tp < t + Railway_input.headways:
                             headway_constrain[(k,kp)] = self.ppair
                             headway_constrain[(kp,k)] = self.ppair
         self.headway_constrain = headway_constrain
@@ -133,9 +131,9 @@ class QuboVars:
                 for tp in self.sjt_inds[sp][j]:
                     lb = Railway_input.tvar_range[sp][j][0]
                     if (j % 2) == 1:
-                        ub = min([t + Railway_input.stay + Railway_input.pass_time[f"{s}_{sp}"], Railway_input.tvar_range[sp][j][1] + 1])
+                        ub = t + Railway_input.stay + Railway_input.pass_time[f"{s}_{sp}"]
                     else:
-                        ub = min([t + Railway_input.stay + Railway_input.pass_time[f"{sp}_{s}"], Railway_input.tvar_range[s][j][1] + 1])
+                        ub = t + Railway_input.stay + Railway_input.pass_time[f"{sp}_{s}"]
                     if lb <= tp < ub:
                         k = self.sjt_inds[s][j][t]
                         kp = self.sjt_inds[sp][j][tp]
@@ -152,7 +150,7 @@ class QuboVars:
             for t in self.sjt_inds[s][j]:
                 for tp in self.sjt_inds[s][jp]:
                     lb = Railway_input.tvar_range[s][jp][0]
-                    ub = min([t + Railway_input.stay + Railway_input.preparation_t, Railway_input.tvar_range[s][jp][1] + 1])
+                    ub = t + Railway_input.stay + Railway_input.preparation_t
                     if lb <= tp < ub:
                         k = self.sjt_inds[s][j][t]
                         kp = self.sjt_inds[s][jp][tp]

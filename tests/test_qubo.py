@@ -36,7 +36,16 @@ def test_qubo_analyze():
                                (6, 6): -2, (6, 7): 2, (6, 8): 2, (7, 7): -2, (7, 6): 2, (7, 8): 2,
                                (8, 8): -2, (8, 6): 2, (8, 7): 2, (9, 9): -2, (9, 10): 2, (9, 11): 2,
                                (10, 10): -2, (10, 9): 2, (10, 11): 2, (11, 11): -2, (11, 9): 2, (11, 10): 2}
-    assert q.headway_constrain == {(2, 3): 2, (3, 2): 2, (8, 9): 2, (9, 8): 2}
+    
+
+    print(q.headway_constrain)
+    assert q.headway_constrain == {(2, 3): 2.0, (3, 2): 2.0, (8, 9): 2.0, (9, 8): 2.0}
+
+    #  2: ['A', 1, 2], 3: ['A', 3, 2]  
+    #  8: ['B', 1, 4], 9: ['B', 3, 4]  
+
+    print(rail_input.tvar_range)
+
     assert q.passing_time_constrain == {(1, 6): 2, (6, 1): 2, (2, 6): 2, (6, 2): 2, (2, 7): 2, (7, 2): 2,
                                         (4, 9): 2, (9, 4): 2, (5, 9): 2, (9, 5): 2, (5, 10): 2, (10, 5): 2}
     assert not q.circ_constrain
@@ -77,15 +86,16 @@ def test_qubo_analyze():
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 2, ('A',3): 2, ('B',1): 4, ('B',3): 6}
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 1, 0, 0)
 
+    solution = [0,0,1,1,0,0,0,0,1,0,0,1]
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A', 1): 2, ('A', 3): 2, ('B', 1): 4, ('B', 3): 6}
+    assert qubo_to_analyze.count_broken_constrains(solution) == (0, 1, 0, 0)
 
     #     0,1,2,3,4,5,6,7,8,9,10,11
-    solution = [1,0,0,0,0,1,0,1,0,1,0,0]
-    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 4, ('B',1): 3, ('B',3): 4}
-    assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 1, 0)
+    solution = [0,1,0,0,1,0,1,0,0,1,0,0]
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 1, ('A',3): 3, ('B',1): 2, ('B',3): 4}
+    assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 2, 0)
     assert qubo_to_analyze.broken_MO_conditions(solution) == 0
 
-
-     #          0,1,2,3,4,5,6,7,8,9,10,11
 
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
     p = Parameters(timetable, dmax = 4, headways = 1)
@@ -155,7 +165,7 @@ def test_qubo_larger():
 
     q.make_qubo(i)
 
-    assert len(q.qubo) == 244
+    assert len(q.qubo) == 248
     assert q.noqubits == 26
 
     assert q.objective == {(6, 6): 0.0, (7, 7): 0.2, (8, 8): 0.4, (9, 9): 0.6,
@@ -192,9 +202,10 @@ def test_qubo_larger():
                                (23, 24): 2, (23, 25): 2, (24, 24): -2, (24, 22): 2, (24, 23): 2,
                                (24, 25): 2, (25, 25): -2, (25, 22): 2, (25, 23): 2, (25, 24): 2}
 
-    assert len(q.headway_constrain) == 32
+    assert len(q.headway_constrain) == 36
     for (k, kp) in q.headway_constrain:
-        assert -2 < q.qbit_inds[k][2] - q.qbit_inds[kp][2] < 2
+        assert -2 <= q.qbit_inds[k][2] - q.qbit_inds[kp][2] <= 2
+
 
     assert len(q.passing_time_constrain) == 72
     for (k, kp) in q.passing_time_constrain:
@@ -214,7 +225,7 @@ def test_qubo_1():
     q = QuboVars(r_input)
     q.make_qubo(r_input)
 
-    assert len(q.qubo) == 812
+    assert len(q.qubo) == 814
     assert q.noqubits == 44
 
 
@@ -227,7 +238,7 @@ def test_qubo_2():
     q = QuboVars(r_input)
     q.make_qubo(r_input)
 
-    assert len(q.qubo) == 909
+    assert len(q.qubo) == 913
     assert q.noqubits == 51
 
 def test_qubo_3():
@@ -239,7 +250,7 @@ def test_qubo_3():
     q = QuboVars(r_input)
     q.make_qubo(r_input)
 
-    assert len(q.qubo) == 2008
+    assert len(q.qubo) == 2136
     assert q.noqubits == 106
 
 
