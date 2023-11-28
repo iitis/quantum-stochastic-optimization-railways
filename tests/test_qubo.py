@@ -1,4 +1,4 @@
-from QTrains import QuboVars, Parameters, Railway_input, add_update, find_ones
+from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, add_update, find_ones
 
 
 
@@ -17,11 +17,11 @@ def test_qubo_small():
 
     p = Parameters(timetable, dmax = 2, headways = 1)
     objective_stations = ["B"]
-    i = Railway_input(p, objective_stations, delays)
-    q = QuboVars(i)
+    rail_input = Railway_input(p, objective_stations, delays)
+    q = QuboVars(rail_input)
 
     assert q.sjt_inds['A'] == {1: {0:0, 1:1, 2:2}, 3: {2:3, 3:4, 4:5}}
-    q.make_qubo(i)
+    q.make_qubo(rail_input)
 
     assert q.qbit_inds == {0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3],
                                 5: ['A', 3, 4], 6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4], 9: ['B', 3, 4],
@@ -43,29 +43,33 @@ def test_qubo_small():
     assert q.qbit_inds == { 0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3],
                          5: ['A', 3, 4], 6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4], 9: ['B', 3, 4],
                          10: ['B', 3, 5], 11: ['B', 3, 6]}
+    
+    dict = q.store_in_dict(rail_input)
+    qubo_to_analyze = Analyze_qubo(dict)
 
     #           0,1,2,3,4,5,6,7,8,9,10,11
     solution = [1,0,0,1,0,0,1,0,0,0,0,1]
-    assert q.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2, ('B',3): 6}
-    assert q.count_broken_constrains(solution) == (0, 0, 0,0)  # sum, headway, pass, circ
-    assert q.objective_val(solution) == 1.0
-    assert q.broken_MO_conditions(i, solution) == 0
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2, ('B',3): 6}
+    assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 0,0)  # sum, headway, pass, circ
+    assert qubo_to_analyze.objective_val(solution) == 1.0
+    assert qubo_to_analyze.broken_MO_conditions(solution) == 0
+
 
     solution = [1,0,0,1,0,0,1,0,0,0,0,0]
-    assert q.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2}
-    assert q.count_broken_constrains(solution) == (1, 0, 0, 0)
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2}
+    assert qubo_to_analyze.count_broken_constrains(solution) == (1, 0, 0, 0)
 
      #          0,1,2,3,4,5,6,7,8,9,10,11
     solution = [0,0,1,1,0,0,0,0,1,0,0,1]
-    assert q.binary_vars2sjt(solution) == {('A',1): 2, ('A',3): 2, ('B',1): 4, ('B',3): 6}
-    assert q.count_broken_constrains(solution) == (0, 1, 0, 0)
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 2, ('A',3): 2, ('B',1): 4, ('B',3): 6}
+    assert qubo_to_analyze.count_broken_constrains(solution) == (0, 1, 0, 0)
 
 
     #     0,1,2,3,4,5,6,7,8,9,10,11
     solution = [1,0,0,0,0,1,0,1,0,1,0,0]
-    assert q.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 4, ('B',1): 3, ('B',3): 4}
-    assert q.count_broken_constrains(solution) == (0, 0, 1, 0)
-    assert q.broken_MO_conditions(i, solution) == 0
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 4, ('B',1): 3, ('B',3): 4}
+    assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 1, 0)
+    assert qubo_to_analyze.broken_MO_conditions(solution) == 0
 
 
      #          0,1,2,3,4,5,6,7,8,9,10,11
@@ -74,13 +78,15 @@ def test_qubo_small():
     p = Parameters(timetable, dmax = 4, headways = 1)
     objective_stations = ["B"]
     delays = {1:2}
-    i = Railway_input(p, objective_stations, delays)
-    q = QuboVars(i)
+    rail_input = Railway_input(p, objective_stations, delays)
+    q = QuboVars(rail_input)
+    dict = q.store_in_dict(rail_input)
+    qubo_to_analyze = Analyze_qubo(dict)
 
     solution = [0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,1]
-    assert q.broken_MO_conditions(i, solution) == 1
-    assert q.binary_vars2sjt(solution) == {('A',1): 4, ('A',3): 2, ('B',1):6, ('B',3): 8}
-    assert q.count_broken_constrains(solution) == (0, 0, 0, 0)
+    assert qubo_to_analyze.broken_MO_conditions(solution) == 1
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 4, ('A',3): 2, ('B',1):6, ('B',3): 8}
+    assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 0, 0)
 
 
 

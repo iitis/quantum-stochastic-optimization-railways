@@ -177,7 +177,9 @@ class LinearPrograming():
 
 
     def make_objective_ofset(self, variables, Railway_input):
-        "returns float the ofset for objective"
+        """returns float the ofset for objective
+        can have also s and j wise version
+        """
         for s in Railway_input.timetable:
             for j in Railway_input.timetable[s]:
                 if variables.variables[f"t_{s}_{j}"].int_id in variables.obj_vars:
@@ -241,7 +243,9 @@ class LinearPrograming():
     # these requires values of variables
 
     def compute_objective(self, variables, Railway_input):
-        "given the values of variables, returns the objective"
+        """given the values of variables, returns the objective
+        can be modified station and train wise, but mind the ofset
+        """
         obj = 0
         for s in Railway_input.timetable:
             for j in Railway_input.timetable[s]:
@@ -276,3 +280,5 @@ def make_ilp_docplex(prob, var):
     model.minimize(sum(variables[v.str_id] * prob.obj[v.int_id] for v in var.variables.values()))
 
     return model
+
+

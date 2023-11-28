@@ -1,11 +1,8 @@
-"""plots train diagram for given solutions"""
+"plots train diagram for given solutions"
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-
-
 
 def plot_train_diagrams(v, train_path, pass_time, stay_time, file):
-    """plotter of train diagrams"""
+    "plotter of train diagrams"
     p = train_path[1]
     x = {p[0]: 0}
     time = 0

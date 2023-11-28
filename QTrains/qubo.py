@@ -67,7 +67,6 @@ class QuboVars:
         self.headway_constrain = {}
         self.passing_time_constrain = {}
         self.circ_constrain = {}
-
         self.qubo = {}
         self.noqubits = 0
 
@@ -177,7 +176,61 @@ class QuboVars:
         self.qubo = dict(sorted(qubo.items()))
         self.noqubits = list(self.qubo.keys())[-1][0]  + 1
 
+    
+    def store_in_dict(self, Railway_input):
+        d = {}
+        d["qubo"] = self.qubo
+        d["objective"] = self.objective
+        d["sum_constrain"] = self.sum_constrain
+        d["sum_ofset"] = self.sum_ofset
+        d["headway_constrain"] = self.headway_constrain
+        d["passing_time_constrain"] = self.passing_time_constrain
+        d["circ_constrain"] = self.circ_constrain
+        d["qbit_inds"] = self.qbit_inds
+        d["ppair"] = self.ppair
+        d["psum"] = self.psum
 
+        d["trains_paths"] = Railway_input.trains_paths
+        d["stay_time"] = Railway_input.stay
+        d["pass_time"] = Railway_input.pass_time
+
+        return d
+
+
+
+# this should be new class using the sbove dict
+
+class Analyze_qubo():
+    def __init__(self, d):
+        self.qubo = d["qubo"]
+        self.objective = d["objective"]
+        self.sum_constrain = d["sum_constrain"]
+        self.sum_ofset = d["sum_ofset"]
+        self.headway_constrain = d["headway_constrain"]
+        self.passing_time_constrain =d["passing_time_constrain"]
+        self.circ_constrain= d["circ_constrain"]
+        self.qbit_inds = d["qbit_inds"]
+        self.ppair = d["ppair"]
+        self.psum = d["psum"]
+
+        self.trains_paths = d["trains_paths"]
+        self.stay = d["stay_time"]
+        self.pass_time = d["pass_time"]
+
+
+
+
+    def binary_vars2sjt(self, var_list):
+        """returns particular integer sjt (train j enters s at time t)
+        given QUBO variables
+        use if sum constrains are fulfilled
+        """
+        assert len(var_list) == len(self.qbit_inds)
+        sjt = {}
+        for i in find_ones(var_list):
+            s,j,t = self.qbit_inds[i]
+            sjt[(s,j)] = t
+        return sjt
 
     def count_broken_constrains(self, var_list):
         """ given QUBO and solution ccount number of broken constrains """
@@ -198,13 +251,13 @@ class QuboVars:
         return round(self.sum_ofset/self.psum - broken_sum), round(broken_headways/2), round(broken_pass/2), round(broken_circ/2)
 
 
-    def broken_MO_conditions(self, Railway_input, var_list):
+    def broken_MO_conditions(self, var_list):
         """ checks MO situations that are problematic """
         no_MO = 0
         solution = self.binary_vars2sjt(var_list)
         pair = (0,0)
         our_sign = 0
-        for (j, jp, s) in pairs_same_direction(Railway_input.trains_paths):
+        for (j, jp, s) in pairs_same_direction(self.trains_paths):
             t1 = solution[(s,j)]
             t2 = solution[(s,jp)]
             if pair == (j,jp):
@@ -215,19 +268,6 @@ class QuboVars:
                 our_sign = np.sign(t1 - t2)
         return no_MO
 
-
-
-    def binary_vars2sjt(self, var_list):
-        """returns particular integer sjt (train j enters s at time t)
-        given QUBO variables
-        use if sum constrains are fulfilled
-        """
-        assert len(var_list) == len(self.qbit_inds)
-        sjt = {}
-        for i in find_ones(var_list):
-            s,j,t = self.qbit_inds[i]
-            sjt[(s,j)] = t
-        return sjt
 
 
     def objective_val(self, var_list):
