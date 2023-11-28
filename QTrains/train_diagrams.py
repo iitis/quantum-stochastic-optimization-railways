@@ -42,3 +42,4 @@ def plot_train_diagrams(v, train_path, pass_time, stay_time, file):
     plt.ylabel("stations")
     plt.subplots_adjust(bottom=0.19, top = 0.75)
     plt.savefig(file)
+    plt.clf()

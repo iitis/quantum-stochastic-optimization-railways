@@ -2,6 +2,7 @@
 import copy
 import numpy as np
 from .parameters import pairs_same_direction, station_pairs
+from .LP_problem import Variable
 
 
 
@@ -231,6 +232,20 @@ class Analyze_qubo():
             s,j,t = self.qbit_inds[i]
             sjt[(s,j)] = t
         return sjt
+    
+    def qubo2int_vars(self, var_list):
+        """ change qubo values to int var values """
+        assert len(var_list) == len(self.qbit_inds)
+        variables = {}
+        count = 0
+        for i in find_ones(var_list):
+            count += 1
+            s,j,t = self.qbit_inds[i]
+            our_var = Variable(count, f"t_{s}_{j}")
+            our_var.value = t
+            variables[f"t_{s}_{j}"] = our_var
+        return variables
+
 
     def count_broken_constrains(self, var_list):
         """ given QUBO and solution ccount number of broken constrains """

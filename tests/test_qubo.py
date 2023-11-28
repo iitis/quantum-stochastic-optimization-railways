@@ -1,5 +1,5 @@
 import pickle
-from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, add_update, find_ones
+from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, add_update, find_ones, plot_train_diagrams
 
 
 
@@ -12,7 +12,7 @@ def test_auxiliary():
     assert d1 == {1:1, 2:4, 3:3, 4:4}
 
 
-def test_qubo_small():
+def test_qubo_analyze():
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
     delays = {3:0}
 
@@ -48,9 +48,19 @@ def test_qubo_small():
     dict = q.store_in_dict(rail_input)
     qubo_to_analyze = Analyze_qubo(dict)
 
+
     #           0,1,2,3,4,5,6,7,8,9,10,11
     solution = [1,0,0,1,0,0,1,0,0,0,0,1]
+    v = qubo_to_analyze.qubo2int_vars(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2, ('B',3): 6}
+    assert v['t_A_1'].value == 0
+    assert v['t_A_3'].value == 2
+    assert v['t_B_1'].value == 2
+    assert v['t_B_3'].value == 6
+
+    file =  "tests/pics/qubodiagram.pdf"
+    plot_train_diagrams(v, qubo_to_analyze.trains_paths, qubo_to_analyze.pass_time, qubo_to_analyze.stay, file)
+
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 0,0)  # sum, headway, pass, circ
     assert qubo_to_analyze.objective_val(solution) == 1.0
     assert qubo_to_analyze.broken_MO_conditions(solution) == 0
