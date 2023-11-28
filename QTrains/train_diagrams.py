@@ -2,9 +2,6 @@
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-mpl.rc("text", usetex=True)
-mpl.rc("font", family="serif")
-mpl.rc("font", size=10)
 
 
 def plot_train_diagrams(v, train_path, pass_time, stay_time, file):
@@ -39,7 +36,7 @@ def plot_train_diagrams(v, train_path, pass_time, stay_time, file):
 
 
     for i, j in enumerate( ys ):
-        plt.plot(ys[j], xs[j], "o-", label=f"train $j$ ", linewidth=0.85, markersize=2, color = colors[i])
+        plt.plot(ys[j], xs[j], "o-", label=f"train {j} ", linewidth=0.85, markersize=2, color = colors[i])
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.45), ncol = 3)
 
     our_marks = [f"{key}" for key in x ]
