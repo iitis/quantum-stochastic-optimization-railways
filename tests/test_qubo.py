@@ -1,3 +1,4 @@
+import pickle
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, add_update, find_ones
 
 
@@ -80,9 +81,19 @@ def test_qubo_small():
     delays = {1:2}
     rail_input = Railway_input(p, objective_stations, delays)
     q = QuboVars(rail_input)
+    q.make_qubo(rail_input)
+
     dict = q.store_in_dict(rail_input)
     
-    qubo_to_analyze = Analyze_qubo(dict)
+    with open('tests/qubo.json', 'wb') as fp:
+        pickle.dump(dict, fp)
+
+    with open('tests/qubo.json', 'rb') as fp:
+        dict_read = pickle.load(fp)
+    
+    assert dict == dict_read
+
+    qubo_to_analyze = Analyze_qubo(dict_read)
 
     solution = [0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,1]
     assert qubo_to_analyze.broken_MO_conditions(solution) == 1
