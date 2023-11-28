@@ -2,6 +2,7 @@
 import pytest
 from scipy.optimize import linprog
 from QTrains import Variables, LinearPrograming, Parameters, Railway_input
+from QTrains import plot_train_diagrams
 
 def test_variables_class():
     """ test class Variables """
@@ -191,3 +192,24 @@ def test_optimization_larger_headways_circ():
     v.check_clusters()
 
     assert problem.compute_objective(v, r_input) == pytest.approx(1.2)
+
+
+def test_train_diagrams():
+    timetable =  {"PS": {1: 0, 4:33}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
+    p = Parameters(timetable, dmax = 10, circulation = {(3,4): "CS"})
+    objective_stations = ["MR", "CS"]
+    r_input = Railway_input(p, objective_stations, delays = {3:2})
+    v = Variables(r_input)
+    bounds, integrality = v.bonds_and_integrality()
+    problem = LinearPrograming(v, r_input, M = 10)
+
+    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
+                  b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
+                  integrality = integrality)
+
+    v.linprog2vars(opt)
+
+    file = "tests/pics/test.pdf"
+    plot_train_diagrams(v, p.trains_paths, p.pass_time, p.stay, file)
+
+    
