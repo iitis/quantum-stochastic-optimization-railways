@@ -209,7 +209,10 @@ def test_train_diagrams():
 
     v.linprog2vars(opt)
 
+    print(v.variables)
+
     file = "tests/pics/test.pdf"
-    plot_train_diagrams(v, p.trains_paths, p.pass_time, p.stay, file)
+    plot_train_diagrams(v.variables, p.trains_paths, p.pass_time, p.stay, file)
+
 
     

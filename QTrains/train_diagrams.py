@@ -18,7 +18,7 @@ def plot_train_diagrams(v, train_path, pass_time, stay_time, file):
 
     for i, j in enumerate( train_path ):
         for s in p:
-            for variable in v.variables.values():
+            for variable in v.values():
                 if variable.str_id == f"t_{s}_{j}":
                     ys[j].append(variable.value)
                     if j % 2 == 1:
