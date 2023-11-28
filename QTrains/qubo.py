@@ -200,9 +200,6 @@ class QuboVars:
         return d
 
 
-
-# this should be new class using the sbove dict
-
 class Analyze_qubo():
     def __init__(self, d):
         self.qubo = d["qubo"]
