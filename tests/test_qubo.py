@@ -75,26 +75,42 @@ def test_qubo_analyze():
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 0,0)  # sum, headway, pass, circ
     assert qubo_to_analyze.objective_val(solution) == 1.0
     assert qubo_to_analyze.broken_MO_conditions(solution) == 0
+    assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset
 
 
     solution = [1,0,0,1,0,0,1,0,0,0,0,0]
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2}
     assert qubo_to_analyze.count_broken_constrains(solution) == (1, 0, 0, 0)
+    assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + qubo_to_analyze.psum
+
+    solution = [1,0,0,1,0,0,0,0,0,0,0,0]
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2}
+    assert qubo_to_analyze.count_broken_constrains(solution) == (2, 0, 0, 0)
+    assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 2*qubo_to_analyze.psum
+
+    solution = [1,0,0,1,0,0,1,0,0,1,1,1]
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2, ('B',3): 4, ('B',3): 5, ('B',3): 6}
+    # with to much variables it is more complicated
+    assert qubo_to_analyze.count_broken_constrains(solution) == (4, 0, 0, 0)
+    assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 4*qubo_to_analyze.psum
 
      #          0,1,2,3,4,5,6,7,8,9,10,11
     solution = [0,0,1,1,0,0,0,0,1,0,0,1]
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 2, ('A',3): 2, ('B',1): 4, ('B',3): 6}
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 1, 0, 0)
+    assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 2*qubo_to_analyze.ppair
 
     solution = [0,0,1,1,0,0,0,0,1,0,0,1]
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A', 1): 2, ('A', 3): 2, ('B', 1): 4, ('B', 3): 6}
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 1, 0, 0)
+    assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 2*qubo_to_analyze.ppair
 
     #     0,1,2,3,4,5,6,7,8,9,10,11
     solution = [0,1,0,0,1,0,1,0,0,1,0,0]
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 1, ('A',3): 3, ('B',1): 2, ('B',3): 4}
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 2, 0)
     assert qubo_to_analyze.broken_MO_conditions(solution) == 0
+    assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 4*qubo_to_analyze.ppair
 
 
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}

@@ -257,20 +257,31 @@ class Analyze_qubo():
         for i in find_ones(var_list):
             for j in find_ones(var_list):
                 if (i,j) in self.sum_constrain:
-                    broken_sum += 1
+                    broken_sum += self.sum_constrain[(i,j)]
                 if (i,j) in self.headway_constrain:
                     broken_headways += 1
                 if (i,j) in self.passing_time_constrain:
                     broken_pass += 1
                 if (i,j) in self.circ_constrain:
                     broken_circ += 1
-        return round(self.sum_ofset/self.psum - broken_sum), round(broken_headways/2), round(broken_pass/2), round(broken_circ/2)
+        broken_sum = abs( round(self.sum_ofset/self.psum + broken_sum/self.psum) )
+        return broken_sum, round(broken_headways/2), round(broken_pass/2), round(broken_circ/2)
+    
+    def energy(self, var_list):
+        """ compute energy given qubo and solution """
+        energy = 0
+        for i in find_ones(var_list):
+            for j in find_ones(var_list):
+                if (i,j) in self.qubo:
+                    energy += self.qubo[(i,j)]
+        return energy
 
 
     def broken_MO_conditions(self, var_list):
         """ checks MO situations that are problematic """
         no_MO = 0
         solution = self.binary_vars2sjt(var_list)
+        print(solution)
         pair = (0,0)
         our_sign = 0
         for (j, jp, s) in pairs_same_direction(self.trains_paths):

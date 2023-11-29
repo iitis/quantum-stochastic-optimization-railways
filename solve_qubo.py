@@ -31,9 +31,9 @@ def file_QUBO(q_input, q_pars):
 def file_QUBO_output(file, q_pars):
     file = file.replace("QUBOs", "solutions")
     if q_pars.method == "sim":
-        file = file.replace(".json", f"_{q_pars.method}_{q_pars.beta_range}_{q_pars.num_sweeps}.json")
+        file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.beta_range}_{q_pars.num_sweeps}.json")
     elif q_pars.method == "real":
-        file = file.replace(".json", f"_{q_pars.method}_{q_pars.annealing_time}_{q_pars.chain_strength}_{q_pars.auto_scale}.json")
+        file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.annealing_time}.json")
     return file
 
 
@@ -130,9 +130,7 @@ def solve_qubo(q_input, q_pars):
             sampleset[k] = sampler.sample_qubo(
                 Q,
                 num_reads=q_pars.num_reads,
-                auto_scale=q_pars.auto_scale,
-                annealing_time=q_pars.annealing_time,
-                chain_strength=q_pars.chain_strength,
+                annealing_time=q_pars.annealing_time
         )
 
     file = file_QUBO_output(file, q_pars)
@@ -166,10 +164,13 @@ def analyze_qubo(q_input, q_pars):
         k = 0
         for sample in sampleset.samples():
             sol = [ i for i in sample.values()]
+            print(qubo_to_analyze.count_broken_constrains(sol))
+            print(sum(sol))
             if qubo_to_analyze.count_broken_constrains(sol) == (0,0,0,0):
                 if qubo_to_analyze.broken_MO_conditions(sol) == 0:
                     if k == 0:
                         print("selected objective", qubo_to_analyze.objective_val(sol) )
+                        print("energy  and ofset", qubo_to_analyze.energy(sol), qubo_to_analyze.sum_ofset)
                     k = k + 1
                     vq = qubo_to_analyze.qubo2int_vars(sol)
                     h = diff_passing_times(lp_sol["variables"], vq, ["MR", "CS"], qubo_to_analyze.trains_paths) 
@@ -197,7 +198,7 @@ def plot_hist(q_input, q_pars):
 
 
 def process(q_input, q_pars):
-    solve = False
+
 
     file = file_LP_output(q_input, q_pars)
     if not os.path.isfile(file):
@@ -245,12 +246,13 @@ class input_qubo():
 
 class qubo_parameters():
     def __init__(self):
-        self.num_all_runs = 5000
+        self.num_all_runs = 25_000
+        
         self.num_reads = 500
         assert self.num_all_runs % self.num_reads == 0
 
         self.ppair = 2.0
-        self.psum = 2.0
+        self.psum = 4.0
         self.dmax = 10
         
         self.method = "sim"
@@ -258,9 +260,8 @@ class qubo_parameters():
         self.beta_range = (0.001, 50)
         self.num_sweeps = 500
         # for real annealing
-        self.annealing_time = 2
-        self.chain_strength = 1
-        self.auto_scale = "true"
+        self.annealing_time = 1000
+        assert self.annealing_time * self.num_reads < 1_000_000
 
 
 if __name__ == "__main__":
@@ -271,25 +272,26 @@ if __name__ == "__main__":
     q_pars = qubo_parameters()
     process(q_input, q_pars)
 
-    q_pars.num_sweeps = 50
-    process(q_input, q_pars)
-
-    q_pars.num_sweeps = 500
-    q_pars.ppair = 100.0
-    q_pars.psum = 100.0
+    q_pars.ppair = 250.0
+    q_pars.psum = 500.0
     process(q_input, q_pars)
 
     q_input.qubo2()
     q_pars = qubo_parameters()
     process(q_input, q_pars)
 
-    q_pars.num_sweeps = 50
+    q_input.qubo1()
+    q_pars = qubo_parameters()
+    q_pars.method = "real"
+    process(q_input, q_pars)
+    q_pars.annealing_time = 5
     process(q_input, q_pars)
 
-    q_pars.num_sweeps = 500
-
-    q_pars.ppair = 100.0
-    q_pars.psum = 100.0
+    q_input.qubo2()
+    q_pars = qubo_parameters()
+    q_pars.method = "real"
+    process(q_input, q_pars)
+    q_pars.annealing_time = 5
     process(q_input, q_pars)
 
     
