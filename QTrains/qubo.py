@@ -292,19 +292,22 @@ class Analyze_qubo():
                 objective += self.objective[(i,i)]
         return objective
     
-def compare_qubo_and_lp(lp_results, qubo_results, trains_paths):
-    time_differences = {}
-    over_station = {}
+def diff_passing_times(sol_ref, sol, stations, trains_paths):
+    "compare passing time beteen the seqience of stations in stations for two solutions "
+    time_differences = []
     for j in trains_paths:
-        temp = {}
-        for s in trains_paths[j]:
-            v = f"t_{s}_{j}"
-            temp[s] = qubo_results[v].value - lp_results[v].value
-            if s in over_station:
-                over_station[s].append(temp[s])
-            else:
-                over_station[s] = [temp[s]]
-        time_differences[j] = temp
-    return time_differences, over_station
+        if j % 2 == 1:
+            s1 = stations[0]
+            s2 = stations[1]
+        else:
+            s1 = stations[1]
+            s2 = stations[0]
+
+        v1 = f"t_{s1}_{j}"
+        v2 = f"t_{s2}_{j}"
+        delta1 = sol_ref[v2].value - sol_ref[v1].value
+        delta2 = sol[v2].value - sol[v1].value
+        time_differences.append(delta2 - delta1)
+    return list(time_differences)
 
 

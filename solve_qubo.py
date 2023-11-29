@@ -13,15 +13,23 @@ from dwave.system import (
 )
 
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
-from QTrains import add_update, find_ones, compare_qubo_and_lp, plot_train_diagrams
+from QTrains import add_update, find_ones, diff_passing_times, plot_train_diagrams
 
 
 
 
-def solve_on_LP(timetable, objective_stations, circulation, delays, dmax, file):
-    stay = 1
-    headways = 2
-    preparation_t = 3
+def solve_on_LP(q_input, q_pars):
+    stay = q_input.stay
+    headways = q_input.headways
+    preparation_t = q_input.preparation_t
+
+    timetable = q_input.timetable
+    objective_stations = q_input.objective_stations
+    circulation = q_input.circ
+    delays = q_input.delays
+    file = q_input.file
+
+    dmax = q_pars.dmax
 
     file = file.replace("QUBOs", "solutions")
     p = Parameters(timetable, stay=stay, headways=headways,
@@ -49,10 +57,21 @@ def solve_on_LP(timetable, objective_stations, circulation, delays, dmax, file):
 
 
 
-def prepare_qubo(timetable, objective_stations, circulation, delays, dmax, ppair, psum, file):
-    stay = 1
-    headways = 2
-    preparation_t = 3
+def prepare_qubo(q_input, q_pars):
+    stay = q_input.stay
+    headways = q_input.headways
+    preparation_t = q_input.preparation_t
+
+    timetable = q_input.timetable
+    objective_stations = q_input.objective_stations
+    circulation = q_input.circ
+    delays = q_input.delays
+    file = q_input.file
+
+    ppair = q_pars.ppair
+    psum = q_pars.psum
+    dmax = q_pars.dmax
+
     p = Parameters(timetable, stay=stay, headways=headways,
                    preparation_t=preparation_t, dmax=dmax, circulation=circulation)
     rail_input = Railway_input(p, objective_stations, delays = delays)
@@ -60,17 +79,21 @@ def prepare_qubo(timetable, objective_stations, circulation, delays, dmax, ppair
     q.make_qubo(rail_input)
     dict = q.store_in_dict(rail_input)
 
-    print(rail_input.tvar_range)
-
-    print( rail_input.pass_time )
-
     file1 = f"{file}_{dmax}_{ppair}_{psum}.json"
     with open(file1, 'wb') as fp:
         pickle.dump(dict, fp)
 
 
 
-def solve_qubo(dmax, ppair, psum, file):
+def solve_qubo(q_input, q_pars):
+
+    loops = 10
+    file = q_input.file
+
+    ppair = q_pars.ppair
+    psum = q_pars.psum
+    dmax = q_pars.dmax
+
     file = f"{file}_{dmax}_{ppair}_{psum}.json"
 
     with open(file, 'rb') as fp:
@@ -80,22 +103,33 @@ def solve_qubo(dmax, ppair, psum, file):
     Q = qubo_to_analyze.qubo
 
     file = file.replace("QUBOs", "solutions")
+    file = file.replace(".json", f"_{q_pars.method}.json")
 
-    file = file.replace(".json", "_sim.json")
-    s = neal.SimulatedAnnealingSampler()
-    sampleset = s.sample_qubo(
-        Q, beta_range = (0.001, 50), num_sweeps = 500, num_reads = 10, beta_schedule_type="geometric"
-    )
 
-    if False: # real annelaing
+    sampleset = {}
+
+    if q_pars.method == "sim":
+        for k in range(loops):
+            s = neal.SimulatedAnnealingSampler()
+            sampleset[k] = s.sample_qubo(
+                Q, beta_range = (0.001, 50), num_sweeps = 500, num_reads = q_pars.num_reads, beta_schedule_type="geometric"
+            )
+
+    elif q_pars.method == "real":
         sampler = EmbeddingComposite(DWaveSampler())
 
-        sampleset = sampler.sample(
-            bqm,
-            num_reads=num_reads,
-            auto_scale="true",
-            annealing_time=annealing_time,
-            chain_strength=chain_strength,
+        for k in range(loops):
+
+            num_reads = q_pars.num_reads
+            annealing_time = 2
+            chain_strength = 1
+
+            sampleset[k] = sampler.sample_qubo(
+                Q,
+                num_reads=num_reads,
+                auto_scale="true",
+                annealing_time=annealing_time,
+                chain_strength=chain_strength,
         )
 
     with open(file, 'wb') as fp:
@@ -103,7 +137,14 @@ def solve_qubo(dmax, ppair, psum, file):
 
 
 
-def analyze_qubo(dmax, ppair, psum, file):
+def analyze_qubo(q_input, q_pars):
+
+    file = q_input.file
+
+    ppair = q_pars.ppair
+    psum = q_pars.psum
+    dmax = q_pars.dmax
+
     file1 = f"{file}_{dmax}.json"
     file1 = file1.replace("qubo", "LP")
     file1 = file1.replace("QUBOs", "solutions")
@@ -119,38 +160,29 @@ def analyze_qubo(dmax, ppair, psum, file):
 
     file = file.replace("QUBOs", "solutions")
 
-    file = file.replace(".json", "_sim.json")
+    file = file.replace(".json", f"_{q_pars.method}.json")
 
     with open(file, 'rb') as fp:
-        sampleset = pickle.load(fp)
+        samplesets = pickle.load(fp)
 
 
     print("..... LP objective", lp_sol["objective"])
 
-    hist = {s:list([]) for s in qubo_to_analyze.timetable}
+    hist = list([])
 
-    for sample in sampleset.samples():
-        sol = [ i for i in sample.values()]
-        if qubo_to_analyze.count_broken_constrains(sol) == (0,0,0,0):
-            if qubo_to_analyze.broken_MO_conditions(sol) == 0:
-                print("objective", qubo_to_analyze.objective_val(sol) )
-                vq = qubo_to_analyze.qubo2int_vars(sol)
-                _, over_station = compare_qubo_and_lp(lp_sol["variables"], vq, qubo_to_analyze.trains_paths)
-                
-                for j in qubo_to_analyze.trains_paths:
-                    for s in qubo_to_analyze.trains_paths[j]:
-                        v = f"t_{s}_{j}"
-                        print("s", s, "j", j)
-                        print("qubo", vq[v].value)
+    for sampleset in samplesets.values():
+        k = 0
+        for sample in sampleset.samples():
+            sol = [ i for i in sample.values()]
+            if qubo_to_analyze.count_broken_constrains(sol) == (0,0,0,0):
+                if qubo_to_analyze.broken_MO_conditions(sol) == 0:
+                    if k == 0:
+                        print("selected objective", qubo_to_analyze.objective_val(sol) )
+                    k = k + 1
+                    vq = qubo_to_analyze.qubo2int_vars(sol)
+                    h = diff_passing_times(lp_sol["variables"], vq, ["MR", "CS"], qubo_to_analyze.trains_paths) 
+                    hist.extend( h )
 
-                        print("lp", lp_sol["variables"][v].value)
-
-                #print( sol )
-                print(over_station)
-                #print(qubo_to_analyze.passing_time_constrain)
-
-                for s in over_station:
-                    hist[s] = hist[s] + list(over_station[s])
 
     file = file.replace("solutions", "histograms")
 
@@ -158,43 +190,73 @@ def analyze_qubo(dmax, ppair, psum, file):
         pickle.dump(hist, fp)
 
 
-def plot_hist(dmax, ppair, psum, file):
+def plot_hist(q_input, q_pars):
+
+    ppair = q_pars.ppair
+    psum = q_pars.psum
+    dmax = q_pars.dmax
+
+    file = q_input.file
+
     file = file.replace("QUBOs", "histograms")
     file = f"{file}_{dmax}_{ppair}_{psum}.json"
 
-    file = file.replace(".json", "_sim.json")
+    file = file.replace(".json", f"_{q_pars.method}.json")
 
     with open(file, 'rb') as fp:
-        histogram = pickle.load(fp)
+        hist = pickle.load(fp)
 
-        k = "CS" 
-        hist = histogram[k]
-        print(set(hist))   
         plt.bar(*np.unique(hist, return_counts=True))
         file = file.replace(".json", ".pdf")
+        plt.title(f"sim, dmax={dmax}, ppair={ppair}, psum={psum}")
         plt.savefig(file)
         plt.clf()
 
 
+
+class input_qubo():
+    def __init__(self):
+        self.stay = 1
+        self.headways = 2
+        self.preparation_t = 3
+        self.circ = {}
+        self.timetable = {}
+        self.objective_stations = []
+        self.delays = {}
+        self.file = ""
+    
+    def qubo1(self):
+        self.circ = {}
+        self.timetable = {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
+        self.objective_stations = ["MR", "CS"]
+        self.delays = {3:2}
+        self.file = "QUBOs/qubo_1"
+
+
+class qubo_parameters():
+    def __init__(self):
+        self.num_reads = 500
+        self.ppair = 2.0
+        self.psum = 2.0
+        self.dmax = 10
+        self.method = "sim"
+
+
 if __name__ == "__main__":
-    #circulation = {(1,2): "B"}
-    circ = {}
-    tt =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
-    obj_st = ["MR", "CS"]
-    d = {3:2}
 
-    d_max = 5
-    p_pair = 2.
-    p_sum = 2.
 
-    f = "QUBOs/qubo_1"
+    q_input = input_qubo()
+    q_input.qubo1()
+    q_pars = qubo_parameters()
 
-    solve_on_LP(timetable=tt, objective_stations=obj_st, circulation=circ, delays=d, dmax=d_max, file=f)
 
-    prepare_qubo(timetable=tt, objective_stations=obj_st, circulation=circ, delays=d, dmax=d_max, ppair=p_pair, psum=p_sum, file=f)
+    solve_on_LP(q_input, q_pars)
 
-    solve_qubo(dmax=d_max, ppair=p_pair, psum=p_sum, file=f)
+    prepare_qubo(q_input, q_pars)
 
-    analyze_qubo(dmax=d_max, ppair=p_pair, psum=p_sum, file=f)
 
-    plot_hist(dmax=d_max, ppair=p_pair, psum=p_sum, file=f)
+    solve_qubo(q_input, q_pars)
+
+    analyze_qubo(q_input, q_pars)
+
+    plot_hist(q_input, q_pars)

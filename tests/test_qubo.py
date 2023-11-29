@@ -1,7 +1,7 @@
 import pickle
 from scipy.optimize import linprog
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
-from QTrains import add_update, find_ones, compare_qubo_and_lp, plot_train_diagrams
+from QTrains import add_update, find_ones, diff_passing_times, plot_train_diagrams
 
 
 
@@ -290,7 +290,7 @@ def test_qubo_vs_LP():
     assert vl['t_B_3'].value == 4
     assert problem.compute_objective(v, rail_input) == 0.0
 
-    td, over_station = compare_qubo_and_lp(vl, vq, qubo_to_analyze.trains_paths)
-    assert td == {1: {'A': 0.0, 'B': 0.0}, 3: {'A': 0.0, 'B': 2.0}}
-    assert over_station == {'A': [0.0, 0.0], 'B': [0.0, 2.0]}
+    hist = diff_passing_times(vl, vq, ["A", "B"], qubo_to_analyze.trains_paths)
+    assert hist == [0.0, 2.0]
+
 
