@@ -31,7 +31,7 @@ def file_QUBO(q_input, q_pars):
 def file_QUBO_output(file, q_pars):
     file = file.replace("QUBOs", "solutions")
     if q_pars.method == "sim":
-        file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.beta_range}_{q_pars.num_sweeps}.json")
+        file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.beta_range[0]}_{q_pars.num_sweeps}.json")
     elif q_pars.method == "real":
         file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.annealing_time}.json")
     return file
