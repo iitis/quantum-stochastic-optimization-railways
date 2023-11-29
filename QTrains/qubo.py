@@ -281,7 +281,6 @@ class Analyze_qubo():
         """ checks MO situations that are problematic """
         no_MO = 0
         solution = self.binary_vars2sjt(var_list)
-        print(solution)
         pair = (0,0)
         our_sign = 0
         for (j, jp, s) in pairs_same_direction(self.trains_paths):

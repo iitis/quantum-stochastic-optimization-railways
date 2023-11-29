@@ -164,13 +164,12 @@ def analyze_qubo(q_input, q_pars):
         k = 0
         for sample in sampleset.samples():
             sol = [ i for i in sample.values()]
-            print(qubo_to_analyze.count_broken_constrains(sol))
-            print(sum(sol))
             if qubo_to_analyze.count_broken_constrains(sol) == (0,0,0,0):
                 if qubo_to_analyze.broken_MO_conditions(sol) == 0:
                     if k == 0:
-                        print("selected objective", qubo_to_analyze.objective_val(sol) )
-                        print("energy  and ofset", qubo_to_analyze.energy(sol), qubo_to_analyze.sum_ofset)
+                        print("selected objective / energy + ofset",
+                            qubo_to_analyze.objective_val(sol),
+                            qubo_to_analyze.energy(sol) + qubo_to_analyze.sum_ofset)
                     k = k + 1
                     vq = qubo_to_analyze.qubo2int_vars(sol)
                     h = diff_passing_times(lp_sol["variables"], vq, ["MR", "CS"], qubo_to_analyze.trains_paths) 
@@ -192,7 +191,10 @@ def plot_hist(q_input, q_pars):
 
         plt.bar(*np.unique(hist, return_counts=True))
         file = file.replace(".json", ".pdf")
-        plt.title(f"sim, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        if q_pars.method == "sim":
+            plt.title(f"{q_input.file}, {q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        else:
+            plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
         plt.savefig(file)
         plt.clf()
 
@@ -287,11 +289,11 @@ if __name__ == "__main__":
     q_pars.annealing_time = 5
     process(q_input, q_pars)
 
-    q_input.qubo2()
-    q_pars = qubo_parameters()
-    q_pars.method = "real"
-    process(q_input, q_pars)
-    q_pars.annealing_time = 5
-    process(q_input, q_pars)
+    #q_input.qubo2()
+    #q_pars = qubo_parameters()
+    #q_pars.method = "real"
+    #process(q_input, q_pars)
+    #q_pars.annealing_time = 5
+    #process(q_input, q_pars)
 
     
