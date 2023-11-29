@@ -200,6 +200,7 @@ def plot_hist(q_input, q_pars):
         else:
             plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
         plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} comparing with ILP")
+        plt.ylabel("number of solutions")
         plt.savefig(file)
         plt.clf()
 
