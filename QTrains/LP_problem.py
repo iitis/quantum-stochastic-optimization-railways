@@ -280,4 +280,3 @@ def make_ilp_docplex(prob, var):
     model.minimize(sum(variables[v.str_id] * prob.obj[v.int_id] for v in var.variables.values()))
 
     return model
-
