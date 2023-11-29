@@ -17,6 +17,7 @@ from QTrains import diff_passing_times
 
 
 def file_LP_output(q_input, q_pars):
+    """ returns string, the file name and dir to store LP results """
     file = q_input.file
     file = file.replace("qubo", "LP")
     file = f"{file}_{q_pars.dmax}.json"
@@ -25,10 +26,12 @@ def file_LP_output(q_input, q_pars):
 
 
 def file_QUBO(q_input, q_pars):
+    """ returns string, the file name and dir to store QUBO and its features """
     file = f"{q_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}.json"
     return file
 
-def file_QUBO_output(file, q_pars):
+def file_QUBO_comp(file, q_pars):
+    """ returns string, the file name and dir to store results of computaiton on QUBO """
     file = file.replace("QUBOs", "solutions")
     if q_pars.method == "sim":
         file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.beta_range[0]}_{q_pars.num_sweeps}.json")
@@ -38,6 +41,7 @@ def file_QUBO_output(file, q_pars):
 
 
 def solve_on_LP(q_input, q_pars):
+    """ solve the problem using LP, and save results """
     stay = q_input.stay
     headways = q_input.headways
     preparation_t = q_input.preparation_t
@@ -75,6 +79,7 @@ def solve_on_LP(q_input, q_pars):
 
 
 def prepare_qubo(q_input, q_pars):
+    """ create and save QUBO given railway input and parameters """
     stay = q_input.stay
     headways = q_input.headways
     preparation_t = q_input.preparation_t
@@ -101,9 +106,8 @@ def prepare_qubo(q_input, q_pars):
         pickle.dump(dict, fp)
 
 
-
 def solve_qubo(q_input, q_pars):
-
+    """ solve the problem given by QUBO and store results """
     file = file_QUBO(q_input, q_pars)
 
     with open(file, 'rb') as fp:
@@ -133,13 +137,13 @@ def solve_qubo(q_input, q_pars):
                 annealing_time=q_pars.annealing_time
         )
 
-    file = file_QUBO_output(file, q_pars)
+    file = file_QUBO_comp(file, q_pars)
     with open(file, 'wb') as fp:
         pickle.dump(sampleset, fp)
 
 
 def analyze_qubo(q_input, q_pars):
-
+    """ analyze results of computation on QUBO and comparison with LP """
     file = file_QUBO(q_input, q_pars)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
@@ -147,14 +151,14 @@ def analyze_qubo(q_input, q_pars):
     file1 = file_LP_output(q_input, q_pars)
     with open(file1, 'rb') as fp:
         lp_sol = pickle.load(fp)
- 
+
     qubo_to_analyze = Analyze_qubo(dict_read)
     print(" ......  problem size ......")
     print("no qubits", qubo_to_analyze.noqubits)
     print("no qubo terms", len(qubo_to_analyze.qubo) )
     print(".............................")
 
-    file = file_QUBO_output(file, q_pars)
+    file = file_QUBO_comp(file, q_pars)
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
 
@@ -181,9 +185,9 @@ def analyze_qubo(q_input, q_pars):
 
 
 def plot_hist(q_input, q_pars):
-
+    """ plot histograms of trains passing time from results from QUBO """
     file = file_QUBO(q_input, q_pars)
-    file = file_QUBO_output(file, q_pars)
+    file = file_QUBO_comp(file, q_pars)
     file = file.replace("solutions", "histograms")
 
     with open(file, 'rb') as fp:
@@ -200,8 +204,7 @@ def plot_hist(q_input, q_pars):
 
 
 def process(q_input, q_pars):
-
-
+    """ the sequence of calculation  makes computation if results has not been saved already"""
     file = file_LP_output(q_input, q_pars)
     if not os.path.isfile(file):
         solve_on_LP(q_input, q_pars)
@@ -210,7 +213,7 @@ def process(q_input, q_pars):
     if not os.path.isfile(file):
         prepare_qubo(q_input, q_pars)
 
-    file = file_QUBO_output(file, q_pars)
+    file = file_QUBO_comp(file, q_pars)
     if not os.path.isfile(file):
         solve_qubo(q_input, q_pars)
 
@@ -220,6 +223,7 @@ def process(q_input, q_pars):
 
 
 class Input_qubo():
+    """ store railway parameters """
     def __init__(self):
         self.stay = 1
         self.headways = 2
@@ -231,6 +235,9 @@ class Input_qubo():
         self.file = ""
 
     def qubo1(self):
+        """
+        two trains one following other
+        """
         self.circ = {}
         self.timetable = {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
         self.objective_stations = ["MR", "CS"]
@@ -238,6 +245,9 @@ class Input_qubo():
         self.file = "QUBOs/qubo_1"
 
     def qubo2(self):
+        """ 
+        four - trains  3 going one direction and one going around at "CS"
+        """
         self.circ = {(3,4): "CS"}
         self.timetable = {"PS": {1: 0, 4:33}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
         self.objective_stations = ["MR", "CS"]
@@ -245,7 +255,11 @@ class Input_qubo():
         self.file = "QUBOs/qubo_2"
 
 
-class Qubo_parameters():
+    
+
+
+class Comp_parameters():
+    """ stores parameters of QUBO and computaiton """
     def __init__(self):
         self.num_all_runs = 25_000
 
@@ -269,29 +283,29 @@ if __name__ == "__main__":
 
     our_qubo = Input_qubo()
     our_qubo.qubo1()
-    p = Qubo_parameters()
-    process(our_qubo, p)
+    q_par = Comp_parameters()
+    process(our_qubo, q_par)
 
-    p.ppair = 250.0
-    p.psum = 500.0
-    process(our_qubo, p)
+    q_par.ppair = 250.0
+    q_par.psum = 500.0
+    process(our_qubo, q_par)
 
-    p.ppair = 2.0
-    p.psum = 4.0
-    p.method = "real"
-    process(our_qubo, p)
-    p.annealing_time = 5
-    process(our_qubo, p)
-
-    our_qubo.qubo2()
-    p.method = "sim"
-    process(our_qubo, p)
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+    q_par.method = "real"
+    process(our_qubo, q_par)
+    q_par.annealing_time = 5
+    process(our_qubo, q_par)
 
     our_qubo.qubo2()
-    p.method = "real"
-    p.annealing_time = 1000
-    process(our_qubo, p)
-    p.annealing_time = 50
-    process(our_qubo, p)
-    p.annealing_time = 2
-    process(our_qubo, p)
+    q_par.method = "sim"
+    process(our_qubo, q_par)
+
+    our_qubo.qubo2()
+    q_par.method = "real"
+    q_par.annealing_time = 1000
+    process(our_qubo, q_par)
+    q_par.annealing_time = 50
+    process(our_qubo, q_par)
+    q_par.annealing_time = 2
+    process(our_qubo, q_par)

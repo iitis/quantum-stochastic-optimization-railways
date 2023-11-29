@@ -36,7 +36,7 @@ def plot_train_diagrams(v, train_path, pass_time, stay_time, file):
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.45), ncol = 3)
 
     our_marks = [f"{key}" for key in x ]
-    locs = [v for v in x.values() ]
+    locs = list(x.values())
     plt.yticks(locs, our_marks)
     plt.xlabel("time")
     plt.ylabel("stations")

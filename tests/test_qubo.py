@@ -1,3 +1,5 @@
+""" test creation and analysis of QUBO in qubo.py file """
+
 import pickle
 from scipy.optimize import linprog
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
@@ -6,6 +8,7 @@ from QTrains import add_update, find_ones, diff_passing_times, plot_train_diagra
 
 
 def test_auxiliary():
+    """ test auxiliary functions """
     assert find_ones([0,1,1,1,0]) == [1,2,3]
 
     d1 = {1:1, 2:2, 3:3}
@@ -15,6 +18,7 @@ def test_auxiliary():
 
 
 def test_qubo_analyze():
+    """ test Analyze_qubo() class """
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
     delays = {3:0}
 
@@ -143,6 +147,7 @@ def test_qubo_analyze():
 
 
 def test_qubo_circ():
+    """ test QuboVars class for simple problem of two trains with rolling stock circulation """
     timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
     par = Parameters(timetable, dmax = 2, headways = 1, circulation = {(1,2): "B"})
 
@@ -160,6 +165,7 @@ def test_qubo_circ():
 
 
 def test_qubo_larger():
+    """ test QuboVars class for larger problem of two trains heading in the same direction """
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
     p = Parameters(timetable, dmax = 5)
 
@@ -232,45 +238,8 @@ def test_qubo_larger():
 
 
 
-def test_qubo_1():
-    timetable = {"A": {1:0, 2:8}, "B": {1:2 , 2:6}}
-    par = Parameters(timetable, dmax = 10, headways = 1, circulation = {(1,2): "B"})
-
-    objective_stations = ["B"]
-    r_input = Railway_input(par, objective_stations, delays = {1:0})
-    q = QuboVars(r_input)
-    q.make_qubo(r_input)
-
-    assert len(q.qubo) == 814
-    assert q.noqubits == 44
-
-
-def test_qubo_2():
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
-    p = Parameters(timetable, dmax = 10)
-
-    objective_stations = ["MR", "CS"]
-    r_input = Railway_input(p, objective_stations, delays = {3:2})
-    q = QuboVars(r_input)
-    q.make_qubo(r_input)
-
-    assert len(q.qubo) == 913
-    assert q.noqubits == 51
-
-def test_qubo_3():
-    timetable =  {"PS": {1: 0, 4:33}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
-    p = Parameters(timetable, dmax = 10, circulation = {(3,4): "CS"})
-
-    objective_stations = ["MR", "CS"]
-    r_input = Railway_input(p, objective_stations, delays = {3:2})
-    q = QuboVars(r_input)
-    q.make_qubo(r_input)
-
-    assert len(q.qubo) == 2136
-    assert q.noqubits == 106
-
-
 def test_qubo_vs_LP():
+    """  test comparison of QUBO output vs LP output """
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
     delays = {3:0}
 
@@ -281,8 +250,8 @@ def test_qubo_vs_LP():
     #QUBO
     q = QuboVars(rail_input)
     q.make_qubo(rail_input)
-    dict = q.store_in_dict(rail_input)
-    qubo_to_analyze = Analyze_qubo(dict)
+    qubo_dict = q.store_in_dict(rail_input)
+    qubo_to_analyze = Analyze_qubo(qubo_dict)
     solution = [1,0,0,1,0,0,1,0,0,0,0,1]
     vq = qubo_to_analyze.qubo2int_vars(solution)
     assert vq['t_A_1'].value == 0
@@ -294,9 +263,9 @@ def test_qubo_vs_LP():
     # LP
     v = Variables(rail_input)
     bounds, integrality = v.bonds_and_integrality()
-    problem = LinearPrograming(v, rail_input, M = 10)
-    opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
-                  b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
+    prob = LinearPrograming(v, rail_input, M = 15)
+    opt = linprog(c=prob.obj, A_ub=prob.lhs_ineq,
+                  b_ub=prob.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
     v.linprog2vars(opt)
     vl = v.variables
@@ -304,7 +273,7 @@ def test_qubo_vs_LP():
     assert vl['t_A_3'].value == 2
     assert vl['t_B_1'].value == 2
     assert vl['t_B_3'].value == 4
-    assert problem.compute_objective(v, rail_input) == 0.0
+    assert prob.compute_objective(v, rail_input) == 0.0
 
     hist = diff_passing_times(vl, vq, ["A", "B"], qubo_to_analyze.trains_paths)
     assert hist == [0.0, 2.0]

@@ -281,4 +281,3 @@ def make_ilp_docplex(prob, var):
 
     return model
 
-

@@ -175,8 +175,9 @@ class QuboVars:
         self.qubo = dict(sorted(qubo.items()))
         self.noqubits = list(self.qubo.keys())[-1][0]  + 1
 
-    
+
     def store_in_dict(self, Railway_input):
+        "stores features of QuboVars for further proceeding"
         d = {}
         d["qubo"] = self.qubo
         d["objective"] = self.objective
@@ -200,6 +201,7 @@ class QuboVars:
 
 
 class Analyze_qubo():
+    "class used to analyse solutions given QUBO"
     def __init__(self, d):
         self.qubo = d["qubo"]
         self.objective = d["objective"]
@@ -233,7 +235,7 @@ class Analyze_qubo():
             s,j,t = self.qbit_inds[i]
             sjt[(s,j)] = t
         return sjt
-    
+
     def qubo2int_vars(self, var_list):
         """ change qubo values to int var values """
         assert len(var_list) == len(self.qbit_inds)
@@ -266,7 +268,7 @@ class Analyze_qubo():
                     broken_circ += 1
         broken_sum = abs( round(self.sum_ofset/self.psum + broken_sum/self.psum) )
         return broken_sum, round(broken_headways/2), round(broken_pass/2), round(broken_circ/2)
-    
+
     def energy(self, var_list):
         """ compute energy given qubo and solution """
         energy = 0
@@ -303,7 +305,7 @@ class Analyze_qubo():
             if (i,i) in self.objective:
                 objective += self.objective[(i,i)]
         return objective
-    
+
 def diff_passing_times(sol_ref, sol, stations, trains_paths):
     "compare passing time beteen the seqience of stations in stations for two solutions "
     time_differences = []
@@ -321,5 +323,3 @@ def diff_passing_times(sol_ref, sol, stations, trains_paths):
         delta2 = sol[v2].value - sol[v1].value
         time_differences.append(delta2 - delta1)
     return list(time_differences)
-
-

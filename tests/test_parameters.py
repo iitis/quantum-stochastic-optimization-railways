@@ -1,6 +1,8 @@
+""" testing module parameters """
 from QTrains import match_lists, common_s_same_dir, pairs_same_direction, station_pairs, Parameters, Railway_input
 
 def test_helpers():
+    """ test helpers in parameters """
     a = [1,2,3]
     b = [2,3]
     assert match_lists(a, b) == ([2, 3], 2)
@@ -14,7 +16,8 @@ def test_helpers():
     assert not common_s_same_dir(trains_paths, 1, 2)
     assert not pairs_same_direction(trains_paths)
 
-def test_par_class():
+def test_parameter_class():
+    """ test class Parameters()  """
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
     p = Parameters(timetable)
     assert p.headways == 2
@@ -24,6 +27,7 @@ def test_par_class():
 
 
 def test_initial_conditions():
+    """ test class Railway_input() """
     timetable = {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
     delays = {3:2} # train:delay
     p = Parameters(timetable, dmax = 5)

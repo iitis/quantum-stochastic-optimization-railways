@@ -65,7 +65,7 @@ class Parameters:
         self.pass_time = self.compute_passing_times()
         if circulation:
             self.circulation = circulation
-        else: 
+        else:
             self.circulation = {}
 
 
