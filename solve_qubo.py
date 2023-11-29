@@ -271,6 +271,10 @@ if __name__ == "__main__":
     q_pars = qubo_parameters()
     process(q_input, q_pars)
 
+    q_pars.num_sweeps = 50
+    process(q_input, q_pars)
+
+    q_pars.num_sweeps = 500
     q_pars.ppair = 100.0
     q_pars.psum = 100.0
     process(q_input, q_pars)
@@ -278,6 +282,11 @@ if __name__ == "__main__":
     q_input.qubo2()
     q_pars = qubo_parameters()
     process(q_input, q_pars)
+
+    q_pars.num_sweeps = 50
+    process(q_input, q_pars)
+
+    q_pars.num_sweeps = 500
 
     q_pars.ppair = 100.0
     q_pars.psum = 100.0
