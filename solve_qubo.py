@@ -147,7 +147,7 @@ def analyze_qubo(q_input, q_pars):
     file1 = file_LP_output(q_input, q_pars)
     with open(file1, 'rb') as fp:
         lp_sol = pickle.load(fp)
-        
+ 
     qubo_to_analyze = Analyze_qubo(dict_read)
     print(" ......  problem size ......")
     print("no qubits", qubo_to_analyze.noqubits)
@@ -172,7 +172,7 @@ def analyze_qubo(q_input, q_pars):
                             qubo_to_analyze.energy(sol) + qubo_to_analyze.sum_ofset)
                     k = k + 1
                     vq = qubo_to_analyze.qubo2int_vars(sol)
-                    h = diff_passing_times(lp_sol["variables"], vq, ["MR", "CS"], qubo_to_analyze.trains_paths) 
+                    h = diff_passing_times(lp_sol["variables"], vq, ["MR", "CS"], qubo_to_analyze.trains_paths)
                     hist.extend( h )
 
     file = file.replace("solutions", "histograms")
@@ -209,7 +209,7 @@ def process(q_input, q_pars):
     file = file_QUBO(q_input, q_pars)
     if not os.path.isfile(file):
         prepare_qubo(q_input, q_pars)
-    
+
     file = file_QUBO_output(file, q_pars)
     if not os.path.isfile(file):
         solve_qubo(q_input, q_pars)
@@ -219,7 +219,7 @@ def process(q_input, q_pars):
 
 
 
-class input_qubo():
+class Input_qubo():
     def __init__(self):
         self.stay = 1
         self.headways = 2
@@ -229,7 +229,7 @@ class input_qubo():
         self.objective_stations = []
         self.delays = {}
         self.file = ""
-    
+
     def qubo1(self):
         self.circ = {}
         self.timetable = {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
@@ -243,20 +243,19 @@ class input_qubo():
         self.objective_stations = ["MR", "CS"]
         self.delays = {3:2}
         self.file = "QUBOs/qubo_2"
-        
 
 
-class qubo_parameters():
+class Qubo_parameters():
     def __init__(self):
         self.num_all_runs = 25_000
-        
+
         self.num_reads = 500
         assert self.num_all_runs % self.num_reads == 0
 
         self.ppair = 2.0
         self.psum = 4.0
         self.dmax = 10
-        
+
         self.method = "sim"
         # for simulated annelaing
         self.beta_range = (0.001, 50)
@@ -268,34 +267,31 @@ class qubo_parameters():
 
 if __name__ == "__main__":
 
+    our_qubo = Input_qubo()
+    our_qubo.qubo1()
+    p = Qubo_parameters()
+    process(our_qubo, p)
 
-    q_input = input_qubo()
-    q_input.qubo1()
-    q_pars = qubo_parameters()
-    process(q_input, q_pars)
+    p.ppair = 250.0
+    p.psum = 500.0
+    process(our_qubo, p)
 
-    q_pars.ppair = 250.0
-    q_pars.psum = 500.0
-    process(q_input, q_pars)
+    p.ppair = 2.0
+    p.psum = 4.0
+    p.method = "real"
+    process(our_qubo, p)
+    p.annealing_time = 5
+    process(our_qubo, p)
 
-    q_input.qubo2()
-    q_pars = qubo_parameters()
-    process(q_input, q_pars)
+    our_qubo.qubo2()
+    p.method = "sim"
+    process(our_qubo, p)
 
-    q_input.qubo1()
-    q_pars = qubo_parameters()
-    q_pars.method = "real"
-    process(q_input, q_pars)
-    q_pars.annealing_time = 5
-    process(q_input, q_pars)
-
-    q_input.qubo2()
-    q_pars = qubo_parameters()
-    q_pars.method = "real"
-    process(q_input, q_pars)
-    q_pars.annealing_time = 50
-    process(q_input, q_pars)
-    q_pars.annealing_time = 2
-    process(q_input, q_pars)
-
-    
+    our_qubo.qubo2()
+    p.method = "real"
+    p.annealing_time = 1000
+    process(our_qubo, p)
+    p.annealing_time = 50
+    process(our_qubo, p)
+    p.annealing_time = 2
+    process(our_qubo, p)
