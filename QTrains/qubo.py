@@ -188,6 +188,7 @@ class QuboVars:
         d["qbit_inds"] = self.qbit_inds
         d["ppair"] = self.ppair
         d["psum"] = self.psum
+        d["noqubits"] = self.noqubits
 
         d["dmax"] = Railway_input.dmax
         d["timetable"] = Railway_input.timetable
@@ -211,6 +212,7 @@ class Analyze_qubo():
         self.ppair = d["ppair"]
         self.psum = d["psum"]
         self.dmax = d["dmax"]
+        self.noqubits = d["noqubits"]
 
         self.timetable = d["timetable"]
         self.trains_paths = d["trains_paths"]

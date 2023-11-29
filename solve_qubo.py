@@ -1,21 +1,40 @@
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
+import os.path
 
 from scipy.optimize import linprog
 import neal
 import dimod
 from dwave.system import (
     EmbeddingComposite,
-    DWaveSampler,
-    LeapHybridSampler,
-    LeapHybridCQMSampler,
+    DWaveSampler
 )
 
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
-from QTrains import add_update, find_ones, diff_passing_times, plot_train_diagrams
+from QTrains import diff_passing_times
 
 
+
+def file_LP_output(q_input, q_pars):
+    file = q_input.file
+    file = file.replace("qubo", "LP")
+    file = f"{file}_{q_pars.dmax}.json"
+    file = file.replace("QUBOs", "solutions")
+    return file
+
+
+def file_QUBO(q_input, q_pars):
+    file = f"{q_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}.json"
+    return file
+
+def file_QUBO_output(file, q_pars):
+    file = file.replace("QUBOs", "solutions")
+    if q_pars.method == "sim":
+        file = file.replace(".json", f"_{q_pars.method}_{q_pars.beta_range}_{q_pars.num_sweeps}.json")
+    elif q_pars.method == "real":
+        file = file.replace(".json", f"_{q_pars.method}_{q_pars.annealing_time}_{q_pars.chain_strength}_{q_pars.auto_scale}.json")
+    return file
 
 
 def solve_on_LP(q_input, q_pars):
@@ -49,10 +68,8 @@ def solve_on_LP(q_input, q_pars):
     d["variables"] = v.variables
     d["objective"] = problem.compute_objective(v, rail_input)
 
-    file1 = file.replace("qubo", "LP")
-    file1 = f"{file1}_{dmax}.json"
-
-    with open(file1, 'wb') as fp:
+    file = file_LP_output(q_input, q_pars)
+    with open(file, 'wb') as fp:
         pickle.dump(d, fp)
 
 
@@ -79,22 +96,15 @@ def prepare_qubo(q_input, q_pars):
     q.make_qubo(rail_input)
     dict = q.store_in_dict(rail_input)
 
-    file1 = f"{file}_{dmax}_{ppair}_{psum}.json"
-    with open(file1, 'wb') as fp:
+    file = file_QUBO(q_input, q_pars)
+    with open(file, 'wb') as fp:
         pickle.dump(dict, fp)
 
 
 
 def solve_qubo(q_input, q_pars):
 
-    loops = 10
-    file = q_input.file
-
-    ppair = q_pars.ppair
-    psum = q_pars.psum
-    dmax = q_pars.dmax
-
-    file = f"{file}_{dmax}_{ppair}_{psum}.json"
+    file = file_QUBO(q_input, q_pars)
 
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
@@ -102,17 +112,14 @@ def solve_qubo(q_input, q_pars):
     qubo_to_analyze = Analyze_qubo(dict_read)
     Q = qubo_to_analyze.qubo
 
-    file = file.replace("QUBOs", "solutions")
-    file = file.replace(".json", f"_{q_pars.method}.json")
-
-
     sampleset = {}
-
+    loops = q_pars.num_all_runs // q_pars.num_reads
     if q_pars.method == "sim":
         for k in range(loops):
             s = neal.SimulatedAnnealingSampler()
             sampleset[k] = s.sample_qubo(
-                Q, beta_range = (0.001, 50), num_sweeps = 500, num_reads = q_pars.num_reads, beta_schedule_type="geometric"
+                Q, beta_range = q_pars.beta_range, num_sweeps = q_pars.num_sweeps,
+                num_reads = q_pars.num_reads, beta_schedule_type="geometric"
             )
 
     elif q_pars.method == "real":
@@ -120,56 +127,41 @@ def solve_qubo(q_input, q_pars):
 
         for k in range(loops):
 
-            num_reads = q_pars.num_reads
-            annealing_time = 2
-            chain_strength = 1
-
             sampleset[k] = sampler.sample_qubo(
                 Q,
-                num_reads=num_reads,
-                auto_scale="true",
-                annealing_time=annealing_time,
-                chain_strength=chain_strength,
+                num_reads=q_pars.num_reads,
+                auto_scale=q_pars.auto_scale,
+                annealing_time=q_pars.annealing_time,
+                chain_strength=q_pars.chain_strength,
         )
 
+    file = file_QUBO_output(file, q_pars)
     with open(file, 'wb') as fp:
         pickle.dump(sampleset, fp)
 
 
-
 def analyze_qubo(q_input, q_pars):
 
-    file = q_input.file
-
-    ppair = q_pars.ppair
-    psum = q_pars.psum
-    dmax = q_pars.dmax
-
-    file1 = f"{file}_{dmax}.json"
-    file1 = file1.replace("qubo", "LP")
-    file1 = file1.replace("QUBOs", "solutions")
-    file = f"{file}_{dmax}_{ppair}_{psum}.json"
-
+    file = file_QUBO(q_input, q_pars)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
+    file1 = file_LP_output(q_input, q_pars)
     with open(file1, 'rb') as fp:
         lp_sol = pickle.load(fp)
         
     qubo_to_analyze = Analyze_qubo(dict_read)
+    print(" ......  problem size ......")
+    print("no qubits", qubo_to_analyze.noqubits)
+    print("no qubo terms", len(qubo_to_analyze.qubo) )
+    print(".............................")
 
-    file = file.replace("QUBOs", "solutions")
-
-    file = file.replace(".json", f"_{q_pars.method}.json")
-
+    file = file_QUBO_output(file, q_pars)
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
 
-
     print("..... LP objective", lp_sol["objective"])
-
     hist = list([])
-
     for sampleset in samplesets.values():
         k = 0
         for sample in sampleset.samples():
@@ -183,34 +175,44 @@ def analyze_qubo(q_input, q_pars):
                     h = diff_passing_times(lp_sol["variables"], vq, ["MR", "CS"], qubo_to_analyze.trains_paths) 
                     hist.extend( h )
 
-
     file = file.replace("solutions", "histograms")
-
     with open(file, 'wb') as fp:
         pickle.dump(hist, fp)
 
 
 def plot_hist(q_input, q_pars):
 
-    ppair = q_pars.ppair
-    psum = q_pars.psum
-    dmax = q_pars.dmax
-
-    file = q_input.file
-
-    file = file.replace("QUBOs", "histograms")
-    file = f"{file}_{dmax}_{ppair}_{psum}.json"
-
-    file = file.replace(".json", f"_{q_pars.method}.json")
+    file = file_QUBO(q_input, q_pars)
+    file = file_QUBO_output(file, q_pars)
+    file = file.replace("solutions", "histograms")
 
     with open(file, 'rb') as fp:
         hist = pickle.load(fp)
 
         plt.bar(*np.unique(hist, return_counts=True))
         file = file.replace(".json", ".pdf")
-        plt.title(f"sim, dmax={dmax}, ppair={ppair}, psum={psum}")
+        plt.title(f"sim, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
         plt.savefig(file)
         plt.clf()
+
+
+def process(q_input, q_pars):
+    solve = False
+
+    file = file_LP_output(q_input, q_pars)
+    if not os.path.isfile(file):
+        solve_on_LP(q_input, q_pars)
+
+    file = file_QUBO(q_input, q_pars)
+    if not os.path.isfile(file):
+        prepare_qubo(q_input, q_pars)
+    
+    file = file_QUBO_output(file, q_pars)
+    if not os.path.isfile(file):
+        solve_qubo(q_input, q_pars)
+
+    analyze_qubo(q_input, q_pars)
+    plot_hist(q_input, q_pars)
 
 
 
@@ -232,14 +234,33 @@ class input_qubo():
         self.delays = {3:2}
         self.file = "QUBOs/qubo_1"
 
+    def qubo2(self):
+        self.circ = {(3,4): "CS"}
+        self.timetable = {"PS": {1: 0, 4:33}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
+        self.objective_stations = ["MR", "CS"]
+        self.delays = {3:2}
+        self.file = "QUBOs/qubo_2"
+        
+
 
 class qubo_parameters():
     def __init__(self):
+        self.num_all_runs = 5000
         self.num_reads = 500
+        assert self.num_all_runs % self.num_reads == 0
+
         self.ppair = 2.0
         self.psum = 2.0
         self.dmax = 10
+        
         self.method = "sim"
+        # for simulated annelaing
+        self.beta_range = (0.001, 50)
+        self.num_sweeps = 500
+        # for real annealing
+        self.annealing_time = 2
+        self.chain_strength = 1
+        self.auto_scale = "true"
 
 
 if __name__ == "__main__":
@@ -248,15 +269,18 @@ if __name__ == "__main__":
     q_input = input_qubo()
     q_input.qubo1()
     q_pars = qubo_parameters()
+    process(q_input, q_pars)
 
+    q_pars.ppair = 100.0
+    q_pars.psum = 100.0
+    process(q_input, q_pars)
 
-    solve_on_LP(q_input, q_pars)
+    q_input.qubo2()
+    q_pars = qubo_parameters()
+    process(q_input, q_pars)
 
-    prepare_qubo(q_input, q_pars)
+    q_pars.ppair = 100.0
+    q_pars.psum = 100.0
+    process(q_input, q_pars)
 
-
-    solve_qubo(q_input, q_pars)
-
-    analyze_qubo(q_input, q_pars)
-
-    plot_hist(q_input, q_pars)
+    
