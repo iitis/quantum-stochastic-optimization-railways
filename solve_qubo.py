@@ -176,7 +176,7 @@ def analyze_qubo(q_input, q_pars):
                             qubo_to_analyze.energy(sol) + qubo_to_analyze.sum_ofset)
                     k = k + 1
                     vq = qubo_to_analyze.qubo2int_vars(sol)
-                    h = diff_passing_times(lp_sol["variables"], vq, ["MR", "CS"], qubo_to_analyze.trains_paths)
+                    h = diff_passing_times(lp_sol["variables"], vq, q_input.objective_stations, qubo_to_analyze.trains_paths)
                     hist.extend( h )
 
     file = file.replace("solutions", "histograms")
@@ -199,6 +199,7 @@ def plot_hist(q_input, q_pars):
             plt.title(f"{q_input.file}, {q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
         else:
             plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} comparing with ILP")
         plt.savefig(file)
         plt.clf()
 
