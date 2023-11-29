@@ -195,6 +195,7 @@ def test_optimization_larger_headways_circ():
 
 
 def test_train_diagrams():
+    """ test plotting of train diagrams """
     timetable =  {"PS": {1: 0, 4:33}, "MR" :{1: 3, 3: 0, 5:5, 4:30}, "CS" : {1: 16 , 3: 13, 4:17, 5:18}}
     p = Parameters(timetable, dmax = 10, circulation = {(3,4): "CS"})
     objective_stations = ["MR", "CS"]
@@ -213,6 +214,3 @@ def test_train_diagrams():
 
     file = "tests/pics/LPdiagram.pdf"
     plot_train_diagrams(v.variables, p.trains_paths, p.pass_time, p.stay, file)
-
-
-    

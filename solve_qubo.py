@@ -1,11 +1,11 @@
+""" main computation script """
 import pickle
+import os.path
 import matplotlib.pyplot as plt
 import numpy as np
-import os.path
 
 from scipy.optimize import linprog
 import neal
-import dimod
 from dwave.system import (
     EmbeddingComposite,
     DWaveSampler
@@ -99,11 +99,11 @@ def prepare_qubo(q_input, q_pars):
     rail_input = Railway_input(p, objective_stations, delays = delays)
     q = QuboVars(rail_input, ppair=ppair, psum=psum)
     q.make_qubo(rail_input)
-    dict = q.store_in_dict(rail_input)
+    qubo_dict = q.store_in_dict(rail_input)
 
     file = file_QUBO(q_input, q_pars)
     with open(file, 'wb') as fp:
-        pickle.dump(dict, fp)
+        pickle.dump(qubo_dict, fp)
 
 
 def solve_qubo(q_input, q_pars):
@@ -167,7 +167,7 @@ def analyze_qubo(q_input, q_pars):
     for sampleset in samplesets.values():
         k = 0
         for sample in sampleset.samples():
-            sol = [ i for i in sample.values()]
+            sol = list(sample.values())
             if qubo_to_analyze.count_broken_constrains(sol) == (0,0,0,0):
                 if qubo_to_analyze.broken_MO_conditions(sol) == 0:
                     if k == 0:
@@ -254,8 +254,6 @@ class Input_qubo():
         self.delays = {3:2}
         self.file = "QUBOs/qubo_2"
 
-
-    
 
 
 class Comp_parameters():

@@ -60,8 +60,8 @@ def test_qubo_analyze():
                          5: ['A', 3, 4], 6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4], 9: ['B', 3, 4],
                          10: ['B', 3, 5], 11: ['B', 3, 6]}
 
-    dict = q.store_in_dict(rail_input)
-    qubo_to_analyze = Analyze_qubo(dict)
+    qubo_dict = q.store_in_dict(rail_input)
+    qubo_to_analyze = Analyze_qubo(qubo_dict)
 
 
     #           0,1,2,3,4,5,6,7,8,9,10,11
@@ -277,5 +277,4 @@ def test_qubo_vs_LP():
 
     hist = diff_passing_times(vl, vq, ["A", "B"], qubo_to_analyze.trains_paths)
     assert hist == [0.0, 2.0]
-
 
