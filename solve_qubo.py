@@ -289,11 +289,13 @@ if __name__ == "__main__":
     q_pars.annealing_time = 5
     process(q_input, q_pars)
 
-    #q_input.qubo2()
-    #q_pars = qubo_parameters()
-    #q_pars.method = "real"
-    #process(q_input, q_pars)
-    #q_pars.annealing_time = 5
-    #process(q_input, q_pars)
+    q_input.qubo2()
+    q_pars = qubo_parameters()
+    q_pars.method = "real"
+    process(q_input, q_pars)
+    q_pars.annealing_time = 50
+    process(q_input, q_pars)
+    q_pars.annealing_time = 2
+    process(q_input, q_pars)
 
     
