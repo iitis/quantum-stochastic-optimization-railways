@@ -178,23 +178,23 @@ def plot_hist(dmax, ppair, psum, file):
 
 if __name__ == "__main__":
     #circulation = {(1,2): "B"}
-    circulation = {}
-    timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
-    objective_stations = ["MR", "CS"]
-    delays = {3:2}
+    circ = {}
+    tt =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
+    obj_st = ["MR", "CS"]
+    d = {3:2}
 
-    dmax = 5
-    ppair = 2.
-    psum = 2.
+    d_max = 5
+    p_pair = 2.
+    p_sum = 2.
 
-    file = "QUBOs/qubo_1"
+    f = "QUBOs/qubo_1"
 
-    solve_on_LP(timetable=timetable, objective_stations=objective_stations, circulation=circulation, delays=delays, dmax=dmax, file=file)
+    solve_on_LP(timetable=tt, objective_stations=obj_st, circulation=circ, delays=d, dmax=d_max, file=f)
 
-    prepare_qubo(timetable=timetable, objective_stations=objective_stations, circulation=circulation, delays=delays, dmax=dmax, file=file)
+    prepare_qubo(timetable=tt, objective_stations=obj_st, circulation=circ, delays=d, dmax=d_max, ppair=p_pair, psum=p_sum, file=f)
 
-    solve_qubo(dmax=dmax, ppair=ppair, psum=psum, file=file)
+    solve_qubo(dmax=d_max, ppair=p_pair, psum=p_sum, file=f)
 
-    analyze_qubo(dmax=dmax, ppair=ppair, psum=psum, file=file)
+    analyze_qubo(dmax=d_max, ppair=p_pair, psum=p_sum, file=f)
 
-    plot_hist(dmax=dmax, ppair=ppair, psum=psum, file=file)
+    plot_hist(dmax=d_max, ppair=p_pair, psum=p_sum, file=f)
