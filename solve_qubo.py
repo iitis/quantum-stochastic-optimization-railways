@@ -36,7 +36,7 @@ def solve_on_LP(timetable, objective_stations, circulation, delays, dmax, file):
     v.linprog2vars(opt)
 
     v.check_clusters()
-    
+
     d = {}
     d["variables"] = v.variables
     d["objective"] = problem.compute_objective(v, rail_input)
@@ -48,7 +48,6 @@ def solve_on_LP(timetable, objective_stations, circulation, delays, dmax, file):
         pickle.dump(d, fp)
 
 
-    
 
 def prepare_qubo(timetable, objective_stations, circulation, delays, dmax, ppair, psum, file):
     stay = 1
@@ -76,7 +75,7 @@ def solve_qubo(dmax, ppair, psum, file):
 
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
-    
+
     qubo_to_analyze = Analyze_qubo(dict_read)
     Q = qubo_to_analyze.qubo
 
@@ -111,10 +110,10 @@ def analyze_qubo(dmax, ppair, psum, file):
     file = f"{file}_{dmax}_{ppair}_{psum}.json"
 
     with open(file, 'rb') as fp:
-            dict_read = pickle.load(fp)
+        dict_read = pickle.load(fp)
 
     with open(file1, 'rb') as fp:
-            lp_sol = pickle.load(fp)
+        lp_sol = pickle.load(fp)
         
     qubo_to_analyze = Analyze_qubo(dict_read)
 
@@ -190,12 +189,12 @@ if __name__ == "__main__":
 
     file = "QUBOs/qubo_1"
 
-    solve_on_LP(timetable, objective_stations, circulation, delays, dmax, file)
+    solve_on_LP(timetable=timetable, objective_stations=objective_stations, circulation=circulation, delays=delays, dmax=dmax, file=file)
 
-    prepare_qubo(timetable, objective_stations, circulation, delays, dmax, ppair, psum, file)
+    prepare_qubo(timetable=timetable, objective_stations=objective_stations, circulation=circulation, delays=delays, dmax=dmax, file=file)
 
-    solve_qubo(dmax, ppair, psum, file)
+    solve_qubo(dmax=dmax, ppair=ppair, psum=psum, file=file)
 
-    analyze_qubo(dmax, ppair, psum, file)
+    analyze_qubo(dmax=dmax, ppair=ppair, psum=psum, file=file)
 
-    plot_hist(dmax, ppair, psum, file)
+    plot_hist(dmax=dmax, ppair=ppair, psum=psum, file=file)

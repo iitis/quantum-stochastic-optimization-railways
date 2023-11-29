@@ -36,13 +36,13 @@ def test_qubo_analyze():
                                (6, 6): -2, (6, 7): 2, (6, 8): 2, (7, 7): -2, (7, 6): 2, (7, 8): 2,
                                (8, 8): -2, (8, 6): 2, (8, 7): 2, (9, 9): -2, (9, 10): 2, (9, 11): 2,
                                (10, 10): -2, (10, 9): 2, (10, 11): 2, (11, 11): -2, (11, 9): 2, (11, 10): 2}
-    
+
 
     print(q.headway_constrain)
     assert q.headway_constrain == {(2, 3): 2.0, (3, 2): 2.0, (8, 9): 2.0, (9, 8): 2.0}
 
-    #  2: ['A', 1, 2], 3: ['A', 3, 2]  
-    #  8: ['B', 1, 4], 9: ['B', 3, 4]  
+    #  2: ['A', 1, 2], 3: ['A', 3, 2]
+    #  8: ['B', 1, 4], 9: ['B', 3, 4]
 
     print(rail_input.tvar_range)
 
@@ -55,7 +55,7 @@ def test_qubo_analyze():
     assert q.qbit_inds == { 0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3],
                          5: ['A', 3, 4], 6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4], 9: ['B', 3, 4],
                          10: ['B', 3, 5], 11: ['B', 3, 6]}
-    
+
     dict = q.store_in_dict(rail_input)
     qubo_to_analyze = Analyze_qubo(dict)
 
@@ -106,13 +106,13 @@ def test_qubo_analyze():
     q.make_qubo(rail_input)
 
     dict = q.store_in_dict(rail_input)
-    
+
     with open('tests/qubo.json', 'wb') as fp:
         pickle.dump(dict, fp)
 
     with open('tests/qubo.json', 'rb') as fp:
         dict_read = pickle.load(fp)
-    
+
     assert dict == dict_read
 
     qubo_to_analyze = Analyze_qubo(dict_read)
@@ -293,7 +293,4 @@ def test_qubo_vs_LP():
     td, over_station = compare_qubo_and_lp(vl, vq, qubo_to_analyze.trains_paths)
     assert td == {1: {'A': 0.0, 'B': 0.0}, 3: {'A': 0.0, 'B': 2.0}}
     assert over_station == {'A': [0.0, 0.0], 'B': [0.0, 2.0]}
-
-
-
 
