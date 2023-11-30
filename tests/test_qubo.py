@@ -277,4 +277,3 @@ def test_qubo_vs_LP():
 
     hist = diff_passing_times(vl, vq, ["A", "B"], qubo_to_analyze.trains_paths)
     assert hist == [0.0, 2.0]
-

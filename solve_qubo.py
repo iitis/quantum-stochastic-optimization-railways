@@ -164,7 +164,6 @@ def analyze_qubo(q_input, q_pars):
     count = 0
     no_feasible = 0
     for sampleset in samplesets.values():
-        k = 0
         for sample in sampleset.samples():
             sol = list(sample.values())
             count += 1
@@ -193,6 +192,7 @@ def analyze_qubo(q_input, q_pars):
 
 
 def display_results(res_dict, q_pars, q_input):
+    """ print results of computation """
     print("xxxxxxxxx    RESULTS     xxxxxx ", q_input.file,  "xxxxx")
     print(  )
     print("method", q_pars.method)
@@ -240,7 +240,7 @@ def plot_hist(q_input, q_pars):
         else:
             plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
         plt.legend()
-        plt.xlabel(f"Objective")
+        plt.xlabel("Objective")
         plt.ylabel("density")
         plt.savefig(file_pass)
         plt.clf()
