@@ -198,6 +198,7 @@ def display_results(res_dict, q_pars, q_input):
     print("method", q_pars.method)
     print("psum", q_pars.psum)
     print("ppair", q_pars.ppair)
+    print("LP objective", res_dict["lp objective"])
 
     if q_pars.method == "real":
         print("annealing time", q_pars.annealing_time)
