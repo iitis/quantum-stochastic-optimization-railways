@@ -122,19 +122,18 @@ class QuboVars:
 
 
 
-    def add_passing_time_and_stay_constrain(self, Railway_input):
+    def add_passing_time_constrain(self, Railway_input):
         """ add minimal passing time + stay to QuboVars class in the form of 
         dict {..., (k,kp): ppair, (kp,k): ppair,  ...} """
         passing_time_constrain = {}
         for (j, s, sp) in station_pairs(Railway_input.trains_paths):
             for t in self.sjt_inds[s][j]:
                 for tp in self.sjt_inds[sp][j]:
-                    lb = Railway_input.tvar_range[sp][j][0]
                     if (j % 2) == 1:
                         ub = t + Railway_input.stay + Railway_input.pass_time[f"{s}_{sp}"]
                     else:
                         ub = t + Railway_input.stay + Railway_input.pass_time[f"{sp}_{s}"]
-                    if lb <= tp < ub:
+                    if  tp < ub:
                         k = self.sjt_inds[s][j][t]
                         kp = self.sjt_inds[sp][j][tp]
                         passing_time_constrain[(k,kp)] = self.ppair
@@ -149,9 +148,8 @@ class QuboVars:
         for _, ((j,jp), s) in enumerate(Railway_input.circulation.items()):
             for t in self.sjt_inds[s][j]:
                 for tp in self.sjt_inds[s][jp]:
-                    lb = Railway_input.tvar_range[s][jp][0]
                     ub = t + Railway_input.stay + Railway_input.preparation_t
-                    if lb <= tp < ub:
+                    if tp < ub:
                         k = self.sjt_inds[s][j][t]
                         kp = self.sjt_inds[s][jp][tp]
                         circ_constrain[(k,kp)] = self.ppair
@@ -164,7 +162,7 @@ class QuboVars:
         self.add_objective(Railway_input)
         self.add_sum_to_one_constrain()
         self.add_headway_constrain(Railway_input)
-        self.add_passing_time_and_stay_constrain( Railway_input)
+        self.add_passing_time_constrain( Railway_input)
         self.add_circ_constrain( Railway_input)
         qubo = {}
         add_update( qubo, self.objective )

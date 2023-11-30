@@ -3,6 +3,7 @@ import pickle
 import os.path
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 from scipy.optimize import linprog
 import neal
@@ -153,35 +154,56 @@ def analyze_qubo(q_input, q_pars):
         lp_sol = pickle.load(fp)
 
     qubo_to_analyze = Analyze_qubo(dict_read)
-    print(" ......  problem size ......")
-    print("no qubits", qubo_to_analyze.noqubits)
-    print("no qubo terms", len(qubo_to_analyze.qubo) )
-    print(".............................")
 
     file = file_QUBO_comp(file, q_pars)
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
-
-    print("..... LP objective", lp_sol["objective"])
+    
     hist = list([])
+    qubo_objectives = list([])
+    count = 0
+    no_feasible = 0
     for sampleset in samplesets.values():
         k = 0
         for sample in sampleset.samples():
             sol = list(sample.values())
+            count += 1
             if qubo_to_analyze.count_broken_constrains(sol) == (0,0,0,0):
                 if qubo_to_analyze.broken_MO_conditions(sol) == 0:
-                    if k == 0:
-                        print("selected objective / energy + ofset",
-                            qubo_to_analyze.objective_val(sol),
-                            qubo_to_analyze.energy(sol) + qubo_to_analyze.sum_ofset)
-                    k = k + 1
+                    no_feasible += 1
+                    q_objective = qubo_to_analyze.objective_val(sol)
+
+                    assert q_objective == pytest.approx( qubo_to_analyze.energy(sol) + qubo_to_analyze.sum_ofset )
+
                     vq = qubo_to_analyze.qubo2int_vars(sol)
                     h = diff_passing_times(lp_sol["variables"], vq, q_input.objective_stations, qubo_to_analyze.trains_paths)
                     hist.extend( h )
+                    qubo_objectives.append( q_objective )
+    perc_feasible = no_feasible/count
+
+    results = {"perc feasible": perc_feasible, f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}": hist}
+    results["no qubits"] = qubo_to_analyze.noqubits
+    results["no qubo terms"] = len(qubo_to_analyze.qubo)
+    results["lp objective"] = lp_sol["objective"]
+    results["qubo objectives"] = qubo_objectives
 
     file = file.replace("solutions", "histograms")
     with open(file, 'wb') as fp:
-        pickle.dump(hist, fp)
+        pickle.dump(results, fp)
+
+
+def display_results(res_dict, q_pars, q_input):
+    print("xxxxxxxxx    RESULTS     xxxxxx ", q_input.file,  "xxxxx")
+    print(  )
+    print("method", q_pars.method)
+    print("psum", q_pars.psum)
+    print("ppair", q_pars.ppair)
+
+    if q_pars.method == "real":
+        print("annealing time", q_pars.annealing_time)
+    print("no qubits", res_dict["no qubits"])
+    print("no qubo terms", res_dict["no qubo terms"])
+    print("percentage of feasible", res_dict["perc feasible"])
 
 
 def plot_hist(q_input, q_pars):
@@ -191,18 +213,39 @@ def plot_hist(q_input, q_pars):
     file = file.replace("solutions", "histograms")
 
     with open(file, 'rb') as fp:
-        hist = pickle.load(fp)
+        results = pickle.load(fp)
 
-        plt.bar(*np.unique(hist, return_counts=True))
-        file = file.replace(".json", ".pdf")
+        hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
+
+        plt.bar(*np.unique(hist_pass, return_counts=True))
+        file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
         if q_pars.method == "sim":
             plt.title(f"{q_input.file}, {q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
         else:
             plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
         plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} comparing with ILP")
         plt.ylabel("number of solutions")
-        plt.savefig(file)
+        plt.savefig(file_pass)
         plt.clf()
+
+        hist_obj = results["qubo objectives"]
+
+
+        file_pass = file.replace(".json", "obj.pdf")
+        plt.hist(hist_obj, color = "gray", label = "QUBO")
+        plt.axvline(x = results["lp objective"], lw = 3, color = 'red', label = 'ILP')
+        if q_pars.method == "sim":
+            plt.title(f"{q_input.file}, {q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        else:
+            plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        plt.legend()
+        plt.xlabel(f"Objective")
+        plt.ylabel("density")
+        plt.savefig(file_pass)
+        plt.clf()
+
+        display_results(results, q_pars, q_input)
+
 
 
 def process(q_input, q_pars):
