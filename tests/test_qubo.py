@@ -238,6 +238,28 @@ def test_qubo_larger():
 
 
 
+def test_smallest_qubo():
+    """  test comparison of QUBO output vs LP output """
+    timetable = {"MR" :{1: 3}, "CS" : {1: 16}}
+    objective_stations = ["MR", "CS"]
+    delays = {1:1}
+    p = Parameters(timetable, dmax = 4, headways = 1)
+    rail_input = Railway_input(p, objective_stations, delays)
+    q = QuboVars(rail_input, psum = 4, ppair = 2)
+    q.make_qubo(rail_input)
+    
+    assert q.noqubits == 8
+    assert len(q.qubo) == 44
+
+    solution = [1,0,0,0,1,0,0,0]
+    qubo_dict = q.store_in_dict(rail_input)
+    qubo_to_analyze = Analyze_qubo(qubo_dict)
+    assert qubo_to_analyze.broken_MO_conditions(solution) == 0
+    assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 0, 0)
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('MR', 1): 4, ('CS', 1): 17}
+    assert qubo_to_analyze.objective_val(solution) == 0.5
+
+
 def test_qubo_vs_LP():
     """  test comparison of QUBO output vs LP output """
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
