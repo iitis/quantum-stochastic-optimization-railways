@@ -247,7 +247,7 @@ def test_smallest_qubo():
     rail_input = Railway_input(p, objective_stations, delays)
     q = QuboVars(rail_input, psum = 4, ppair = 2)
     q.make_qubo(rail_input)
-    
+
     assert q.noqubits == 8
     assert len(q.qubo) == 44
 
