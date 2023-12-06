@@ -307,7 +307,7 @@ class Input_qubo():
 
     # real live problems plus PS - CS and back
 
-    def qubo_real_12t(self):
+    def qubo_real_12t(self, delays = {}):
         """
         12 trains
 
@@ -324,11 +324,11 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 0:5, 2:20, 12:22, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = {}
-        self.file = "QUBOs/qubo_12"
+        self.delays = delays
+        self.file = f"QUBOs/LR_timetable/12trains/qubo_{delays}_12t"
 
 
-    def qubo_real_11t(self):
+    def qubo_real_11t(self, delays = {}):
         """
         11 trains 
         
@@ -343,10 +343,10 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 2:20, 12:22, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = {}
-        self.file = "QUBOs/qubo_11"
+        self.delays = delays
+        self.file = f"QUBOs/LR_timetable/11trains/qubo_{delays}_11t"
 
-    def qubo_real_10t(self):
+    def qubo_real_10t(self, delays = {}):
         """
         10 trains 
         
@@ -361,10 +361,10 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 2:20, 12:22, 4:35, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = {}
-        self.file = "QUBOs/qubo_10t"
+        self.delays = delays
+        self.file = f"QUBOs/LR_timetable/10trains/qubo_{delays}_10t"
 
-    def qubo_real_8t(self):
+    def qubo_real_8t(self, delays = {}):
         """
         8 trains
 
@@ -379,11 +379,11 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 3:37, 5:47, 2:20, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = {}
-        self.file = "QUBOs/qubo_8t"
+        self.delays = delays
+        self.file = f"QUBOs/LR_timetable/8trains/qubo_{delays}_8t"
 
 
-    def qubo_real_6t(self):
+    def qubo_real_6t(self, delays = {}):
         """
         6 trains
 
@@ -398,13 +398,13 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 3:37, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = {}
-        self.file = "QUBOs/qubo_6t"
+        self.delays = delays
+        self.file = f"QUBOs/LR_timetable/6trains/qubo_{delays}_6t"
 
     
 
 
-    def qubo_real_4t(self):
+    def qubo_real_4t(self, delays = {}):
         """
         4 trains
 
@@ -419,11 +419,11 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 4:35, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = {}
-        self.file = "QUBOs/qubo_4t"
+        self.delays = delays
+        self.file = f"QUBOs/LR_timetable/4trains/qubo_{delays}_4t"
 
 
-    def qubo_real_2t(self):
+    def qubo_real_2t(self, delays = {}):
         """
         2 trains 1 pair PS - CS - PS
         
@@ -435,10 +435,10 @@ class Input_qubo():
                           "CS":{11:32, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = {}
-        self.file = "QUBOs/qubo_2t"
+        self.delays = delays
+        self.file = f"QUBOs/LR_timetable/2trains/qubo_{delays}_2t"
 
-    def qubo_real_1t(self):
+    def qubo_real_1t(self, delays = {}):
         """
         smallest possible 1 train according to real live timetable
         """
@@ -447,8 +447,8 @@ class Input_qubo():
                           "CS":{1:27}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = {}
-        self.file = "QUBOs/qubo_1t"
+        self.delays = delays
+        self.file = f"QUBOs/LR_timetable/1train/qubo_{delays}_1t"
 
 
 
@@ -485,29 +485,33 @@ if __name__ == "__main__":
         q_par.method = "sim"
         q_par.dmax = 10
 
-        our_qubo.qubo_real_1t()
-        process(our_qubo, q_par)
+        delays_list = [{}, {1:5}, {1:5, 4:5}, {1:5, 2:2, 4:5}]
 
-        our_qubo.qubo_real_2t()
-        process(our_qubo, q_par)
+        for delays in delays_list:
 
-        our_qubo.qubo_real_4t()
-        process(our_qubo, q_par)
+            our_qubo.qubo_real_1t(delays)
+            process(our_qubo, q_par)
 
-        our_qubo.qubo_real_6t()
-        process(our_qubo, q_par)
+            our_qubo.qubo_real_2t(delays)
+            process(our_qubo, q_par)
 
-        our_qubo.qubo_real_8t()
-        process(our_qubo, q_par)
+            our_qubo.qubo_real_4t(delays)
+            process(our_qubo, q_par)
 
-        our_qubo.qubo_real_10t()
-        process(our_qubo, q_par)
+            our_qubo.qubo_real_6t(delays)
+            process(our_qubo, q_par)
 
-        our_qubo.qubo_real_11t()
-        process(our_qubo, q_par)
+            our_qubo.qubo_real_8t(delays)
+            process(our_qubo, q_par)
 
-        our_qubo.qubo_real_12t()
-        process(our_qubo, q_par)
+            our_qubo.qubo_real_10t(delays)
+            process(our_qubo, q_par)
+
+            our_qubo.qubo_real_11t(delays)
+            process(our_qubo, q_par)
+
+            our_qubo.qubo_real_12t(delays)
+            process(our_qubo, q_par)
 
 
 
