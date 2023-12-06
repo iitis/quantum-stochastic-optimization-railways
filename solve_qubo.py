@@ -49,16 +49,14 @@ def solve_on_LP(q_input, q_pars):
 
     timetable = q_input.timetable
     objective_stations = q_input.objective_stations
-    circulation = q_input.circ
-    delays = q_input.delays
     file = q_input.file
 
     dmax = q_pars.dmax
 
     file = file.replace("QUBOs", "solutions")
     p = Parameters(timetable, stay=stay, headways=headways,
-                   preparation_t=preparation_t, dmax=dmax, circulation=circulation)
-    rail_input = Railway_input(p, objective_stations, delays = delays)
+                   preparation_t=preparation_t, dmax=dmax, circulation=q_input.circ)
+    rail_input = Railway_input(p, objective_stations, delays = q_input.delays)
     v = Variables(rail_input)
     bounds, integrality = v.bonds_and_integrality()
     problem = LinearPrograming(v, rail_input, M = q_pars.M)
@@ -87,8 +85,6 @@ def prepare_qubo(q_input, q_pars):
 
     timetable = q_input.timetable
     objective_stations = q_input.objective_stations
-    circulation = q_input.circ
-    delays = q_input.delays
     file = q_input.file
 
     ppair = q_pars.ppair
@@ -96,8 +92,8 @@ def prepare_qubo(q_input, q_pars):
     dmax = q_pars.dmax
 
     p = Parameters(timetable, stay=stay, headways=headways,
-                   preparation_t=preparation_t, dmax=dmax, circulation=circulation)
-    rail_input = Railway_input(p, objective_stations, delays = delays)
+                   preparation_t=preparation_t, dmax=dmax, circulation=q_input.circ)
+    rail_input = Railway_input(p, objective_stations, delays = q_input.delays)
     q = QuboVars(rail_input, ppair=ppair, psum=psum)
     q.make_qubo(rail_input)
     qubo_dict = q.store_in_dict(rail_input)
