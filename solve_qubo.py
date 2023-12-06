@@ -61,7 +61,7 @@ def solve_on_LP(q_input, q_pars):
     rail_input = Railway_input(p, objective_stations, delays = delays)
     v = Variables(rail_input)
     bounds, integrality = v.bonds_and_integrality()
-    problem = LinearPrograming(v, rail_input, M = 10)
+    problem = LinearPrograming(v, rail_input, M = q_pars.M)
     opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
                   b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
@@ -145,6 +145,7 @@ def solve_qubo(q_input, q_pars):
 
 def analyze_qubo(q_input, q_pars):
     """ analyze results of computation on QUBO and comparison with LP """
+    show_var_vals = False
     file = file_QUBO(q_input, q_pars)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
@@ -179,6 +180,10 @@ def analyze_qubo(q_input, q_pars):
                     hist.extend( h )
                     qubo_objectives.append( q_objective )
     perc_feasible = no_feasible/count
+
+    if show_var_vals:
+        for v in lp_sol["variables"]:
+            print(v, lp_sol["variables"][v].value, lp_sol["variables"][v].range )
 
     results = {"perc feasible": perc_feasible, f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}": hist}
     results["no qubits"] = qubo_to_analyze.noqubits
@@ -300,11 +305,157 @@ class Input_qubo():
         self.delays = {3:2}
         self.file = "QUBOs/qubo_2"
 
+    # real live problems plus PS - CS and back
+
+    def qubo_real_12t(self):
+        """
+        12 trains
+
+        8 trains from real live timetable
+        added 2 pairs PS - CS - PS  number (11, 13, 12, 14)
+
+        https://www.mta.maryland.gov/schedule/lightrail?origin=7640&destination=7646&direction=0&trip=3447009&schedule_date=12%2F06%2F2023&show_all=yes
+        
+        starts from 8 a.m.  0 -> 8:00  arr a minute before dep
+
+        """
+        self.circ = {(11,14): "CS", (12,13): "PS"}
+        self.timetable = {"PS":{11:14, 12:40, 13:44, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 7:42, 13:47, 0:20, 2:35, 12:37,  4:50, 14:55, 6:60}, 
+                          "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 0:5, 2:20, 12:22, 4:35, 14:40, 6:45}
+                        }
+        self.objective_stations = ["MR", "CS"]
+        self.delays = {}
+        self.file = "QUBOs/qubo_12"
+
+
+    def qubo_real_11t(self):
+        """
+        11 trains 
+        
+        7 trains from real live timetable
+        added 2 pairs PS - CS - PS  number (11, 13, 12, 14)
+
+        starts from 8 a.m.  0 -> 8:00
+
+        """
+        self.circ = {(11,14): "CS", (12,13): "PS"}
+        self.timetable = {"PS":{11:14, 12:40, 13:44, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 7:42, 13:47, 2:35, 12:37,  4:50, 14:55, 6:60}, 
+                          "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 2:20, 12:22, 4:35, 14:40, 6:45}
+                        }
+        self.objective_stations = ["MR", "CS"]
+        self.delays = {}
+        self.file = "QUBOs/qubo_11"
+
+    def qubo_real_10t(self):
+        """
+        10 trains 
+        
+        6 trains from real live timetable
+        added 2 pairs PS - CS - PS  number (11, 13, 12, 14)
+
+        starts from 8 a.m.  0 -> 8:00
+
+        """
+        self.circ = {(11,14): "CS", (12,13): "PS"}
+        self.timetable = {"PS":{11:14, 12:40, 13:44, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 7:42, 13:47, 2:35, 12:37, 4:50, 14:55}, 
+                          "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 2:20, 12:22, 4:35, 14:40}
+                        }
+        self.objective_stations = ["MR", "CS"]
+        self.delays = {}
+        self.file = "QUBOs/qubo_10t"
+
+    def qubo_real_8t(self):
+        """
+        8 trains
+
+        6 trains from real live timetable
+        added 1 pair PS - CS - PS
+
+        starts from 8 a.m.  0 -> 8:00
+
+        """
+        self.circ = {(11,14): "CS"}
+        self.timetable = {"PS":{11:14, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 2:35, 4:50, 14:55, 6:60}, 
+                          "CS":{1:27, 11:32, 3:37, 5:47, 2:20, 4:35, 14:40, 6:45}
+                        }
+        self.objective_stations = ["MR", "CS"]
+        self.delays = {}
+        self.file = "QUBOs/qubo_8t"
+
+
+    def qubo_real_6t(self):
+        """
+        6 trains
+
+        5 trains from real live timetable
+        added 1 pair PS - CS - PS
+        
+        starts from 8 a.m.  0 -> 8:00
+
+        """
+        self.circ = {(11,14): "CS"}
+        self.timetable = {"PS":{11:14, 14:58}, "MR":{1:12, 11:17, 3:22, 4:50, 14:55, 6:60}, 
+                          "CS":{1:27, 11:32, 3:37, 4:35, 14:40, 6:45}
+                        }
+        self.objective_stations = ["MR", "CS"]
+        self.delays = {}
+        self.file = "QUBOs/qubo_6t"
+
+    
+
+
+    def qubo_real_4t(self):
+        """
+        4 trains
+
+        3 trains from real live timetable
+        added 1 pair PS - CS - PS
+        
+        starts from 8 a.m.  0 -> 8:00
+
+        """
+        self.circ = {(11,14): "CS"}
+        self.timetable = {"PS":{11:14, 14:58}, "MR":{1:12, 11:17, 4:50, 14:55}, 
+                          "CS":{1:27, 11:32, 4:35, 14:40}
+                        }
+        self.objective_stations = ["MR", "CS"]
+        self.delays = {}
+        self.file = "QUBOs/qubo_4t"
+
+
+    def qubo_real_2t(self):
+        """
+        2 trains 1 pair PS - CS - PS
+        
+        starts from 8 a.m.  0 -> 8:00
+
+        """
+        self.circ = {(11,14): "CS"}
+        self.timetable = {"PS":{11:14, 14:58}, "MR":{11:17, 14:55}, 
+                          "CS":{11:32, 14:40}
+                        }
+        self.objective_stations = ["MR", "CS"]
+        self.delays = {}
+        self.file = "QUBOs/qubo_2t"
+
+    def qubo_real_1t(self):
+        """
+        smallest possible 1 train according to real live timetable
+        """
+        self.circ = {}
+        self.timetable = {"MR":{1:12}, 
+                          "CS":{1:27}
+                        }
+        self.objective_stations = ["MR", "CS"]
+        self.delays = {}
+        self.file = "QUBOs/qubo_1t"
+
 
 
 class Comp_parameters():
     """ stores parameters of QUBO and computaiton """
     def __init__(self):
+        self.M = 50
         self.num_all_runs = 25_000
 
         self.num_reads = 500
@@ -325,31 +476,68 @@ class Comp_parameters():
 
 if __name__ == "__main__":
 
-    our_qubo = Input_qubo()
-    our_qubo.qubo1()
-    q_par = Comp_parameters()
-    process(our_qubo, q_par)
+    real_problem = True
 
-    q_par.ppair = 250.0
-    q_par.psum = 500.0
-    process(our_qubo, q_par)
+    if real_problem:
 
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-    q_par.method = "real"
-    process(our_qubo, q_par)
-    q_par.annealing_time = 5
-    process(our_qubo, q_par)
+        our_qubo = Input_qubo()
+        q_par = Comp_parameters()
+        q_par.method = "sim"
+        q_par.dmax = 10
 
-    our_qubo.qubo2()
-    q_par.method = "sim"
-    process(our_qubo, q_par)
+        our_qubo.qubo_real_1t()
+        process(our_qubo, q_par)
 
-    our_qubo.qubo2()
-    q_par.method = "real"
-    q_par.annealing_time = 1000
-    process(our_qubo, q_par)
-    q_par.annealing_time = 50
-    process(our_qubo, q_par)
-    q_par.annealing_time = 2
-    process(our_qubo, q_par)
+        our_qubo.qubo_real_2t()
+        process(our_qubo, q_par)
+
+        our_qubo.qubo_real_4t()
+        process(our_qubo, q_par)
+
+        our_qubo.qubo_real_6t()
+        process(our_qubo, q_par)
+
+        our_qubo.qubo_real_8t()
+        process(our_qubo, q_par)
+
+        our_qubo.qubo_real_10t()
+        process(our_qubo, q_par)
+
+        our_qubo.qubo_real_11t()
+        process(our_qubo, q_par)
+
+        our_qubo.qubo_real_12t()
+        process(our_qubo, q_par)
+
+
+
+    else:
+
+        our_qubo = Input_qubo()
+        our_qubo.qubo1()
+        q_par = Comp_parameters()
+        process(our_qubo, q_par)
+
+        q_par.ppair = 250.0
+        q_par.psum = 500.0
+        process(our_qubo, q_par)
+
+        q_par.ppair = 2.0
+        q_par.psum = 4.0
+        q_par.method = "real"
+        process(our_qubo, q_par)
+        q_par.annealing_time = 5
+        process(our_qubo, q_par)
+
+        our_qubo.qubo2()
+        q_par.method = "sim"
+        process(our_qubo, q_par)
+
+        our_qubo.qubo2()
+        q_par.method = "real"
+        q_par.annealing_time = 1000
+        process(our_qubo, q_par)
+        q_par.annealing_time = 50
+        process(our_qubo, q_par)
+        q_par.annealing_time = 2
+        process(our_qubo, q_par)

@@ -191,14 +191,15 @@ class LinearPrograming():
         for (j, jp, s) in pairs_same_direction(Railway_input.trains_paths):
             v = variables.variables[f"t_{s}_{j}"]
             vp = variables.variables[f"t_{s}_{jp}"]
-            vy = variables.variables[f"y_{s}_{j}_{jp}"]
+
             i = v.int_id
             ip = vp.int_id
-            iy = vy.int_id
 
             p = Railway_input.headways
             if v.range[1] + p >= vp.range[0] and vp.range[1] + p >= v.range[0]:
                 # do not count trains with no dependencies
+                vy = variables.variables[f"y_{s}_{j}_{jp}"]
+                iy = vy.int_id
 
                 lhs_el_y0 = [0 for _ in variables.variables]
                 lhs_el_y0[i] = 1

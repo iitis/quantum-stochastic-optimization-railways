@@ -90,9 +90,9 @@ class Parameters:
 
             passing_time = abs(self.timetable[sp][j] - self.timetable[s][j]) - self.stay
             if f"{s}_{sp}" in pass_time:
-                assert pass_time[f"{s}_{sp}"] == passing_time
+                assert pass_time[f"{s}_{sp}"] == passing_time, f"train {j}, {s} => {sp}"
             elif f"{sp}_{s}" in pass_time:
-                assert pass_time[f"{sp}_{s}"] == passing_time
+                assert pass_time[f"{sp}_{s}"] == passing_time, f"train {j}, {sp} => {s}"
             else:
                 pass_time[f"{s}_{sp}"] = passing_time
         return pass_time
