@@ -159,7 +159,7 @@ def analyze_qubo(q_input, q_pars):
     file = file_QUBO_comp(file, q_pars)
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
-    
+
     hist = list([])
     qubo_objectives = list([])
     count = 0
@@ -320,7 +320,7 @@ class Input_qubo():
 
         """
         self.circ = {(11,14): "CS", (12,13): "PS"}
-        self.timetable = {"PS":{11:14, 12:40, 13:44, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 7:42, 13:47, 0:20, 2:35, 12:37,  4:50, 14:55, 6:60}, 
+        self.timetable = {"PS":{11:14, 12:40, 13:44, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 7:42, 13:47, 0:20, 2:35, 12:37,  4:50, 14:55, 6:60},
                           "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 0:5, 2:20, 12:22, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
@@ -339,7 +339,7 @@ class Input_qubo():
 
         """
         self.circ = {(11,14): "CS", (12,13): "PS"}
-        self.timetable = {"PS":{11:14, 12:40, 13:44, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 7:42, 13:47, 2:35, 12:37,  4:50, 14:55, 6:60}, 
+        self.timetable = {"PS":{11:14, 12:40, 13:44, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 7:42, 13:47, 2:35, 12:37,  4:50, 14:55, 6:60},
                           "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 2:20, 12:22, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
@@ -357,7 +357,7 @@ class Input_qubo():
 
         """
         self.circ = {(11,14): "CS", (12,13): "PS"}
-        self.timetable = {"PS":{11:14, 12:40, 13:44, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 7:42, 13:47, 2:35, 12:37, 4:50, 14:55}, 
+        self.timetable = {"PS":{11:14, 12:40, 13:44, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 7:42, 13:47, 2:35, 12:37, 4:50, 14:55},
                           "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 2:20, 12:22, 4:35, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
@@ -375,7 +375,7 @@ class Input_qubo():
 
         """
         self.circ = {(11,14): "CS"}
-        self.timetable = {"PS":{11:14, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 2:35, 4:50, 14:55, 6:60}, 
+        self.timetable = {"PS":{11:14, 14:58}, "MR":{1:12, 11:17, 3:22, 5:32, 2:35, 4:50, 14:55, 6:60},
                           "CS":{1:27, 11:32, 3:37, 5:47, 2:20, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
@@ -394,14 +394,13 @@ class Input_qubo():
 
         """
         self.circ = {(11,14): "CS"}
-        self.timetable = {"PS":{11:14, 14:58}, "MR":{1:12, 11:17, 3:22, 4:50, 14:55, 6:60}, 
+        self.timetable = {"PS":{11:14, 14:58}, "MR":{1:12, 11:17, 3:22, 4:50, 14:55, 6:60},
                           "CS":{1:27, 11:32, 3:37, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
         self.file = f"QUBOs/LR_timetable/6trains/qubo_{d}_6t"
 
-    
 
 
     def qubo_real_4t(self, d):
@@ -415,7 +414,7 @@ class Input_qubo():
 
         """
         self.circ = {(11,14): "CS"}
-        self.timetable = {"PS":{11:14, 14:58}, "MR":{1:12, 11:17, 4:50, 14:55}, 
+        self.timetable = {"PS":{11:14, 14:58}, "MR":{1:12, 11:17, 4:50, 14:55},
                           "CS":{1:27, 11:32, 4:35, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
@@ -431,7 +430,7 @@ class Input_qubo():
 
         """
         self.circ = {(11,14): "CS"}
-        self.timetable = {"PS":{11:14, 14:58}, "MR":{11:17, 14:55}, 
+        self.timetable = {"PS":{11:14, 14:58}, "MR":{11:17, 14:55},
                           "CS":{11:32, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
@@ -443,7 +442,7 @@ class Input_qubo():
         smallest possible 1 train according to real live timetable
         """
         self.circ = {}
-        self.timetable = {"MR":{1:12}, 
+        self.timetable = {"MR":{1:12},
                           "CS":{1:27}
                         }
         self.objective_stations = ["MR", "CS"]
