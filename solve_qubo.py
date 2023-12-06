@@ -307,7 +307,7 @@ class Input_qubo():
 
     # real live problems plus PS - CS and back
 
-    def qubo_real_12t(self, delays = {}):
+    def qubo_real_12t(self, d):
         """
         12 trains
 
@@ -324,11 +324,11 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 0:5, 2:20, 12:22, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = delays
-        self.file = f"QUBOs/LR_timetable/12trains/qubo_{delays}_12t"
+        self.delays = d
+        self.file = f"QUBOs/LR_timetable/12trains/qubo_{d}_12t"
 
 
-    def qubo_real_11t(self, delays = {}):
+    def qubo_real_11t(self, d):
         """
         11 trains 
         
@@ -343,10 +343,10 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 2:20, 12:22, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = delays
-        self.file = f"QUBOs/LR_timetable/11trains/qubo_{delays}_11t"
+        self.delays = d
+        self.file = f"QUBOs/LR_timetable/11trains/qubo_{d}_11t"
 
-    def qubo_real_10t(self, delays = {}):
+    def qubo_real_10t(self, d):
         """
         10 trains 
         
@@ -361,10 +361,10 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 3:37, 5:47, 7:57, 13:62, 2:20, 12:22, 4:35, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = delays
-        self.file = f"QUBOs/LR_timetable/10trains/qubo_{delays}_10t"
+        self.delays = d
+        self.file = f"QUBOs/LR_timetable/10trains/qubo_{d}_10t"
 
-    def qubo_real_8t(self, delays = {}):
+    def qubo_real_8t(self, d):
         """
         8 trains
 
@@ -379,11 +379,11 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 3:37, 5:47, 2:20, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = delays
-        self.file = f"QUBOs/LR_timetable/8trains/qubo_{delays}_8t"
+        self.delays = d
+        self.file = f"QUBOs/LR_timetable/8trains/qubo_{d}_8t"
 
 
-    def qubo_real_6t(self, delays = {}):
+    def qubo_real_6t(self, d):
         """
         6 trains
 
@@ -398,13 +398,13 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 3:37, 4:35, 14:40, 6:45}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = delays
-        self.file = f"QUBOs/LR_timetable/6trains/qubo_{delays}_6t"
+        self.delays = d
+        self.file = f"QUBOs/LR_timetable/6trains/qubo_{d}_6t"
 
     
 
 
-    def qubo_real_4t(self, delays = {}):
+    def qubo_real_4t(self, d):
         """
         4 trains
 
@@ -419,11 +419,11 @@ class Input_qubo():
                           "CS":{1:27, 11:32, 4:35, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = delays
-        self.file = f"QUBOs/LR_timetable/4trains/qubo_{delays}_4t"
+        self.delays = d
+        self.file = f"QUBOs/LR_timetable/4trains/qubo_{d}_4t"
 
 
-    def qubo_real_2t(self, delays = {}):
+    def qubo_real_2t(self, d):
         """
         2 trains 1 pair PS - CS - PS
         
@@ -435,10 +435,10 @@ class Input_qubo():
                           "CS":{11:32, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = delays
-        self.file = f"QUBOs/LR_timetable/2trains/qubo_{delays}_2t"
+        self.delays = d
+        self.file = f"QUBOs/LR_timetable/2trains/qubo_{d}_2t"
 
-    def qubo_real_1t(self, delays = {}):
+    def qubo_real_1t(self, d):
         """
         smallest possible 1 train according to real live timetable
         """
@@ -447,8 +447,8 @@ class Input_qubo():
                           "CS":{1:27}
                         }
         self.objective_stations = ["MR", "CS"]
-        self.delays = delays
-        self.file = f"QUBOs/LR_timetable/1train/qubo_{delays}_1t"
+        self.delays = d
+        self.file = f"QUBOs/LR_timetable/1train/qubo_{d}_1t"
 
 
 
