@@ -204,7 +204,7 @@ def display_results(res_dict, q_pars, q_input):
     print("method", q_pars.method)
     print("psum", q_pars.psum)
     print("ppair", q_pars.ppair)
-    print("smax", q_pars.dmax)
+    print("dmax", q_pars.dmax)
     print("LP objective", res_dict["lp objective"])
 
     if q_pars.method == "real":
@@ -490,9 +490,9 @@ if __name__ == "__main__":
 
         for delays in delays_list:
             
-            for d in [6,8,10,12,14]:
+            for d_max in [6,8,10,12,14]:
 
-                q_par.dmax = d
+                q_par.dmax = d_max
                 
                 our_qubo.qubo_real_1t(delays)
                 process(our_qubo, q_par)
