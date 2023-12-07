@@ -4,6 +4,7 @@ import os.path
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+from collections import Counter
 
 from scipy.optimize import linprog
 import neal
@@ -223,13 +224,22 @@ def plot_hist(q_input, q_pars):
         results = pickle.load(fp)
 
     hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
-
-    plt.bar(*np.unique(hist_pass, return_counts=True))
+    xs = [i for i in range(q_pars.dmax + 1)]
+    ys = [hist_pass.count(x) for x in xs]
+    for el in hist_pass:
+        assert 0 <= el <= q_pars.dmax + 1
+        assert el == int(el)
+    print(xs)
+    print(ys)
+    x,y =  np.unique(hist_pass, return_counts=True) 
+    print(x)
+    print(y)
+    plt.bar(xs,ys)
     file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
     if q_pars.method == "sim":
-        plt.title(f"{q_input.file}, {q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        plt.title(f"delays {q_input.delays}, method={q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
     else:
-        plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        plt.title(f"delays {q_input.delays}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
     plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} comparing with ILP")
     plt.ylabel("number of solutions")
     plt.savefig(file_pass)
@@ -241,9 +251,9 @@ def plot_hist(q_input, q_pars):
     plt.hist(hist_obj, color = "gray", label = "QUBO")
     plt.axvline(x = results["lp objective"], lw = 3, color = 'red', label = 'ILP')
     if q_pars.method == "sim":
-        plt.title(f"{q_input.file}, {q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        plt.title(f"delays {q_input.delays}, method={q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
     else:
-        plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        plt.title(f"delays {q_input.delays}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
     plt.legend()
     plt.xlabel("Objective")
     plt.ylabel("density")
@@ -514,13 +524,13 @@ if __name__ == "__main__":
 
         our_qubo = Input_qubo()
         q_par = Comp_parameters()
-        
+
         q_par.method = "sim"
         for d_max in [6,8,10,12,14]:
             q_par.dmax = d_max
 
             series_of_computation(our_qubo, q_par)
-       
+
 
 
 
