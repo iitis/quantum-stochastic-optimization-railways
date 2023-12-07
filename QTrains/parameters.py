@@ -135,6 +135,7 @@ class Railway_input():
                     if s in self.trains_paths[j]:
                         a = a + delays[j]
                 b = var_range[s][j]+parameters.dmax
+                b = a+parameters.dmax
                 assert a <= b
                 var_range[s][j] = (a,b)
         self.tvar_range = var_range

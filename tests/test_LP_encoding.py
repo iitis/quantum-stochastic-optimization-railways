@@ -27,11 +27,11 @@ def test_variables_class():
     assert v.variables['t_PS_1'].type == int
 
     #problem.add_all_bounds()
-    assert [v.range for v in v.variables.values()] == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 5.0), (15.0, 18.0), (0.0, 1.0), (0.0, 1.0)]
+    assert [v.range for v in v.variables.values()] == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 7.0), (15.0, 20.0), (0.0, 1.0), (0.0, 1.0)]
     v.set_y_value(('MR', 1, 3), 1)
-    assert [v.range for v in v.variables.values()] == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 5.0), (15.0, 18.0), (1,1), (0.0, 1.0)]
+    assert [v.range for v in v.variables.values()] == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 7.0), (15.0, 20.0), (1,1), (0.0, 1.0)]
     v.reset_y_bonds(('MR', 1, 3))
-    assert [v.range for v in v.variables.values()] == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 5.0), (15.0, 18.0), (0.0, 1.0), (0.0, 1.0)]
+    assert [v.range for v in v.variables.values()] == [(0.0, 5.0), (3.0, 8.0), (16.0, 21.0), (2.0, 7.0), (15.0, 20.0), (0.0, 1.0), (0.0, 1.0)]
 
     v.relax_integer_req()
     assert v.variables['t_PS_1'].type == float
@@ -100,7 +100,7 @@ def test_constrains():
     assert problem.rhs_ineq == [-4]
 
     bounds, integrality = v.bonds_and_integrality()
-    assert bounds == [(1, 4), (3, 6), (6, 10), (8, 12)]
+    assert bounds == [(1, 5), (3, 7), (6, 10), (8, 12)]
     assert integrality == [1, 1, 1, 1]
 
 

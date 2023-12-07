@@ -34,5 +34,5 @@ def test_initial_conditions():
 
     objective_stations = ["MR", "CS"]
     i = Railway_input(p, objective_stations, delays)
-    assert i.tvar_range ==  {"PS": {1: (0., 5.)}, "MR" :{1: (3.,8.), 3: (2.,5.)}, "CS" : {1: (16.,21.) , 3: (15., 18.)}}
+    assert i.tvar_range ==  {"PS": {1: (0., 5.)}, "MR" :{1: (3.,8.), 3: (2.,7.)}, "CS" : {1: (16.,21.) , 3: (15., 20.)}}
     assert i.objective_stations == ['MR', 'CS']

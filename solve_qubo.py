@@ -1,10 +1,11 @@
 """ main computation script """
 import pickle
 import os.path
+from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-from collections import Counter
+
 
 from scipy.optimize import linprog
 import neal
@@ -224,14 +225,14 @@ def plot_hist(q_input, q_pars):
         results = pickle.load(fp)
 
     hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
-    xs = [i for i in range(q_pars.dmax + 1)]
+    xs = list( range(q_pars.dmax + 1) )
     ys = [hist_pass.count(x) for x in xs]
     for el in hist_pass:
         assert 0 <= el <= q_pars.dmax + 1
         assert el == int(el)
     print(xs)
     print(ys)
-    x,y =  np.unique(hist_pass, return_counts=True) 
+    x,y =  np.unique(hist_pass, return_counts=True)
     print(x)
     print(y)
     plt.bar(xs,ys)
@@ -526,13 +527,13 @@ if __name__ == "__main__":
         q_par = Comp_parameters()
 
         q_par.method = "sim"
-        for d_max in [6,8,10,12,14]:
+        for d_max in [2,4,6,8,10,12,14]:
             q_par.dmax = d_max
 
             q_par.ppair = 2.0
             q_par.psum = 4.0
             series_of_computation(our_qubo, q_par)
-            
+
             q_par.ppair = 20.0
             q_par.psum = 40.0
             series_of_computation(our_qubo, q_par)

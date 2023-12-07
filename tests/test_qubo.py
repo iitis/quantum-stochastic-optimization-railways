@@ -118,7 +118,7 @@ def test_qubo_analyze():
 
 
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
-    p = Parameters(timetable, dmax = 4, headways = 1)
+    p = Parameters(timetable, dmax = 2, headways = 1)
     objective_stations = ["B"]
     delays = {1:2}
     rail_input = Railway_input(p, objective_stations, delays)
@@ -137,10 +137,15 @@ def test_qubo_analyze():
 
     qubo_to_analyze = Analyze_qubo(dict_read)
 
-    solution = [0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,1]
+    solution = [1,0,0,0,0,1,0,0,1,1,0,0]
+    assert qubo_to_analyze.qbit_inds == {0: ['A', 1, 2], 1: ['A', 1, 3], 2: ['A', 1, 4],
+                                        3: ['A', 3, 2], 4: ['A', 3, 3], 5: ['A', 3, 4],
+                                        6: ['B', 1, 4], 7: ['B', 1, 5], 8: ['B', 1, 6],
+                                        9: ['B', 3, 4], 10: ['B', 3, 5], 11: ['B', 3, 6]}
+
     assert qubo_to_analyze.broken_MO_conditions(solution) == 1
-    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 4, ('A',3): 2, ('B',1):6, ('B',3): 8}
-    assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 0, 0)
+    assert qubo_to_analyze.binary_vars2sjt(solution) == {('A', 1): 2, ('A', 3): 4, ('B', 1): 6, ('B', 3): 4}
+    assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 1, 0)
 
 
 
@@ -167,69 +172,56 @@ def test_qubo_circ():
 def test_qubo_larger():
     """ test QuboVars class for larger problem of two trains heading in the same direction """
     timetable =  {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
-    p = Parameters(timetable, dmax = 5)
+    p = Parameters(timetable, dmax = 2)
 
     objective_stations = ["MR", "CS"]
     i = Railway_input(p, objective_stations, delays = {3:2})
     q = QuboVars(i)
 
-    assert q.sjt_inds == {'PS': {1: {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5}},
-                                  'MR': {1: {3: 6, 4: 7, 5: 8, 6: 9, 7: 10, 8: 11}, 3: {2: 12, 3: 13, 4: 14, 5: 15}},
-                                  'CS': {1: {16: 16, 17: 17, 18: 18, 19: 19, 20: 20, 21: 21}, 3: {15: 22, 16: 23, 17: 24, 18: 25}}}
-    assert q.qbit_inds == {0: ['PS', 1, 0], 1: ['PS', 1, 1], 2: ['PS', 1, 2], 3: ['PS', 1, 3],
-                               4: ['PS', 1, 4], 5: ['PS', 1, 5], 6: ['MR', 1, 3], 7: ['MR', 1, 4],
-                               8: ['MR', 1, 5], 9: ['MR', 1, 6], 10: ['MR', 1, 7], 11: ['MR', 1, 8],
-                               12: ['MR', 3, 2], 13: ['MR', 3, 3], 14: ['MR', 3, 4], 15: ['MR', 3, 5],
-                               16: ['CS', 1, 16], 17: ['CS', 1, 17], 18: ['CS', 1, 18], 19: ['CS', 1, 19],
-                               20: ['CS', 1, 20], 21: ['CS', 1, 21], 22: ['CS', 3, 15], 23: ['CS', 3, 16],
-                               24: ['CS', 3, 17], 25: ['CS', 3, 18]}
+
+    assert q.sjt_inds == {'PS': {1: {0: 0, 1: 1, 2: 2}},
+                          'MR': {1: {3: 3, 4: 4, 5: 5}, 3: {2: 6, 3: 7, 4: 8}},
+                          'CS': {1: {16: 9, 17: 10, 18: 11}, 3: {15: 12, 16: 13, 17: 14}}}
+    assert q.qbit_inds == {0: ['PS', 1, 0], 1: ['PS', 1, 1], 2: ['PS', 1, 2], 3: ['MR', 1, 3],
+                           4: ['MR', 1, 4], 5: ['MR', 1, 5],
+                           6: ['MR', 3, 2], 7: ['MR', 3, 3], 8: ['MR', 3, 4],
+                           9: ['CS', 1, 16], 10: ['CS', 1, 17], 11: ['CS', 1, 18],
+                           12: ['CS', 3, 15], 13: ['CS', 3, 16], 14: ['CS', 3, 17]}
 
 
     q.make_qubo(i)
 
-    assert len(q.qubo) == 248
-    assert q.noqubits == 26
+    assert len(q.qubo) == 87
+    assert q.noqubits == 15
 
-    assert q.objective == {(6, 6): 0.0, (7, 7): 0.2, (8, 8): 0.4, (9, 9): 0.6,
-                           (10, 10): 0.8, (11, 11): 1.0, (12, 12): 0.4, (13, 13): 0.6,
-                           (14, 14): 0.8, (15, 15): 1.0, (16, 16): 0.0, (17, 17): 0.2,
-                           (18, 18): 0.4, (19, 19): 0.6, (20, 20): 0.8, (21, 21): 1.0,
-                           (22, 22): 0.4, (23, 23): 0.6, (24, 24): 0.8, (25, 25): 1.0}
-    assert q.sum_constrain == {(0, 0): -2, (0, 1): 2, (0, 2): 2, (0, 3): 2, (0, 4): 2,
-                               (0, 5): 2, (1, 1): -2, (1, 0): 2, (1, 2): 2, (1, 3): 2,
-                               (1, 4): 2, (1, 5): 2, (2, 2): -2, (2, 0): 2, (2, 1): 2,
-                               (2, 3): 2, (2, 4): 2, (2, 5): 2, (3, 3): -2, (3, 0): 2,
-                               (3, 1): 2, (3, 2): 2, (3, 4): 2, (3, 5): 2, (4, 4): -2,
-                               (4, 0): 2, (4, 1): 2, (4, 2): 2, (4, 3): 2, (4, 5): 2,
-                               (5, 5): -2, (5, 0): 2, (5, 1): 2, (5, 2): 2, (5, 3): 2,
-                               (5, 4): 2, (6, 6): -2, (6, 7): 2, (6, 8): 2, (6, 9): 2,
-                               (6, 10): 2, (6, 11): 2, (7, 7): -2, (7, 6): 2, (7, 8): 2,
-                               (7, 9): 2, (7, 10): 2, (7, 11): 2, (8, 8): -2, (8, 6): 2,
-                               (8, 7): 2, (8, 9): 2, (8, 10): 2, (8, 11): 2, (9, 9): -2,
-                               (9, 6): 2, (9, 7): 2, (9, 8): 2, (9, 10): 2, (9, 11): 2,
-                               (10, 10): -2, (10, 6): 2, (10, 7): 2, (10, 8): 2, (10, 9): 2,
-                               (10, 11): 2, (11, 11): -2, (11, 6): 2, (11, 7): 2, (11, 8): 2,
-                               (11, 9): 2, (11, 10): 2, (12, 12): -2, (12, 13): 2, (12, 14): 2,
-                               (12, 15): 2, (13, 13): -2, (13, 12): 2, (13, 14): 2, (13, 15): 2,
-                               (14, 14): -2, (14, 12): 2, (14, 13): 2, (14, 15): 2, (15, 15): -2,
-                               (15, 12): 2, (15, 13): 2, (15, 14): 2, (16, 16): -2, (16, 17): 2,
-                               (16, 18): 2, (16, 19): 2, (16, 20): 2, (16, 21): 2, (17, 17): -2,
-                               (17, 16): 2, (17, 18): 2, (17, 19): 2, (17, 20): 2, (17, 21): 2,
-                               (18, 18): -2, (18, 16): 2, (18, 17): 2, (18, 19): 2, (18, 20): 2,
-                               (18, 21): 2, (19, 19): -2, (19, 16): 2, (19, 17): 2, (19, 18): 2,
-                               (19, 20): 2, (19, 21): 2, (20, 20): -2, (20, 16): 2, (20, 17): 2,
-                               (20, 18): 2, (20, 19): 2, (20, 21): 2, (21, 21): -2, (21, 16): 2,
-                               (21, 17): 2, (21, 18): 2, (21, 19): 2, (21, 20): 2, (22, 22): -2,
-                               (22, 23): 2, (22, 24): 2, (22, 25): 2, (23, 23): -2, (23, 22): 2,
-                               (23, 24): 2, (23, 25): 2, (24, 24): -2, (24, 22): 2, (24, 23): 2,
-                               (24, 25): 2, (25, 25): -2, (25, 22): 2, (25, 23): 2, (25, 24): 2}
+    print( q.objective )
 
-    assert len(q.headway_constrain) == 36
+    print( q.sum_constrain )
+
+    assert q.objective == {(3, 3): 0.0, (4, 4): 0.5, (5, 5): 1.0, (6, 6): 1.0,
+                           (7, 7): 1.5, (8, 8): 2.0, (9, 9): 0.0, (10, 10): 0.5,
+                           (11, 11): 1.0, (12, 12): 1.0, (13, 13): 1.5, (14, 14): 2.0}
+
+    assert q.sum_constrain == {(0, 0): -2.0, (0, 1): 2.0, (0, 2): 2.0, (1, 1): -2.0,
+                               (1, 0): 2.0, (1, 2): 2.0, (2, 2): -2.0, (2, 0): 2.0,
+                               (2, 1): 2.0, (3, 3): -2.0, (3, 4): 2.0, (3, 5): 2.0,
+                               (4, 4): -2.0, (4, 3): 2.0, (4, 5): 2.0, (5, 5): -2.0, 
+                               (5, 3): 2.0, (5, 4): 2.0, (6, 6): -2.0, (6, 7): 2.0,
+                               (6, 8): 2.0, (7, 7): -2.0, (7, 6): 2.0, (7, 8): 2.0,
+                               (8, 8): -2.0, (8, 6): 2.0, (8, 7): 2.0, (9, 9): -2.0,
+                               (9, 10): 2.0, (9, 11): 2.0, (10, 10): -2.0, (10, 9): 2.0,
+                               (10, 11): 2.0, (11, 11): -2.0, (11, 9): 2.0, (11, 10): 2.0,
+                               (12, 12): -2.0, (12, 13): 2.0, (12, 14): 2.0,
+                               (13, 13): -2.0, (13, 12): 2.0, (13, 14): 2.0,
+                               (14, 14): -2.0, (14, 12): 2.0, (14, 13): 2.0}
+
+
+    assert len(q.headway_constrain) == 24
     for (k, kp) in q.headway_constrain:
         assert -2 <= q.qbit_inds[k][2] - q.qbit_inds[kp][2] <= 2
 
 
-    assert len(q.passing_time_constrain) == 72
+    assert len(q.passing_time_constrain) == 18
     for (k, kp) in q.passing_time_constrain:
         if "CS" in [ q.qbit_inds[k][0],  q.qbit_inds[kp][0] ]:
             assert -13 < q.qbit_inds[k][2] - q.qbit_inds[kp][2] < 13
@@ -243,7 +235,7 @@ def test_smallest_qubo():
     timetable = {"MR" :{1: 3}, "CS" : {1: 16}}
     objective_stations = ["MR", "CS"]
     delays = {1:1}
-    p = Parameters(timetable, dmax = 4, headways = 1)
+    p = Parameters(timetable, dmax = 3, headways = 1)
     rail_input = Railway_input(p, objective_stations, delays)
     q = QuboVars(rail_input, psum = 4, ppair = 2)
     q.make_qubo(rail_input)
@@ -257,7 +249,7 @@ def test_smallest_qubo():
     assert qubo_to_analyze.broken_MO_conditions(solution) == 0
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 0, 0)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('MR', 1): 4, ('CS', 1): 17}
-    assert qubo_to_analyze.objective_val(solution) == 0.5
+    assert qubo_to_analyze.objective_val(solution) == (1/3+1/3)
 
 
 def test_qubo_vs_LP():
