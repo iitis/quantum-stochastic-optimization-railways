@@ -529,6 +529,12 @@ if __name__ == "__main__":
         for d_max in [6,8,10,12,14]:
             q_par.dmax = d_max
 
+            q_par.ppair = 2.0
+            q_par.psum = 4.0
+            series_of_computation(our_qubo, q_par)
+            
+            q_par.ppair = 20.0
+            q_par.psum = 40.0
             series_of_computation(our_qubo, q_par)
 
 
