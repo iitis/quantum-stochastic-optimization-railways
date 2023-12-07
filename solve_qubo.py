@@ -484,7 +484,7 @@ def series_of_computation(qubo, parameters):
         qubo.qubo_real_1t(delays)
         process(qubo, parameters)
 
-        our_qubo.qubo_real_2t(delays)
+        qubo.qubo_real_2t(delays)
         process(qubo, parameters)
 
         qubo.qubo_real_4t(delays)
