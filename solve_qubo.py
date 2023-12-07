@@ -144,6 +144,24 @@ def solve_qubo(q_input, q_pars):
         pickle.dump(sampleset, fp)
 
 
+def update_hist(Qubo, sol_q, sol_lp, obj_stations, hist, qubo_objective):
+    if Qubo.count_broken_constrains(sol_q) == (0,0,0,0):
+        if Qubo.broken_MO_conditions(sol_q) == 0:
+            q_objective = Qubo.objective_val(sol_q)
+
+            assert q_objective == pytest.approx( Qubo.energy(sol_q) + Qubo.sum_ofset )
+
+            vq = Qubo.qubo2int_vars(sol_q)
+            h = diff_passing_times(sol_lp, vq, obj_stations, Qubo.trains_paths)
+            hist.extend( h )
+            qubo_objective.append( q_objective )
+
+            return 1
+        
+    return 0
+
+
+
 def analyze_qubo(q_input, q_pars):
     """ analyze results of computation on QUBO and comparison with LP """
     show_var_vals = False
@@ -162,6 +180,8 @@ def analyze_qubo(q_input, q_pars):
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
 
+    stations = q_input.objective_stations
+
     hist = list([])
     qubo_objectives = list([])
     count = 0
@@ -170,27 +190,19 @@ def analyze_qubo(q_input, q_pars):
         for sample in sampleset.samples():
             sol = list(sample.values())
             count += 1
-            if qubo_to_analyze.count_broken_constrains(sol) == (0,0,0,0):
-                if qubo_to_analyze.broken_MO_conditions(sol) == 0:
-                    no_feasible += 1
-                    q_objective = qubo_to_analyze.objective_val(sol)
+            no_feasible += update_hist(qubo_to_analyze, sol, lp_sol["variables"], stations, hist, qubo_objectives)
 
-                    assert q_objective == pytest.approx( qubo_to_analyze.energy(sol) + qubo_to_analyze.sum_ofset )
-
-                    vq = qubo_to_analyze.qubo2int_vars(sol)
-                    h = diff_passing_times(lp_sol["variables"], vq, q_input.objective_stations, qubo_to_analyze.trains_paths)
-                    hist.extend( h )
-                    qubo_objectives.append( q_objective )
     perc_feasible = no_feasible/count
 
     if show_var_vals:
         for v in lp_sol["variables"]:
             print(v, lp_sol["variables"][v].value, lp_sol["variables"][v].range )
 
-    results = {"perc feasible": perc_feasible, f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}": hist}
+    results = {"perc feasible": perc_feasible, f"{stations[0]}_{stations[1]}": hist}
     results["no qubits"] = qubo_to_analyze.noqubits
     results["no qubo terms"] = len(qubo_to_analyze.qubo)
     results["lp objective"] = lp_sol["objective"]
+    results["q ofset"] = qubo_to_analyze.sum_ofset
     results["qubo objectives"] = qubo_objectives
 
     file =  file_hist(q_input, q_pars)
@@ -208,6 +220,7 @@ def display_results(res_dict, q_pars, q_input):
     print("ppair", q_pars.ppair)
     print("dmax", q_pars.dmax)
     print("LP objective", res_dict["lp objective"])
+    print("qubo ofset", res_dict["q ofset"])
 
     if q_pars.method == "real":
         print("annealing time", q_pars.annealing_time)
