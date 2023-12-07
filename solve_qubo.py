@@ -476,34 +476,34 @@ class Comp_parameters():
         assert self.annealing_time * self.num_reads < 1_000_000
 
 
-def series_of_computation(our_qubo, q_par):
+def series_of_computation(qubo, parameters):
     delays_list = [{}, {1:5}, {1:5, 4:5}, {1:5, 2:2, 4:5}]
 
     for delays in delays_list:
 
-        our_qubo.qubo_real_1t(delays)
-        process(our_qubo, q_par)
+        qubo.qubo_real_1t(delays)
+        process(qubo, parameters)
 
         our_qubo.qubo_real_2t(delays)
-        process(our_qubo, q_par)
+        process(qubo, parameters)
 
-        our_qubo.qubo_real_4t(delays)
-        process(our_qubo, q_par)
+        qubo.qubo_real_4t(delays)
+        process(qubo, parameters)
 
-        our_qubo.qubo_real_6t(delays)
-        process(our_qubo, q_par)
+        qubo.qubo_real_6t(delays)
+        process(qubo, parameters)
 
-        our_qubo.qubo_real_8t(delays)
-        process(our_qubo, q_par)
+        qubo.qubo_real_8t(delays)
+        process(qubo, parameters)
 
-        our_qubo.qubo_real_10t(delays)
-        process(our_qubo, q_par)
+        qubo.qubo_real_10t(delays)
+        process(qubo, parameters)
 
-        our_qubo.qubo_real_11t(delays)
-        process(our_qubo, q_par)
+        qubo.qubo_real_11t(delays)
+        process(qubo, parameters)
 
-        our_qubo.qubo_real_12t(delays)
-        process(our_qubo, q_par)
+        qubo.qubo_real_12t(delays)
+        process(qubo, parameters)
 
 
 if __name__ == "__main__":
@@ -514,8 +514,8 @@ if __name__ == "__main__":
 
         our_qubo = Input_qubo()
         q_par = Comp_parameters()
+        
         q_par.method = "sim"
-
         for d_max in [6,8,10,12,14]:
             q_par.dmax = d_max
 
