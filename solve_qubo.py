@@ -31,8 +31,9 @@ def file_QUBO(q_input, q_pars):
     file = f"{q_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}.json"
     return file
 
-def file_QUBO_comp(file, q_pars):
+def file_QUBO_comp(q_input, q_pars):
     """ returns string, the file name and dir to store results of computaiton on QUBO """
+    file = file_QUBO(q_input, q_pars)
     file = file.replace("QUBOs", "solutions")
     if q_pars.method == "sim":
         file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.beta_range[0]}_{q_pars.num_sweeps}.json")
@@ -40,6 +41,12 @@ def file_QUBO_comp(file, q_pars):
         file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.annealing_time}.json")
     return file
 
+
+def file_hist(q_input, q_pars):
+    """ file for histogram """
+    file = file_QUBO_comp(q_input, q_pars)
+    file = file.replace("solutions", "histograms")
+    return file
 
 def solve_on_LP(q_input, q_pars):
     """ solve the problem using LP, and save results """
@@ -49,11 +56,8 @@ def solve_on_LP(q_input, q_pars):
 
     timetable = q_input.timetable
     objective_stations = q_input.objective_stations
-    file = q_input.file
-
     dmax = q_pars.dmax
 
-    file = file.replace("QUBOs", "solutions")
     p = Parameters(timetable, stay=stay, headways=headways,
                    preparation_t=preparation_t, dmax=dmax, circulation=q_input.circ)
     rail_input = Railway_input(p, objective_stations, delays = q_input.delays)
@@ -85,7 +89,6 @@ def prepare_qubo(q_input, q_pars):
 
     timetable = q_input.timetable
     objective_stations = q_input.objective_stations
-    file = q_input.file
 
     ppair = q_pars.ppair
     psum = q_pars.psum
@@ -134,7 +137,7 @@ def solve_qubo(q_input, q_pars):
                 annealing_time=q_pars.annealing_time
         )
 
-    file = file_QUBO_comp(file, q_pars)
+    file = file_QUBO_comp(q_input, q_pars)
     with open(file, 'wb') as fp:
         pickle.dump(sampleset, fp)
 
@@ -142,17 +145,18 @@ def solve_qubo(q_input, q_pars):
 def analyze_qubo(q_input, q_pars):
     """ analyze results of computation on QUBO and comparison with LP """
     show_var_vals = False
+
     file = file_QUBO(q_input, q_pars)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
-    file1 = file_LP_output(q_input, q_pars)
-    with open(file1, 'rb') as fp:
+    file = file_LP_output(q_input, q_pars)
+    with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
     qubo_to_analyze = Analyze_qubo(dict_read)
 
-    file = file_QUBO_comp(file, q_pars)
+    file = file_QUBO_comp(q_input, q_pars)
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
 
@@ -187,18 +191,20 @@ def analyze_qubo(q_input, q_pars):
     results["lp objective"] = lp_sol["objective"]
     results["qubo objectives"] = qubo_objectives
 
-    file = file.replace("solutions", "histograms")
+    file =  file_hist(q_input, q_pars)
     with open(file, 'wb') as fp:
         pickle.dump(results, fp)
+
 
 
 def display_results(res_dict, q_pars, q_input):
     """ print results of computation """
     print("xxxxxxxxx    RESULTS     xxxxxx ", q_input.file,  "xxxxx")
-    print(  )
+    print("delays", q_input.delays )
     print("method", q_pars.method)
     print("psum", q_pars.psum)
     print("ppair", q_pars.ppair)
+    print("smax", q_pars.dmax)
     print("LP objective", res_dict["lp objective"])
 
     if q_pars.method == "real":
@@ -210,43 +216,41 @@ def display_results(res_dict, q_pars, q_input):
 
 def plot_hist(q_input, q_pars):
     """ plot histograms of trains passing time from results from QUBO """
-    file = file_QUBO(q_input, q_pars)
-    file = file_QUBO_comp(file, q_pars)
-    file = file.replace("solutions", "histograms")
+
+    file = file_hist(q_input, q_pars)
 
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
-        hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
+    hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
 
-        plt.bar(*np.unique(hist_pass, return_counts=True))
-        file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
-        if q_pars.method == "sim":
-            plt.title(f"{q_input.file}, {q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
-        else:
-            plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
-        plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} comparing with ILP")
-        plt.ylabel("number of solutions")
-        plt.savefig(file_pass)
-        plt.clf()
+    plt.bar(*np.unique(hist_pass, return_counts=True))
+    file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
+    if q_pars.method == "sim":
+        plt.title(f"{q_input.file}, {q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+    else:
+        plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+    plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} comparing with ILP")
+    plt.ylabel("number of solutions")
+    plt.savefig(file_pass)
+    plt.clf()
 
-        hist_obj = results["qubo objectives"]
+    hist_obj = results["qubo objectives"]
 
+    file_pass = file.replace(".json", "obj.pdf")
+    plt.hist(hist_obj, color = "gray", label = "QUBO")
+    plt.axvline(x = results["lp objective"], lw = 3, color = 'red', label = 'ILP')
+    if q_pars.method == "sim":
+        plt.title(f"{q_input.file}, {q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+    else:
+        plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+    plt.legend()
+    plt.xlabel("Objective")
+    plt.ylabel("density")
+    plt.savefig(file_pass)
+    plt.clf()
 
-        file_pass = file.replace(".json", "obj.pdf")
-        plt.hist(hist_obj, color = "gray", label = "QUBO")
-        plt.axvline(x = results["lp objective"], lw = 3, color = 'red', label = 'ILP')
-        if q_pars.method == "sim":
-            plt.title(f"{q_input.file}, {q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
-        else:
-            plt.title(f"{q_input.file}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
-        plt.legend()
-        plt.xlabel("Objective")
-        plt.ylabel("density")
-        plt.savefig(file_pass)
-        plt.clf()
-
-        display_results(results, q_pars, q_input)
+    display_results(results, q_pars, q_input)
 
 
 
@@ -260,11 +264,14 @@ def process(q_input, q_pars):
     if not os.path.isfile(file):
         prepare_qubo(q_input, q_pars)
 
-    file = file_QUBO_comp(file, q_pars)
+    file = file_QUBO_comp(q_input, q_pars)
     if not os.path.isfile(file):
         solve_qubo(q_input, q_pars)
 
-    analyze_qubo(q_input, q_pars)
+    file = file_hist(q_input, q_pars)
+    if not os.path.isfile(file):
+        analyze_qubo(q_input, q_pars)
+
     plot_hist(q_input, q_pars)
 
 
@@ -478,35 +485,38 @@ if __name__ == "__main__":
         our_qubo = Input_qubo()
         q_par = Comp_parameters()
         q_par.method = "sim"
-        q_par.dmax = 10
-
+        
         delays_list = [{}, {1:5}, {1:5, 4:5}, {1:5, 2:2, 4:5}]
 
         for delays in delays_list:
+            
+            for d in [6,8,10,12,14]:
 
-            our_qubo.qubo_real_1t(delays)
-            process(our_qubo, q_par)
+                q_par.dmax = d
+                
+                our_qubo.qubo_real_1t(delays)
+                process(our_qubo, q_par)
 
-            our_qubo.qubo_real_2t(delays)
-            process(our_qubo, q_par)
+                our_qubo.qubo_real_2t(delays)
+                process(our_qubo, q_par)
 
-            our_qubo.qubo_real_4t(delays)
-            process(our_qubo, q_par)
+                our_qubo.qubo_real_4t(delays)
+                process(our_qubo, q_par)
 
-            our_qubo.qubo_real_6t(delays)
-            process(our_qubo, q_par)
+                our_qubo.qubo_real_6t(delays)
+                process(our_qubo, q_par)
 
-            our_qubo.qubo_real_8t(delays)
-            process(our_qubo, q_par)
+                our_qubo.qubo_real_8t(delays)
+                process(our_qubo, q_par)
 
-            our_qubo.qubo_real_10t(delays)
-            process(our_qubo, q_par)
+                our_qubo.qubo_real_10t(delays)
+                process(our_qubo, q_par)
 
-            our_qubo.qubo_real_11t(delays)
-            process(our_qubo, q_par)
+                our_qubo.qubo_real_11t(delays)
+                process(our_qubo, q_par)
 
-            our_qubo.qubo_real_12t(delays)
-            process(our_qubo, q_par)
+                our_qubo.qubo_real_12t(delays)
+                process(our_qubo, q_par)
 
 
 
