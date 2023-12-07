@@ -230,11 +230,7 @@ def plot_hist(q_input, q_pars):
     for el in hist_pass:
         assert 0 <= el <= q_pars.dmax + 1
         assert el == int(el)
-    print(xs)
-    print(ys)
-    x,y =  np.unique(hist_pass, return_counts=True)
-    print(x)
-    print(y)
+        
     plt.bar(xs,ys)
     file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
     if q_pars.method == "sim":
@@ -520,23 +516,40 @@ def series_of_computation(qubo, parameters):
 if __name__ == "__main__":
 
     real_problem = True
+    sim = True
 
     if real_problem:
 
         our_qubo = Input_qubo()
         q_par = Comp_parameters()
 
-        q_par.method = "sim"
-        for d_max in [2,4,6,8,10,12,14]:
-            q_par.dmax = d_max
+        if sim:
+            q_par.method = "sim"
+            for d_max in [2,4,6,8,10,12,14]:
+                q_par.dmax = d_max
 
-            q_par.ppair = 2.0
-            q_par.psum = 4.0
-            series_of_computation(our_qubo, q_par)
+                q_par.ppair = 2.0
+                q_par.psum = 4.0
+                series_of_computation(our_qubo, q_par)
 
-            q_par.ppair = 20.0
-            q_par.psum = 40.0
-            series_of_computation(our_qubo, q_par)
+                q_par.ppair = 20.0
+                q_par.psum = 40.0
+                series_of_computation(our_qubo, q_par)
+        else:
+            q_par.method = "real"
+            for d_max in [2,4,6,8,10,12,14]:
+                q_par.dmax = d_max
+                for at in [1,10,100,1000]:
+                        q_par.annealing_time = at
+
+                        q_par.ppair = 2.0
+                        q_par.psum = 4.0
+                        series_of_computation(our_qubo, q_par)
+
+                        q_par.ppair = 20.0
+                        q_par.psum = 40.0
+                        series_of_computation(our_qubo, q_par)
+
 
 
 
