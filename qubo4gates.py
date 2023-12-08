@@ -1,10 +1,11 @@
 """ prepare and analyze small qubos for gate computiong """
 import pickle
-from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, update_hist
+from QTrains import Analyze_qubo, update_hist
 from solve_qubo import Input_qubo, Comp_parameters, file_QUBO, file_LP_output
 
 
 def dsiplay_analysis(qubo, solution):
+    "prints features of the solution"
     print("solution", solution)
     print("energy", qubo.energy(solution))
     print("objective", qubo.objective_val(solution))
@@ -15,6 +16,7 @@ def dsiplay_analysis(qubo, solution):
 
 
 def save_qubo4gates(dict_qubo, qround_sol, file):
+    "creates and seves file with ground oslution and small qubo for gate computing"
     our_qubo = Analyze_qubo(dict_qubo)
     qubo4gates = {}
     qubo4gates["qubo"] = dict_qubo["qubo"]
@@ -54,11 +56,10 @@ dsiplay_analysis(qubo_smallest, qround_solution)
 
 
 print(" more advances analysis for future")
-# this makes the histogram of differences (lp ground vs qubo) of passing times between given stations 
+# this makes the histogram of differences (lp ground vs qubo) of passing times between given stations
 hist = list([])
 qubo_objectives = list([])
 feasible = update_hist(qubo_smallest, qround_solution, lp_sol["variables"], ["MR", "CS"], hist, qubo_objectives)
 print("1 for feasible", feasible)
 print(hist)
 print(qubo_objectives)
-
