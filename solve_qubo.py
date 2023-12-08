@@ -109,6 +109,8 @@ def solve_qubo(q_input, q_pars):
     """ solve the problem given by QUBO and store results """
     file = file_QUBO(q_input, q_pars)
 
+    print(f"start {file}")
+
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
@@ -139,6 +141,8 @@ def solve_qubo(q_input, q_pars):
     file = file_QUBO_comp(q_input, q_pars)
     with open(file, 'wb') as fp:
         pickle.dump(sampleset, fp)
+
+    print(f"solved qubo method {q_pars.method}")
 
 
 
@@ -270,7 +274,7 @@ def process(q_input, q_pars):
     if not os.path.isfile(file):
         solve_qubo(q_input, q_pars)
 
-    if only_compute:
+    if not only_compute:
         file = file_hist(q_input, q_pars)
         if not os.path.isfile(file):
             analyze_qubo(q_input, q_pars)

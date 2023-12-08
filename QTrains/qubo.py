@@ -306,7 +306,10 @@ class Analyze_qubo():
         return objective
 
 def diff_passing_times(sol_ref, sol, stations, trains_paths):
-    "compare passing time beteen the seqience of stations in stations for two solutions "
+    """
+    compare passing time beteen the seqience of stations in stations for two solutions 
+       IMPORTANT: station sequence in order of odd numer train passing sequence
+    """
     time_differences = []
     for j in trains_paths:
         if j % 2 == 1:
@@ -331,7 +334,8 @@ def update_hist(qubo, sol_q, sol_ilp, stations, hist, qubo_objective):
     update hustogram of defferences computed by diff_passing_times given solution of:
     - qubo - sol_q
     - ILP - sol_ilp
-    and qubo Analyze_qubo object 
+    and qubo Analyze_qubo object
+    IMPORTANT: station sequence in order of odd numer train passing sequence
     """
     if qubo.count_broken_constrains(sol_q) == (0,0,0,0):
         if qubo.broken_MO_conditions(sol_q) == 0:
