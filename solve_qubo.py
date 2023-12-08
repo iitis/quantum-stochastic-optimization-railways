@@ -4,7 +4,6 @@ import os.path
 from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
-import pytest
 
 
 from scipy.optimize import linprog
@@ -15,7 +14,7 @@ from dwave.system import (
 )
 
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
-from QTrains import diff_passing_times
+from QTrains import update_hist
 
 
 
@@ -144,22 +143,6 @@ def solve_qubo(q_input, q_pars):
         pickle.dump(sampleset, fp)
 
 
-def update_hist(Qubo, sol_q, sol_lp, obj_stations, hist, qubo_objective):
-    if Qubo.count_broken_constrains(sol_q) == (0,0,0,0):
-        if Qubo.broken_MO_conditions(sol_q) == 0:
-            q_objective = Qubo.objective_val(sol_q)
-
-            assert q_objective == pytest.approx( Qubo.energy(sol_q) + Qubo.sum_ofset )
-
-            vq = Qubo.qubo2int_vars(sol_q)
-            h = diff_passing_times(sol_lp, vq, obj_stations, Qubo.trains_paths)
-            hist.extend( h )
-            qubo_objective.append( q_objective )
-
-            return 1
-        
-    return 0
-
 
 
 def analyze_qubo(q_input, q_pars):
@@ -276,6 +259,7 @@ def plot_hist(q_input, q_pars):
 
 def process(q_input, q_pars):
     """ the sequence of calculation  makes computation if results has not been saved already"""
+    only_compute = False
     file = file_LP_output(q_input, q_pars)
     if not os.path.isfile(file):
         solve_on_LP(q_input, q_pars)
@@ -288,11 +272,12 @@ def process(q_input, q_pars):
     if not os.path.isfile(file):
         solve_qubo(q_input, q_pars)
 
-    file = file_hist(q_input, q_pars)
-    if not os.path.isfile(file):
-        analyze_qubo(q_input, q_pars)
+    if only_compute:
+        file = file_hist(q_input, q_pars)
+        if not os.path.isfile(file):
+            analyze_qubo(q_input, q_pars)
 
-    plot_hist(q_input, q_pars)
+        plot_hist(q_input, q_pars)
 
 
 

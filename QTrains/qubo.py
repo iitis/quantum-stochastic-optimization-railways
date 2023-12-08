@@ -1,6 +1,7 @@
 "encoding problem as QUBO"
 import copy
 import numpy as np
+import pytest
 from .parameters import pairs_same_direction, station_pairs
 from .LP_problem import Variable
 
@@ -323,3 +324,26 @@ def diff_passing_times(sol_ref, sol, stations, trains_paths):
         assert our_delta == int(our_delta)
         time_differences.append(int(our_delta))
     return list(time_differences)
+
+
+def update_hist(qubo, sol_q, sol_ilp, stations, hist, qubo_objective):
+    """ 
+    update hustogram of defferences computed by diff_passing_times given solution of:
+    - qubo - sol_q
+    - ILP - sol_ilp
+    and qubo Analyze_qubo object 
+    """
+    if qubo.count_broken_constrains(sol_q) == (0,0,0,0):
+        if qubo.broken_MO_conditions(sol_q) == 0:
+            q_objective = qubo.objective_val(sol_q)
+            # check whether objective equals to energy plus ofset
+            assert q_objective == pytest.approx( qubo.energy(sol_q) + qubo.sum_ofset )
+
+            vq = qubo.qubo2int_vars(sol_q)
+            h = diff_passing_times(sol_ilp, vq, stations, qubo.trains_paths)
+            hist.extend( h )
+            qubo_objective.append( q_objective )
+
+            return 1
+        
+    return 0
