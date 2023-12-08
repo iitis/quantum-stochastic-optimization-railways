@@ -320,7 +320,7 @@ def diff_passing_times(sol_ref, sol, stations, trains_paths):
         v2 = f"t_{s2}_{j}"
         delta1 = sol_ref[v2].value - sol_ref[v1].value
         delta2 = sol[v2].value - sol[v1].value
-        our_delta = (delta2 - delta1)
+        our_delta = delta2 - delta1
         assert our_delta == int(our_delta)
         time_differences.append(int(our_delta))
     return list(time_differences)
@@ -345,5 +345,4 @@ def update_hist(qubo, sol_q, sol_ilp, stations, hist, qubo_objective):
             qubo_objective.append( q_objective )
 
             return 1
-        
     return 0
