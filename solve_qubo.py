@@ -37,7 +37,7 @@ def file_QUBO_comp(q_input, q_pars):
     if q_pars.method == "sim":
         file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.beta_range[0]}_{q_pars.num_sweeps}.json")
     elif q_pars.method == "real":
-        file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.annealing_time}.json")
+        file = file.replace(".json", f"_{q_pars.solver}_{q_pars.num_all_runs}_{q_pars.annealing_time}.json")
     return file
 
 
@@ -128,7 +128,7 @@ def solve_qubo(q_input, q_pars):
             )
 
     elif q_pars.method == "real":
-        sampler = EmbeddingComposite(DWaveSampler())
+        sampler = EmbeddingComposite(DWaveSampler(solver=q_pars.solver, token=q_pars.token))
 
         for k in range(loops):
 
@@ -480,6 +480,8 @@ class Comp_parameters():
         self.num_sweeps = 500
         # for real annealing
         self.annealing_time = 1000
+        self.solver = "Advantage_system6.3"
+        self.token = ""
         assert self.annealing_time * self.num_reads < 1_000_000
 
 
