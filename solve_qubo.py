@@ -20,7 +20,7 @@ def file_LP_output(q_input, q_pars):
     """ returns string, the file name and dir to store LP results """
     file = q_input.file
     file = file.replace("qubo", "LP")
-    file = f"{file}_{q_pars.dmax}.json"
+    file = f"{file}.json"
     file = file.replace("QUBOs", "solutions")
     return file
 
@@ -262,6 +262,7 @@ def plot_hist(q_input, q_pars):
 def process(q_input, q_pars):
     """ the sequence of calculation  makes computation if results has not been saved already"""
     only_compute = True
+    only_prepare = False
     file = file_LP_output(q_input, q_pars)
     if not os.path.isfile(file):
         solve_on_LP(q_input, q_pars)
@@ -270,9 +271,10 @@ def process(q_input, q_pars):
     if not os.path.isfile(file):
         prepare_qubo(q_input, q_pars)
 
-    file = file_QUBO_comp(q_input, q_pars)
-    if not os.path.isfile(file):
-        solve_qubo(q_input, q_pars)
+    if not only_prepare:
+        file = file_QUBO_comp(q_input, q_pars)
+        if not os.path.isfile(file):
+            solve_qubo(q_input, q_pars)
 
     if not only_compute:
         file = file_hist(q_input, q_pars)
@@ -317,6 +319,14 @@ class Input_qubo():
 
     # real live problems plus PS - CS and back
 
+
+    def instance_delay_string(self):
+        k = self.delays.keys()
+        s1 = ''.join(map(str, k))
+        v = self.delays.values()
+        s2 = ''.join(map(str, v))
+        return f"delays_{s1}_{s2}".replace("__", "_no")
+
     def qubo_real_12t(self, d):
         """
         12 trains
@@ -335,7 +345,8 @@ class Input_qubo():
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
-        self.file = f"QUBOs/LR_timetable/12trains/qubo_{d}_12t"
+        s_del = self.instance_delay_string()
+        self.file = f"QUBOs/LR_timetable/12trains/qubo_12t_{s_del}"
 
 
     def qubo_real_11t(self, d):
@@ -354,7 +365,8 @@ class Input_qubo():
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
-        self.file = f"QUBOs/LR_timetable/11trains/qubo_{d}_11t"
+        s_del = self.instance_delay_string()
+        self.file = f"QUBOs/LR_timetable/11trains/qubo_11t_{s_del}"
 
     def qubo_real_10t(self, d):
         """
@@ -372,7 +384,8 @@ class Input_qubo():
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
-        self.file = f"QUBOs/LR_timetable/10trains/qubo_{d}_10t"
+        s_del = self.instance_delay_string()
+        self.file = f"QUBOs/LR_timetable/10trains/qubo_10t_{s_del}"
 
     def qubo_real_8t(self, d):
         """
@@ -390,7 +403,8 @@ class Input_qubo():
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
-        self.file = f"QUBOs/LR_timetable/8trains/qubo_{d}_8t"
+        s_del = self.instance_delay_string()
+        self.file = f"QUBOs/LR_timetable/8trains/qubo_8t_{s_del}"
 
 
     def qubo_real_6t(self, d):
@@ -409,7 +423,8 @@ class Input_qubo():
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
-        self.file = f"QUBOs/LR_timetable/6trains/qubo_{d}_6t"
+        s_del = self.instance_delay_string()
+        self.file = f"QUBOs/LR_timetable/6trains/qubo_6t_{s_del}"
 
 
 
@@ -429,7 +444,8 @@ class Input_qubo():
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
-        self.file = f"QUBOs/LR_timetable/4trains/qubo_{d}_4t"
+        s_del = self.instance_delay_string()
+        self.file = f"QUBOs/LR_timetable/4trains/qubo_4t_{s_del}"
 
 
     def qubo_real_2t(self, d):
@@ -445,7 +461,8 @@ class Input_qubo():
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
-        self.file = f"QUBOs/LR_timetable/2trains/qubo_{d}_2t"
+        s_del = self.instance_delay_string()
+        self.file = f"QUBOs/LR_timetable/2trains/qubo_2t_{s_del}"
 
     def qubo_real_1t(self, d):
         """
@@ -457,7 +474,8 @@ class Input_qubo():
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
-        self.file = f"QUBOs/LR_timetable/1train/qubo_{d}_1t"
+        s_del = self.instance_delay_string()
+        self.file = f"QUBOs/LR_timetable/1train/qubo_1t_{s_del}"
 
 
 
