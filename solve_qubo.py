@@ -20,7 +20,7 @@ def file_LP_output(q_input, q_pars):
     """ returns string, the file name and dir to store LP results """
     file = q_input.file
     file = file.replace("qubo", "LP")
-    file = f"{file}.json"
+    file = f"{file}_{q_pars.dmax}.json"
     file = file.replace("QUBOs", "solutions")
     return file
 
@@ -262,7 +262,7 @@ def plot_hist(q_input, q_pars):
 def process(q_input, q_pars):
     """ the sequence of calculation  makes computation if results has not been saved already"""
     only_compute = True
-    only_prepare = False
+    only_prepare = True
     file = file_LP_output(q_input, q_pars)
     if not os.path.isfile(file):
         solve_on_LP(q_input, q_pars)
@@ -536,7 +536,7 @@ def series_of_computation(qubo, parameters):
 if __name__ == "__main__":
 
     real_problem = True
-    sim = False
+    sim = True
 
     if real_problem:
 
