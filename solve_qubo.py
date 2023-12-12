@@ -160,8 +160,8 @@ def analyze_qubo(q_input, q_pars):
         lp_sol = pickle.load(fp)
 
     qubo_to_analyze = Analyze_qubo(dict_read)
-
     file = file_QUBO_comp(q_input, q_pars)
+    print( file )
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
 
@@ -277,11 +277,14 @@ def process(q_input, q_pars):
             solve_qubo(q_input, q_pars)
 
     if not only_compute:
-        file = file_hist(q_input, q_pars)
-        if not os.path.isfile(file):
-            analyze_qubo(q_input, q_pars)
+        try:
+            file = file_hist(q_input, q_pars)
+            if not os.path.isfile(file):
+                analyze_qubo(q_input, q_pars)
 
-        plot_hist(q_input, q_pars)
+            plot_hist(q_input, q_pars)
+        except:
+            0
 
 
 
@@ -504,7 +507,8 @@ class Comp_parameters():
 
 
 def series_of_computation(qubo, parameters):
-    delays_list = [{}, {1:5}, {1:5, 4:5}, {1:5, 2:2, 4:5}]
+    #delays_list = [{}, {1:5}, {1:5, 4:5}, {1:5, 2:2, 4:5}]
+    delays_list = [{}, {1:5, 2:2, 4:5}]
 
     for delays in delays_list:
 
@@ -557,9 +561,11 @@ if __name__ == "__main__":
                 series_of_computation(our_qubo, q_par)
         else:
             q_par.method = "real"
-            for d_max in [2,4,6,8,10,12,14]:
+            #for d_max in [2,4,6,8,10,12,14]:
+            for d_max in [2,6,12]:
                 q_par.dmax = d_max
-                for at in [1,10,100,1000]:
+                #for at in [1,10,100,1000]:
+                for at in [1000, 10]:
                     q_par.annealing_time = at
 
                     q_par.ppair = 2.0
