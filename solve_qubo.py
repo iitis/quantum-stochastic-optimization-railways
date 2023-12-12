@@ -565,7 +565,7 @@ if __name__ == "__main__":
             for d_max in [2,6,12]:
                 q_par.dmax = d_max
                 #for at in [1,10,100,1000]:
-                for at in [1000, 10]:
+                for at in [10, 1000]:
                     q_par.annealing_time = at
 
                     q_par.ppair = 2.0
