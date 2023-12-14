@@ -284,7 +284,9 @@ def process(q_input, q_pars):
 
             plot_hist(q_input, q_pars)
         except:
-            0
+            file = file_QUBO_comp(q_input, q_pars)
+            print(" XXXXXXXXXXXXXXXXXXXXXX  ")
+            print( f"not working for {file}" )
 
 
 
@@ -562,7 +564,7 @@ if __name__ == "__main__":
         else:
             q_par.method = "real"
             #for d_max in [2,4,6,8,10,12,14]:
-            for d_max in [2,6,12]:
+            for d_max in [2,6]:
                 q_par.dmax = d_max
                 #for at in [1,10,100,1000]:
                 for at in [10, 1000]:
