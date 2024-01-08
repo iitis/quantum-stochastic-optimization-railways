@@ -31,11 +31,11 @@ q_pars = Comp_parameters()
 q_pars.ppair = 2.0
 q_pars.psum = 4.0
 q_pars.dmax = 2
-q_pars.dmax = 4
-q_pars.dmax = 6
+#q_pars.dmax = 4
+#q_pars.dmax = 6
 delays = {}
-q_input.qubo_real_1t(delays)
-#q_input.qubo_real_2t(delays)
+#q_input.qubo_real_1t(delays)
+q_input.qubo_real_2t(delays)
 
 file_q = file_QUBO(q_input, q_pars)
 with open(file_q, 'rb') as fp:
@@ -54,8 +54,8 @@ print(dict_read["trains_paths"])
 print(dict_read["qubo"])
 #qround_solution = [1,0,0,1,0,0]
 #qround_solution = [1,0,0,0,0,1,0,0,0,0]
-qround_solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
-#qround_solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
+#qround_solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
+qround_solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
 
 save_qubo4gates(dict_read, qround_solution, file_q)
 

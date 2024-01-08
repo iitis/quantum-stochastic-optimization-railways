@@ -3,7 +3,7 @@
 import pickle
 from scipy.optimize import linprog
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
-from QTrains import add_update, find_ones, diff_passing_times, plot_train_diagrams, update_hist
+from QTrains import add_update, find_ones, hist_passing_times, plot_train_diagrams, update_hist
 
 
 
@@ -289,13 +289,14 @@ def test_qubo_vs_LP():
     assert vl['t_B_3'].value == 4
     assert prob.compute_objective(v, rail_input) == 0.0
 
-    hist = diff_passing_times(vl, vq, ["A", "B"], qubo_to_analyze.trains_paths)
-    assert hist == [0.0, 2.0]
+    print(qubo_to_analyze.stay)
+    hist = hist_passing_times(vq, ["A", "B"], qubo_to_analyze)
+    assert hist == [1.0, 3.0]
 
-    hist_list = list([0.0, 2.0])
+    hist_list = list([])
     qubo_objective = list([1.0])
-    feasible = update_hist(qubo_to_analyze, solution, vl, ["A", "B"], hist_list, qubo_objective)
+    feasible = update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, qubo_objective)
 
-    assert hist_list == [0.0, 2.0, 0.0, 2.0]
+    assert hist_list == [1.0, 3.0]
     assert qubo_objective == [1.0, 1.0]
     assert feasible == 1

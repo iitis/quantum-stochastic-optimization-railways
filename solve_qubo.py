@@ -2,6 +2,7 @@
 import pickle
 import os.path
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 from scipy.optimize import linprog
@@ -175,7 +176,7 @@ def analyze_qubo(q_input, q_pars):
         for sample in sampleset.samples():
             sol = list(sample.values())
             count += 1
-            no_feasible += update_hist(qubo_to_analyze, sol, lp_sol["variables"], stations, hist, qubo_objectives)
+            no_feasible += update_hist(qubo_to_analyze, sol, stations, hist, qubo_objectives)
 
     perc_feasible = no_feasible/count
 
@@ -189,6 +190,7 @@ def analyze_qubo(q_input, q_pars):
     results["lp objective"] = lp_sol["objective"]
     results["q ofset"] = qubo_to_analyze.sum_ofset
     results["qubo objectives"] = qubo_objectives
+
 
     file =  file_hist(q_input, q_pars)
     with open(file, 'wb') as fp:
@@ -223,10 +225,9 @@ def plot_hist(q_input, q_pars):
         results = pickle.load(fp)
 
     hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
-    xs = list( range(q_pars.dmax + 1) )
+    xs = list( range(np.max(hist_pass) + 1) )
     ys = [hist_pass.count(x) for x in xs]
     for el in hist_pass:
-        assert 0 <= el <= q_pars.dmax + 1
         assert el == int(el)
 
     plt.bar(xs,ys)
@@ -235,7 +236,7 @@ def plot_hist(q_input, q_pars):
         plt.title(f"delays {q_input.delays}, method={q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
     else:
         plt.title(f"delays {q_input.delays}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
-    plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} comparing with ILP")
+    plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} ")
     plt.ylabel("number of solutions")
     plt.savefig(file_pass)
     plt.clf()
@@ -279,14 +280,15 @@ def process(q_input, q_pars):
     if not only_compute:
         try:
             file = file_hist(q_input, q_pars)
-            if not os.path.isfile(file):
-                analyze_qubo(q_input, q_pars)
-
+            #if not os.path.isfile(file):
+            analyze_qubo(q_input, q_pars)
+            
             plot_hist(q_input, q_pars)
         except:
             file = file_QUBO_comp(q_input, q_pars)
             print(" XXXXXXXXXXXXXXXXXXXXXX  ")
             print( f"not working for {file}" )
+        
 
 
 

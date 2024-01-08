@@ -305,13 +305,13 @@ class Analyze_qubo():
                 objective += self.objective[(i,i)]
         return objective
 
-def diff_passing_times(sol_ref, sol, stations, trains_paths):
+def hist_passing_times(sol, stations, qubo):
     """
-    compare passing time beteen the seqience of stations in stations for two solutions 
+    compute passing time beteen followng stations substract stay time 
        IMPORTANT: station sequence in order of odd numer train passing sequence
     """
     time_differences = []
-    for j in trains_paths:
+    for j in qubo.trains_paths:
         if j % 2 == 1:
             s1 = stations[0]
             s2 = stations[1]
@@ -321,17 +321,17 @@ def diff_passing_times(sol_ref, sol, stations, trains_paths):
 
         v1 = f"t_{s1}_{j}"
         v2 = f"t_{s2}_{j}"
-        delta1 = sol_ref[v2].value - sol_ref[v1].value
+
         delta2 = sol[v2].value - sol[v1].value
-        our_delta = delta2 - delta1
+        our_delta = delta2 - qubo.stay
         assert our_delta == int(our_delta)
         time_differences.append(int(our_delta))
     return list(time_differences)
 
 
-def update_hist(qubo, sol_q, sol_ilp, stations, hist, qubo_objective):
+def update_hist(qubo, sol_q, stations, hist, qubo_objective):
     """ 
-    update hustogram of defferences computed by diff_passing_times given solution of:
+    update histogram of differences computed by hist_passing_times given solution of:
     - qubo - sol_q
     - ILP - sol_ilp
     and qubo Analyze_qubo object
@@ -344,7 +344,7 @@ def update_hist(qubo, sol_q, sol_ilp, stations, hist, qubo_objective):
             assert q_objective == pytest.approx( qubo.energy(sol_q) + qubo.sum_ofset )
 
             vq = qubo.qubo2int_vars(sol_q)
-            h = diff_passing_times(sol_ilp, vq, stations, qubo.trains_paths)
+            h = hist_passing_times(vq, stations, qubo)
             hist.extend( h )
             qubo_objective.append( q_objective )
 
