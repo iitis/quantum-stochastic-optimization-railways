@@ -280,8 +280,8 @@ def process(q_input, q_pars):
     if not only_compute:
         try:
             file = file_hist(q_input, q_pars)
-            #if not os.path.isfile(file):
-            analyze_qubo(q_input, q_pars)
+            if not os.path.isfile(file):
+                analyze_qubo(q_input, q_pars)
             
             plot_hist(q_input, q_pars)
         except:
