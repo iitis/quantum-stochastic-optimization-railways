@@ -274,6 +274,19 @@ def test_qubo_vs_LP():
     assert vq['t_B_3'].value == 6
     assert qubo_to_analyze.objective_val(solution) == 1.0
 
+
+    print(qubo_to_analyze.stay)
+    hist = hist_passing_times(vq, ["A", "B"], qubo_to_analyze)
+    assert hist == [1.0, 3.0]
+
+    hist_list = list([])
+    qubo_objective = list([1.0])
+    feasible = update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, qubo_objective)
+
+    assert hist_list == [1.0, 3.0]
+    assert qubo_objective == [1.0, 1.0]
+    assert feasible == 1
+
     # LP
     v = Variables(rail_input)
     bounds, integrality = v.bonds_and_integrality()
@@ -289,14 +302,3 @@ def test_qubo_vs_LP():
     assert vl['t_B_3'].value == 4
     assert prob.compute_objective(v, rail_input) == 0.0
 
-    print(qubo_to_analyze.stay)
-    hist = hist_passing_times(vq, ["A", "B"], qubo_to_analyze)
-    assert hist == [1.0, 3.0]
-
-    hist_list = list([])
-    qubo_objective = list([1.0])
-    feasible = update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, qubo_objective)
-
-    assert hist_list == [1.0, 3.0]
-    assert qubo_objective == [1.0, 1.0]
-    assert feasible == 1

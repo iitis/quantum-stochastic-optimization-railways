@@ -4,15 +4,26 @@ from QTrains import Analyze_qubo, update_hist
 from solve_qubo import Input_qubo, Comp_parameters, file_QUBO, file_LP_output
 
 
-def dsiplay_analysis(qubo, solution):
+def dsiplay_analysis(qubo, solution, lp_sol):
     "prints features of the solution"
-    print("solution", solution)
+    print( "..........  QUBO ........   " )
+    print("number of Q-bits", len( solution ))
     print("energy", qubo.energy(solution))
+    print("ofset", qubo.sum_ofset)
     print("objective", qubo.objective_val(solution))
-    print("ofset", -qubo.sum_ofset)
+    
+    print("LP objective", lp_sol["objective"] )
     print(" ....... broken constrains   .......")
     print("broken (sum, headway, pass, circ)", qubo.count_broken_constrains(solution))
     print("broken MO", qubo.broken_MO_conditions(solution))
+
+    print(" ........ vars values  ........ ")
+    print(" key, qubo, LP ")
+
+    vq = our_qubo.qubo2int_vars(solution)
+    for k, v in vq.items():
+        print(k, v.value, lp_sol["variables"][k].value)
+    print("  ..............................  ")
 
 
 def save_qubo4gates(dict_qubo, qround_sol, file):
@@ -26,16 +37,59 @@ def save_qubo4gates(dict_qubo, qround_sol, file):
     with open(new_file, 'wb') as fp:
         pickle.dump(qubo4gates, fp)
 
+
+def get_ground(case):
+    if case in [1, 5]:
+        solution = [1,0,0,1,0,0]
+    if case in [2, 6]:
+        solution = [1,0,0,0,0,1,0,0,0,0]
+    if case in [3, 7]:
+        solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
+    if case in [4, 8]:
+        solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
+    return solution
+
+
+def analyze_outputs(our_qubo, solution, lp_sol):
+    hist = list([])
+    qubo_objectives = list([])
+    for solution in solutions:
+        dsiplay_analysis(our_qubo, solution, lp_sol)
+
+        feasible = update_hist(our_qubo, solution, ["MR", "CS"], hist, qubo_objectives)
+        print("1 for feasible", feasible)
+        print(hist)
+        print(qubo_objectives)
+
+case = 8
+assert case in [1,2,3,4,5,6,7,8]
+save = True
+
 q_input = Input_qubo()
 q_pars = Comp_parameters()
-q_pars.ppair = 2.0
-q_pars.psum = 4.0
-q_pars.dmax = 2
-#q_pars.dmax = 4
-#q_pars.dmax = 6
-delays = {}
-#q_input.qubo_real_1t(delays)
-q_input.qubo_real_2t(delays)
+if case in [1,2,3,4]:
+    q_pars.ppair = 2.0
+    q_pars.psum = 4.0
+if case in [5,6,7,8]:
+    q_pars.ppair = 20.0
+    q_pars.psum = 40.0
+
+if case in [1, 4, 5, 8]:
+    q_pars.dmax = 2
+if case in [2, 6]:
+    q_pars.dmax = 4
+if case in [3, 7]:
+    q_pars.dmax = 6
+
+if case in [1,2,3,4,5,6,7,8]:
+    delays = {}
+if case in [0]:
+    delays = {1:5, 2:2, 4:5}
+
+if case in [1,2,3,5,6,7]:
+    q_input.qubo_real_1t(delays)
+if case in [4, 8]:
+    q_input.qubo_real_2t(delays)
 
 file_q = file_QUBO(q_input, q_pars)
 with open(file_q, 'rb') as fp:
@@ -49,25 +103,16 @@ with open(file, 'rb') as fp:
 
 print("lp file", file)
 
-qubo_smallest = Analyze_qubo(dict_read)
-print(dict_read["trains_paths"])
-print(dict_read["qubo"])
-#qround_solution = [1,0,0,1,0,0]
-#qround_solution = [1,0,0,0,0,1,0,0,0,0]
-#qround_solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
-qround_solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
+if save:
 
-save_qubo4gates(dict_read, qround_solution, file_q)
+    solution = get_ground(case)
+
+    save_qubo4gates(dict_read, solution, file_q)
 
 
-dsiplay_analysis(qubo_smallest, qround_solution)
+our_qubo = Analyze_qubo(dict_read)
+solutions = [solution, solution]
+
+analyze_outputs(our_qubo, solutions, lp_sol)
 
 
-print(" more advances analysis for future")
-# this makes the histogram of differences (lp ground vs qubo) of passing times between given stations
-hist = list([])
-qubo_objectives = list([])
-feasible = update_hist(qubo_smallest, qround_solution, lp_sol["variables"], ["MR", "CS"], hist, qubo_objectives)
-print("1 for feasible", feasible)
-print(hist)
-print(qubo_objectives)
