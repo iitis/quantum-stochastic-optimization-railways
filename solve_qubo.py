@@ -15,7 +15,9 @@ from dwave.system import (
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
 from QTrains import update_hist
 
-
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
+plt.rc('font', size=10)
 
 def file_LP_output(q_input, q_pars):
     """ returns string, the file name and dir to store LP results """
@@ -229,15 +231,26 @@ def plot_hist(q_input, q_pars):
     ys = [hist_pass.count(x) for x in xs]
     for el in hist_pass:
         assert el == int(el)
-
+    
+    fig, ax = plt.subplots(figsize=(4, 3))
+    fig.subplots_adjust(bottom=0.2, left = 0.15)
     plt.bar(xs,ys)
     file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
-    if q_pars.method == "sim":
-        plt.title(f"delays {q_input.delays}, method={q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+    if q_input.delays == {}:
+        disturbed = "Not disturbed"
     else:
-        plt.title(f"delays {q_input.delays}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
-    plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} ")
-    plt.ylabel("number of solutions")
+        disturbed = "Disturbed"
+    if q_pars.method == "sim":
+        plt.title(f"{disturbed}, method={q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
+    else:
+        plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
+    xx = [i for i in xs if i % 2 == 0]
+    plt.xticks(xx)
+    plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
+    plt.ylabel("counts")
+    k = np.max(ys)/15
+    plt.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}min", fontsize=10)
+    plt.gca().set_xlim(left=0)
     plt.savefig(file_pass)
     plt.clf()
 
@@ -245,14 +258,14 @@ def plot_hist(q_input, q_pars):
 
     file_pass = file.replace(".json", "obj.pdf")
     plt.hist(hist_obj, color = "gray", label = "QUBO")
-    plt.axvline(x = results["lp objective"], lw = 3, color = 'red', label = 'ILP')
+    plt.axvline(x = results["lp objective"], lw = 3, color = 'red', label = 'ground state')
     if q_pars.method == "sim":
-        plt.title(f"delays {q_input.delays}, method={q_pars.method}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        plt.title(f"{disturbed}, method={q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
     else:
-        plt.title(f"delays {q_input.delays}, ammeal_time={q_pars.annealing_time}, dmax={q_pars.dmax}, ppair={q_pars.ppair}, psum={q_pars.psum}")
+        plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
     plt.legend()
     plt.xlabel("Objective")
-    plt.ylabel("density")
+    plt.ylabel("frequency density")
     plt.savefig(file_pass)
     plt.clf()
 
@@ -354,6 +367,7 @@ class Input_qubo():
         self.delays = d
         s_del = self.instance_delay_string()
         self.file = f"QUBOs/LR_timetable/12trains/qubo_12t_{s_del}"
+        self.notrains = 12
 
 
     def qubo_real_11t(self, d):
@@ -374,6 +388,7 @@ class Input_qubo():
         self.delays = d
         s_del = self.instance_delay_string()
         self.file = f"QUBOs/LR_timetable/11trains/qubo_11t_{s_del}"
+        self.notrains = 11
 
     def qubo_real_10t(self, d):
         """
@@ -393,6 +408,7 @@ class Input_qubo():
         self.delays = d
         s_del = self.instance_delay_string()
         self.file = f"QUBOs/LR_timetable/10trains/qubo_10t_{s_del}"
+        self.notrains = 10
 
     def qubo_real_8t(self, d):
         """
@@ -412,6 +428,7 @@ class Input_qubo():
         self.delays = d
         s_del = self.instance_delay_string()
         self.file = f"QUBOs/LR_timetable/8trains/qubo_8t_{s_del}"
+        self.notrains = 8
 
 
     def qubo_real_6t(self, d):
@@ -432,6 +449,7 @@ class Input_qubo():
         self.delays = d
         s_del = self.instance_delay_string()
         self.file = f"QUBOs/LR_timetable/6trains/qubo_6t_{s_del}"
+        self.notrains = 6
 
 
 
@@ -453,6 +471,7 @@ class Input_qubo():
         self.delays = d
         s_del = self.instance_delay_string()
         self.file = f"QUBOs/LR_timetable/4trains/qubo_4t_{s_del}"
+        self.notrains = 4
 
 
     def qubo_real_2t(self, d):
@@ -470,6 +489,7 @@ class Input_qubo():
         self.delays = d
         s_del = self.instance_delay_string()
         self.file = f"QUBOs/LR_timetable/2trains/qubo_2t_{s_del}"
+        self.notrains = 2
 
     def qubo_real_1t(self, d):
         """
@@ -483,6 +503,7 @@ class Input_qubo():
         self.delays = d
         s_del = self.instance_delay_string()
         self.file = f"QUBOs/LR_timetable/1train/qubo_1t_{s_del}"
+        self.notrains = 1
 
 
 
