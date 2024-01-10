@@ -462,9 +462,9 @@ class Input_qubo():
         starts from 8 a.m.  0 -> 8:00
 
         """
-        self.circ = {(11,14): "CS"}
-        self.timetable = {"PS":{11:14, 14:58}, "MR":{11:17, 14:55},
-                          "CS":{11:32, 14:40}
+        self.circ = {(1,14): "CS"}
+        self.timetable = {"PS":{1:14, 14:58}, "MR":{1:17, 14:55},
+                          "CS":{1:32, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
@@ -506,13 +506,13 @@ class Comp_parameters():
         # for real annealing
         self.annealing_time = 1000
         self.solver = "Advantage_system6.3"
-        #self.token = "DEV-d9e97c25806c8aa7d2fb3d9aca04b230fcec5f07"
-        self.token = "OBi2-bf11ab4b1a5f98d4d14ea244a5f25e048d6f764c"
+        self.token = "DEV-d9e97c25806c8aa7d2fb3d9aca04b230fcec5f07"
+        #self.token = "OBi2-bf11ab4b1a5f98d4d14ea244a5f25e048d6f764c"
+        self.token = ""
         assert self.annealing_time * self.num_reads < 1_000_000
 
 
 def series_of_computation(qubo, parameters):
-    #delays_list = [{}, {1:5}, {1:5, 4:5}, {1:5, 2:2, 4:5}]
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
     for delays in delays_list:
@@ -554,7 +554,7 @@ if __name__ == "__main__":
 
         if sim:
             q_par.method = "sim"
-            for d_max in [2,4,6,8,10,12,14]:
+            for d_max in [2,6]:
                 q_par.dmax = d_max
 
                 q_par.ppair = 2.0
@@ -566,10 +566,8 @@ if __name__ == "__main__":
                 series_of_computation(our_qubo, q_par)
         else:
             q_par.method = "real"
-            #for d_max in [2,4,6,8,10,12,14]:
             for d_max in [2,6]:
                 q_par.dmax = d_max
-                #for at in [1,10,100,1000]:
                 for at in [10, 1000]:
                     q_par.annealing_time = at
 
@@ -582,14 +580,12 @@ if __name__ == "__main__":
                     series_of_computation(our_qubo, q_par)
 
 
-
-
-
     else:
-
+        # testing
         our_qubo = Input_qubo()
         our_qubo.qubo1()
         q_par = Comp_parameters()
+        q_par.method = "sim"
         process(our_qubo, q_par)
 
         q_par.ppair = 250.0
@@ -598,20 +594,8 @@ if __name__ == "__main__":
 
         q_par.ppair = 2.0
         q_par.psum = 4.0
-        q_par.method = "real"
-        process(our_qubo, q_par)
-        q_par.annealing_time = 5
-        process(our_qubo, q_par)
-
         our_qubo.qubo2()
         q_par.method = "sim"
         process(our_qubo, q_par)
 
-        our_qubo.qubo2()
-        q_par.method = "real"
-        q_par.annealing_time = 1000
-        process(our_qubo, q_par)
-        q_par.annealing_time = 50
-        process(our_qubo, q_par)
-        q_par.annealing_time = 2
-        process(our_qubo, q_par)
+        

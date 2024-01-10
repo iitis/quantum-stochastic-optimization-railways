@@ -47,6 +47,8 @@ def get_ground(case):
         solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
     if case in [4, 8]:
         solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
+    if case in [9, 10]:
+        solution = [1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0]
     return solution
 
 
@@ -61,20 +63,20 @@ def analyze_outputs(our_qubo, solution, lp_sol):
         print(hist)
         print(qubo_objectives)
 
-case = 8
-assert case in [1,2,3,4,5,6,7,8]
+case = 10
+assert case in [1,2,3,4,5,6,7,8, 9, 10]
 save = True
 
 q_input = Input_qubo()
 q_pars = Comp_parameters()
-if case in [1,2,3,4]:
+if case in [1,2,3,4, 9]:
     q_pars.ppair = 2.0
     q_pars.psum = 4.0
-if case in [5,6,7,8]:
+if case in [5,6,7,8, 10]:
     q_pars.ppair = 20.0
     q_pars.psum = 40.0
 
-if case in [1, 4, 5, 8]:
+if case in [1, 4, 5, 8,9,10]:
     q_pars.dmax = 2
 if case in [2, 6]:
     q_pars.dmax = 4
@@ -83,12 +85,12 @@ if case in [3, 7]:
 
 if case in [1,2,3,4,5,6,7,8]:
     delays = {}
-if case in [0]:
+if case in [9,10]:
     delays = {1:5, 2:2, 4:5}
 
 if case in [1,2,3,5,6,7]:
     q_input.qubo_real_1t(delays)
-if case in [4, 8]:
+if case in [4, 8,9,10]:
     q_input.qubo_real_2t(delays)
 
 file_q = file_QUBO(q_input, q_pars)
