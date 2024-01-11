@@ -7,9 +7,7 @@ from solve_qubo import Input_qubo, Comp_parameters, file_QUBO, file_LP_output
 def dsiplay_analysis(qubo, solution, lp_sol):
     "prints features of the solution"
     print( "..........  QUBO ........   " )
-    print( lp_sol["variables"] )
-    print(len( qubo.qubo ) )
-    print( qubo.qubo  )
+    print("qubo size", len( qubo.qubo ) )
     print("number of Q-bits", len( solution ))
     print("energy", qubo.energy(solution))
     print("ofset", qubo.sum_ofset)
@@ -116,7 +114,7 @@ if save:
 
 
 our_qubo = Analyze_qubo(dict_read)
-solutions = [solution, solution]
+solutions = [solution]
 
 analyze_outputs(our_qubo, solutions, lp_sol)
 
