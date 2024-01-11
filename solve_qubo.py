@@ -255,17 +255,21 @@ def plot_hist(q_input, q_pars):
     plt.clf()
 
     hist_obj = results["qubo objectives"]
+    xs = set(hist_obj)
+    ys = [hist_obj.count(x) for x in set(hist_obj)]
 
     file_pass = file.replace(".json", "obj.pdf")
-    plt.hist(hist_obj, color = "gray", label = "QUBO")
-    plt.axvline(x = results["lp objective"], lw = 3, color = 'red', label = 'ground state')
+    fig, ax = plt.subplots(figsize=(4, 3))
+    fig.subplots_adjust(bottom=0.2, left = 0.15)
+    plt.bar(list(xs),ys, width = 0.1, color = "gray", label = "QUBO")
+    plt.axvline(x = results["lp objective"], lw = 2, color = 'red', label = 'ground state')
     if q_pars.method == "sim":
         plt.title(f"{disturbed}, method={q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
     else:
         plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
     plt.legend()
     plt.xlabel("Objective")
-    plt.ylabel("frequency density")
+    plt.ylabel("counts")
     plt.savefig(file_pass)
     plt.clf()
 
@@ -301,6 +305,7 @@ def process(q_input, q_pars):
             file = file_QUBO_comp(q_input, q_pars)
             print(" XXXXXXXXXXXXXXXXXXXXXX  ")
             print( f"not working for {file}" )
+
         
 
 
