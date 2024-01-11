@@ -275,8 +275,8 @@ def plot_hist(q_input, q_pars):
 
 def process(q_input, q_pars):
     """ the sequence of calculation  makes computation if results has not been saved already"""
-    only_compute = True
-    only_prepare = False
+    only_compute = False
+    only_prepare = True
     file = file_LP_output(q_input, q_pars)
     if not os.path.isfile(file):
         solve_on_LP(q_input, q_pars)
