@@ -231,7 +231,7 @@ def plot_hist(q_input, q_pars):
     ys = [hist_pass.count(x) for x in xs]
     for el in hist_pass:
         assert el == int(el)
-    
+
     fig, ax = plt.subplots(figsize=(4, 3))
     fig.subplots_adjust(bottom=0.2, left = 0.15)
     plt.bar(xs,ys)
