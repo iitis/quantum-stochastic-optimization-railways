@@ -198,7 +198,50 @@ def analyze_qubo(q_input, q_pars):
     with open(file, 'wb') as fp:
         pickle.dump(results, fp)
 
+def make_plots(hist_pass, hist_obj, ground, q_pars, q_input, file_pass, file_obj):
+    xs = list( range(np.max(hist_pass) + 1) )
+    ys = [hist_pass.count(x) for x in xs]
+    for el in hist_pass:
+        assert el == int(el)
 
+    fig, ax = plt.subplots(figsize=(4, 3))
+    fig.subplots_adjust(bottom=0.2, left = 0.15)
+    plt.bar(xs,ys)
+    
+    if q_input.delays == {}:
+        disturbed = "Not disturbed"
+    else:
+        disturbed = "Disturbed"
+    if q_pars.method == "real":
+        plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
+    else:
+        plt.title(f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
+ 
+    xx = [i for i in xs if i % 2 == 0]
+    plt.xticks(xx)
+    plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
+    plt.ylabel("counts")
+    k = np.max(ys)/15
+    plt.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}min", fontsize=10)
+    plt.gca().set_xlim(left=0)
+    plt.savefig(file_pass)
+    plt.clf()
+
+    xs = set(hist_obj)
+    ys = [hist_obj.count(x) for x in set(hist_obj)]
+    fig, ax = plt.subplots(figsize=(4, 3))
+    fig.subplots_adjust(bottom=0.2, left = 0.15)
+    plt.bar(list(xs),ys, width = 0.1, color = "gray", label = "QUBO")
+    plt.axvline(x = ground, lw = 2, color = 'red', label = 'ground state')
+    if q_pars.method == "real":
+        plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
+    else:
+        plt.title(f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")   
+    plt.legend()
+    plt.xlabel("Objective")
+    plt.ylabel("counts")
+    plt.savefig(file_obj)
+    plt.clf()
 
 def display_results(res_dict, q_pars, q_input):
     """ print results of computation """
@@ -227,51 +270,12 @@ def plot_hist(q_input, q_pars):
         results = pickle.load(fp)
 
     hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
-    xs = list( range(np.max(hist_pass) + 1) )
-    ys = [hist_pass.count(x) for x in xs]
-    for el in hist_pass:
-        assert el == int(el)
-
-    fig, ax = plt.subplots(figsize=(4, 3))
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-    plt.bar(xs,ys)
-    file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
-    if q_input.delays == {}:
-        disturbed = "Not disturbed"
-    else:
-        disturbed = "Disturbed"
-    if q_pars.method == "sim":
-        plt.title(f"{disturbed}, method={q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
-    else:
-        plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
-    xx = [i for i in xs if i % 2 == 0]
-    plt.xticks(xx)
-    plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
-    plt.ylabel("counts")
-    k = np.max(ys)/15
-    plt.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}min", fontsize=10)
-    plt.gca().set_xlim(left=0)
-    plt.savefig(file_pass)
-    plt.clf()
-
     hist_obj = results["qubo objectives"]
-    xs = set(hist_obj)
-    ys = [hist_obj.count(x) for x in set(hist_obj)]
-
-    file_pass = file.replace(".json", "obj.pdf")
-    fig, ax = plt.subplots(figsize=(4, 3))
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-    plt.bar(list(xs),ys, width = 0.1, color = "gray", label = "QUBO")
-    plt.axvline(x = results["lp objective"], lw = 2, color = 'red', label = 'ground state')
-    if q_pars.method == "sim":
-        plt.title(f"{disturbed}, method={q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
-    else:
-        plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
-    plt.legend()
-    plt.xlabel("Objective")
-    plt.ylabel("counts")
-    plt.savefig(file_pass)
-    plt.clf()
+    file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
+    file_obj = file.replace(".json", "obj.pdf")
+    ground = results["lp objective"]
+    
+    make_plots(hist_pass, hist_obj, ground, q_pars, q_input, file_pass, file_obj)
 
     display_results(results, q_pars, q_input)
 

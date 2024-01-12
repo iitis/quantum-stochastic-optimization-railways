@@ -1,30 +1,30 @@
 """ prepare and analyze small qubos for gate computiong """
 import pickle
 from QTrains import Analyze_qubo, update_hist
-from solve_qubo import Input_qubo, Comp_parameters, file_QUBO, file_LP_output
+from solve_qubo import Input_qubo, Comp_parameters, file_QUBO, file_LP_output, make_plots
+import os
+import json 
 
 
-def dsiplay_analysis(qubo, solution, lp_sol):
+def dsiplay_analysis(qubo, solution, lp_sol, timetable = False):
     "prints features of the solution"
     print( "..........  QUBO ........   " )
-    print("qubo size", len( qubo.qubo ) )
-    print("number of Q-bits", len( solution ))
-    print("energy", qubo.energy(solution))
-    print("ofset", qubo.sum_ofset)
-    print("objective", qubo.objective_val(solution))
-    
-    print("LP objective", lp_sol["objective"] )
-    print(" ....... broken constrains   .......")
+    print("qubo size=", len( qubo.qubo ), " number of Q-bits=", len( solution ))
+    print("energy=", qubo.energy(solution))
+    print("energy + ofset=", qubo.energy(solution) + qubo.sum_ofset)
+    print("QUBO objective=", qubo.objective_val(solution), "  ILP objective=", lp_sol["objective"] )
+
     print("broken (sum, headway, pass, circ)", qubo.count_broken_constrains(solution))
     print("broken MO", qubo.broken_MO_conditions(solution))
 
-    print(" ........ vars values  ........ ")
-    print(" key, qubo, LP ")
+    if timetable:
+        print(" ........ vars values  ........ ")
+        print(" key, qubo, LP ")
 
-    vq = our_qubo.qubo2int_vars(solution)
-    for k, v in vq.items():
-        print(k, v.value, lp_sol["variables"][k].value)
-    print("  ..............................  ")
+        vq = our_qubo.qubo2int_vars(solution)
+        for k, v in vq.items():
+            print(k, v.value, lp_sol["variables"][k].value)
+        print("  ..............................  ")
 
 
 def save_qubo4gates(dict_qubo, qround_sol, file):
@@ -53,20 +53,21 @@ def get_ground(case):
     return solution
 
 
-def analyze_outputs(our_qubo, solution, lp_sol):
+def analyze_outputs(our_qubo, solutions, lp_sol):
     hist = list([])
     qubo_objectives = list([])
     for solution in solutions:
         dsiplay_analysis(our_qubo, solution, lp_sol)
 
         feasible = update_hist(our_qubo, solution, ["MR", "CS"], hist, qubo_objectives)
-        print("1 for feasible", feasible)
+        print("feasible", bool(feasible))
         print(hist)
         print(qubo_objectives)
+    return hist, qubo_objectives
 
-case = 9
+case = 8
 assert case in [1,2,3,4,5,6,7,8, 9, 10]
-save = True
+save = False
 
 q_input = Input_qubo()
 q_pars = Comp_parameters()
@@ -112,10 +113,40 @@ if save:
 
     save_qubo4gates(dict_read, solution, file_q)
 
+    solutions = [solution]
+
+else:
+    folder = "solutions/LR_timetable/2trains_IonQSimulatorResults_18_Qubits/"
+    print( os.path.isdir(folder) )
+    if case == 4:
+        data = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_2.0_4.0.json"
+    if case == 8:
+        data = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_20.0_40.0.json"
+    if case == 9:
+        data = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_2.0_4.0.json"
+    if case == 10:
+        data = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_20.0_40.0.json"
+    
+    with open(data, 'r') as fp:
+        solutions_input = json.load(fp)
+        
+    solutions = [sol["vars"] for sol in solutions_input]
+    print([sol["energy"] for sol in solutions_input])
+
+
 
 our_qubo = Analyze_qubo(dict_read)
-solutions = [solution]
 
-analyze_outputs(our_qubo, solutions, lp_sol)
+p_times, objs = analyze_outputs(our_qubo, solutions, lp_sol)
+print(objs)
+
+ground_sol = get_ground(case)
+ground = lp_sol["objective"]
+folder = folder.replace("solutions", "histograms")
+file_pass = f"{folder}pass_IonQsim{case}.pdf"
+file_obj = f"{folder}obj_IonQsim{case}.pdf"
+q_pars.method = "IonQsim"
+make_plots(p_times, objs, ground, q_pars, q_input, file_pass, file_obj)
+
 
 
