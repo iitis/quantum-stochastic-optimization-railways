@@ -51,7 +51,7 @@ def file_hist(q_input, q_pars, softern):
         file = file.replace("solutions", "histograms")
     else:
         file = file.replace("solutions", "histograms_soft")
-        file = file.replace("qubo", "disturbed_qubo")
+        file = file.replace("qubo", "qubo_softern")
     return file
 
 def solve_on_LP(q_input, q_pars):
@@ -579,7 +579,7 @@ if __name__ == "__main__":
 
     real_problem = True
     sim = False
-    softern = True
+    softern = False
 
     if real_problem:
 
