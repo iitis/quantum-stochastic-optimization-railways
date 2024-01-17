@@ -329,19 +329,28 @@ def hist_passing_times(sol, stations, qubo):
     return list(time_differences)
 
 
-def update_hist(qubo, sol_q, stations, hist, qubo_objective):
+def update_hist(qubo, sol_q, stations, hist, qubo_objective, softern_pass_t = False):
     """ 
     update histogram of differences computed by hist_passing_times given solution of:
     - qubo - sol_q
     - ILP - sol_ilp
     and qubo Analyze_qubo object
     IMPORTANT: station sequence in order of odd numer train passing sequence
+
+    if softern_pass_t - passing tiem constrain is not considered
     """
-    if qubo.count_broken_constrains(sol_q) == (0,0,0,0):
+    if not softern_pass_t:
+        fulfilled_constr = qubo.count_broken_constrains(sol_q) == (0,0,0,0)
+        pas = 0
+    else:
+        sum, headway, pas, circ = qubo.count_broken_constrains(sol_q)
+        fulfilled_constr = sum == 0 and headway == 0 and circ == 0
+    if fulfilled_constr:
         if qubo.broken_MO_conditions(sol_q) == 0:
             q_objective = qubo.objective_val(sol_q)
             # check whether objective equals to energy plus ofset
-            assert q_objective == pytest.approx( qubo.energy(sol_q) + qubo.sum_ofset )
+            assert q_objective + 2*pas*qubo.ppair == pytest.approx( qubo.energy(sol_q) + qubo.sum_ofset )
+
 
             vq = qubo.qubo2int_vars(sol_q)
             h = hist_passing_times(vq, stations, qubo)

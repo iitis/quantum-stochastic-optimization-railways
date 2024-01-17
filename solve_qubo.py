@@ -44,10 +44,13 @@ def file_QUBO_comp(q_input, q_pars):
     return file
 
 
-def file_hist(q_input, q_pars):
+def file_hist(q_input, q_pars, softern):
     """ file for histogram """
     file = file_QUBO_comp(q_input, q_pars)
-    file = file.replace("solutions", "histograms")
+    if not softern:
+        file = file.replace("solutions", "histograms")
+    else:
+        file = file.replace("solutions", "histograms_soft")
     return file
 
 def solve_on_LP(q_input, q_pars):
@@ -150,7 +153,7 @@ def solve_qubo(q_input, q_pars):
 
 
 
-def analyze_qubo(q_input, q_pars):
+def analyze_qubo(q_input, q_pars, softern):
     """ analyze results of computation on QUBO and comparison with LP """
     show_var_vals = False
 
@@ -178,7 +181,7 @@ def analyze_qubo(q_input, q_pars):
         for sample in sampleset.samples():
             sol = list(sample.values())
             count += 1
-            no_feasible += update_hist(qubo_to_analyze, sol, stations, hist, qubo_objectives)
+            no_feasible += update_hist(qubo_to_analyze, sol, stations, hist, qubo_objectives, softern_pass_t = softern)
 
     perc_feasible = no_feasible/count
 
@@ -194,7 +197,7 @@ def analyze_qubo(q_input, q_pars):
     results["qubo objectives"] = qubo_objectives
 
 
-    file =  file_hist(q_input, q_pars)
+    file =  file_hist(q_input, q_pars, softern)
     with open(file, 'wb') as fp:
         pickle.dump(results, fp)
 
@@ -261,10 +264,10 @@ def display_results(res_dict, q_pars, q_input):
     print("percentage of feasible", res_dict["perc feasible"])
 
 
-def plot_hist(q_input, q_pars):
+def plot_hist(q_input, q_pars, softern):
     """ plot histograms of trains passing time from results from QUBO """
 
-    file = file_hist(q_input, q_pars)
+    file = file_hist(q_input, q_pars, softern)
 
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
@@ -281,7 +284,7 @@ def plot_hist(q_input, q_pars):
 
 
 
-def process(q_input, q_pars):
+def process(q_input, q_pars, softern):
     """ the sequence of calculation  makes computation if results has not been saved already"""
     only_compute = False
     only_prepare = True
@@ -300,11 +303,11 @@ def process(q_input, q_pars):
 
     if not only_compute:
         try:
-            file = file_hist(q_input, q_pars)
+            file = file_hist(q_input, q_pars, softern)
             if not os.path.isfile(file):
-                analyze_qubo(q_input, q_pars)
+                analyze_qubo(q_input, q_pars, softern)
             
-            plot_hist(q_input, q_pars)
+            plot_hist(q_input, q_pars, softern)
         except:
             file = file_QUBO_comp(q_input, q_pars)
             print(" XXXXXXXXXXXXXXXXXXXXXX  ")
@@ -541,40 +544,41 @@ class Comp_parameters():
         assert self.annealing_time * self.num_reads < 1_000_000
 
 
-def series_of_computation(qubo, parameters):
+def series_of_computation(qubo, parameters, softern = False):
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
     for delays in delays_list:
 
         qubo.qubo_real_1t(delays)
-        process(qubo, parameters)
+        process(qubo, parameters, softern)
 
         qubo.qubo_real_2t(delays)
-        process(qubo, parameters)
+        process(qubo, parameters, softern)
 
         qubo.qubo_real_4t(delays)
-        process(qubo, parameters)
+        process(qubo, parameters, softern)
 
         qubo.qubo_real_6t(delays)
-        process(qubo, parameters)
+        process(qubo, parameters, softern)
 
         qubo.qubo_real_8t(delays)
-        process(qubo, parameters)
+        process(qubo, parameters, softern)
 
         qubo.qubo_real_10t(delays)
-        process(qubo, parameters)
+        process(qubo, parameters, softern)
 
         qubo.qubo_real_11t(delays)
-        process(qubo, parameters)
+        process(qubo, parameters, softern)
 
         qubo.qubo_real_12t(delays)
-        process(qubo, parameters)
+        process(qubo, parameters, softern)
 
 
 if __name__ == "__main__":
 
     real_problem = True
     sim = False
+    softern = True
 
     if real_problem:
 
@@ -588,11 +592,11 @@ if __name__ == "__main__":
 
                 q_par.ppair = 2.0
                 q_par.psum = 4.0
-                series_of_computation(our_qubo, q_par)
+                series_of_computation(our_qubo, q_par, softern)
 
                 q_par.ppair = 20.0
                 q_par.psum = 40.0
-                series_of_computation(our_qubo, q_par)
+                series_of_computation(our_qubo, q_par, softern)
         else:
             q_par.method = "real"
             for d_max in [2,6]:
@@ -602,11 +606,11 @@ if __name__ == "__main__":
 
                     q_par.ppair = 2.0
                     q_par.psum = 4.0
-                    series_of_computation(our_qubo, q_par)
+                    series_of_computation(our_qubo, q_par, softern)
 
                     q_par.ppair = 20.0
                     q_par.psum = 40.0
-                    series_of_computation(our_qubo, q_par)
+                    series_of_computation(our_qubo, q_par, softern)
 
 
     else:

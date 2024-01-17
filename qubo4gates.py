@@ -53,13 +53,13 @@ def get_ground(case):
     return solution
 
 
-def analyze_outputs(our_qubo, solutions, lp_sol):
+def analyze_outputs(our_qubo, solutions, lp_sol, softern):
     hist = list([])
     qubo_objectives = list([])
     for solution in solutions:
         dsiplay_analysis(our_qubo, solution, lp_sol)
 
-        feasible = update_hist(our_qubo, solution, ["MR", "CS"], hist, qubo_objectives)
+        feasible = update_hist(our_qubo, solution, ["MR", "CS"], hist, qubo_objectives, softern)
         print("feasible", bool(feasible))
         print(hist)
         print(qubo_objectives)
@@ -136,15 +136,19 @@ else:
 
 
 our_qubo = Analyze_qubo(dict_read)
-
-p_times, objs = analyze_outputs(our_qubo, solutions, lp_sol)
+softern = False
+p_times, objs = analyze_outputs(our_qubo, solutions, lp_sol, softern)
 print(objs)
 
 ground_sol = get_ground(case)
 ground = lp_sol["objective"]
 folder = folder.replace("solutions", "histograms")
-file_pass = f"{folder}pass_IonQsim{case}.pdf"
-file_obj = f"{folder}obj_IonQsim{case}.pdf"
+if softern:
+    soft = "soft"
+else:
+    soft = ""
+file_pass = f"{folder}pass_IonQsim{case}{soft}.pdf"
+file_obj = f"{folder}obj_IonQsim{case}{soft}.pdf"
 q_pars.method = "IonQsim"
 make_plots(p_times, objs, ground, q_pars, q_input, file_pass, file_obj)
 
