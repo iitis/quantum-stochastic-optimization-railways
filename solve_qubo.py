@@ -51,6 +51,7 @@ def file_hist(q_input, q_pars, softern):
         file = file.replace("solutions", "histograms")
     else:
         file = file.replace("solutions", "histograms_soft")
+        file = file.replace("qubo", "disturbed_qubo")
     return file
 
 def solve_on_LP(q_input, q_pars):
