@@ -221,13 +221,18 @@ def make_plots(hist_pass, hist_obj, ground, q_pars, q_input, file_pass, file_obj
     else:
         plt.title(f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
  
-    xx = [i for i in xs if i % 2 == 0]
-    plt.xticks(xx)
+
     plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
     plt.ylabel("counts")
-    k = np.max(ys)/15
-    plt.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}min", fontsize=10)
-    plt.gca().set_xlim(left=0)
+    k = np.max(ys)/12
+    plt.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}", fontsize=10)
+    if "softern" in file_pass:
+        plt.gca().set_xlim(left=0, right = 30)
+        plt.xticks(range(0, 30, 2))
+    else:
+        plt.gca().set_xlim(left=0)
+        xx = [i for i in xs if i % 2 == 0]
+        plt.xticks(xx)
     plt.savefig(file_pass)
     plt.clf()
 
