@@ -288,20 +288,20 @@ def test_qubo_vs_LP():
     assert bool(feasible)
 
     hist_list = list([])
-    qubo_objective = list([1.0])
+    qubo_objective = list([])
     feasible = update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, qubo_objective, softern_pass_t = True)
 
     assert hist_list == [1.0, 3.0]
-    assert qubo_objective == [1.0, 1.0]
+    assert qubo_objective == [1.0]
     assert bool(feasible)
 
     solution = [0,1,0,1,0,0,1,0,0,0,0,1]
     hist_list = list([])
-    qubo_objective = list([1.0])
+    qubo_objective = list([])
     feasible = update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, qubo_objective, softern_pass_t = True)
 
     assert hist_list == [0.0, 3.0]
-    assert qubo_objective == [1.0, 1.0]
+    assert qubo_objective == [1.0]
     assert bool(feasible)
 
 
