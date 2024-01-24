@@ -6,51 +6,52 @@ from QTrains import Analyze_qubo, update_hist
 from solve_qubo import Input_qubo, Comp_parameters, file_QUBO, file_LP_output, make_plots
 
 
-def dsiplay_analysis(input, our_solution, lp_solution, timetable = False):
+def dsiplay_analysis(q_input, our_solution, lp_solution, timetable = False):
     "prints features of the solution"
     print( "..........  QUBO ........   " )
-    print("qubo size=", len( input.qubo ), " number of Q-bits=", len( our_solution ))
-    print("energy=", input.energy( our_solution ))
-    print("energy + ofset=", input.energy( our_solution ) + input.sum_ofset)
-    print("QUBO objective=", input.objective_val( our_solution ), "  ILP objective=", lp_solution["objective"] )
+    print("qubo size=", len( q_input.qubo ), " number of Q-bits=", len( our_solution ))
+    print("energy=", q_input.energy( our_solution ))
+    print("energy + ofset=", q_input.energy( our_solution ) + q_input.sum_ofset)
+    print("QUBO objective=", q_input.objective_val( our_solution ), "  ILP objective=", lp_solution["objective"] )
 
-    print("broken (sum, headway, pass, circ)", input.count_broken_constrains( our_solution ))
-    print("broken MO", input.broken_MO_conditions( our_solution ))
+    print("broken (sum, headway, pass, circ)", q_input.count_broken_constrains( our_solution ))
+    print("broken MO", q_input.broken_MO_conditions( our_solution ))
 
     if timetable:
         print(" ........ vars values  ........ ")
         print(" key, qubo, LP ")
 
-        vq = input.qubo2int_vars( our_solution )
+        vq = q_input.qubo2int_vars( our_solution )
         for k, v in vq.items():
             print(k, v.value, lp_solution["variables"][k].value)
         print("  ..............................  ")
 
 
-def save_qubo4gates(dict_qubo, qround_sol, file):
+def save_qubo4gates(dict_qubo, qround_sol, input_file):
     "creates and seves file with ground oslution and small qubo for gate computing"
     our_qubo = Analyze_qubo(dict_qubo)
     qubo4gates = {}
     qubo4gates["qubo"] = dict_qubo["qubo"]
     qubo4gates["ground_solution"] = qround_sol
     qubo4gates["ground_energy"] = our_qubo.energy(qround_sol)
-    new_file = file.replace("LR_timetable/", "gates/")
-    with open(new_file, 'wb') as fp:
-        pickle.dump(qubo4gates, fp)
+    new_file = input_file.replace("LR_timetable/", "gates/")
+    with open(new_file, 'wb') as fp_w:
+        pickle.dump(qubo4gates, fp_w)
 
 
-def get_ground(case):
-    if case in [1, 5]:
-        solution = [1,0,0,1,0,0]
-    if case in [2, 6]:
-        solution = [1,0,0,0,0,1,0,0,0,0]
-    if case in [3, 7]:
-        solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
-    if case in [4, 8]:
-        solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
-    if case in [9, 10]:
-        solution = [1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0]
-    return solution
+def get_ground(case_no):
+    """ returns ground state solution given case number """
+    if case_no in [1, 5]:
+        ground_solution = [1,0,0,1,0,0]
+    if case_no in [2, 6]:
+        ground_solution = [1,0,0,0,0,1,0,0,0,0]
+    if case_no in [3, 7]:
+        ground_solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
+    if case_no in [4, 8]:
+        ground_solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
+    if case_no in [9, 10]:
+        ground_solution = [1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0]
+    return ground_solution
 
 
 def analyze_outputs(input, our_solutions, lp_solution, softern_constr):
@@ -120,15 +121,15 @@ else:
     folder = "solutions/LR_timetable/2trains_IonQSimulatorResults_18_Qubits/"
     print( os.path.isdir(folder) )
     if case == 4:
-        data = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_2.0_4.0.json"
+        data_file = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_2.0_4.0.json"
     if case == 8:
-        data = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_20.0_40.0.json"
+        data_file = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_20.0_40.0.json"
     if case == 9:
-        data = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_2.0_4.0.json"
+        data_file = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_2.0_4.0.json"
     if case == 10:
-        data = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_20.0_40.0.json"
+        data_file = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_20.0_40.0.json"
 
-    with open(data, 'r') as fp:
+    with open(data_file, 'r') as fp:
         solutions_input = json.load(fp)
 
     solutions = [sol["vars"] for sol in solutions_input]
@@ -136,9 +137,9 @@ else:
 
 
 
-our_qubo = Analyze_qubo(dict_read)
+input_qubo = Analyze_qubo(dict_read)
 softern = False
-p_times, objs = analyze_outputs(our_qubo, solutions, lp_sol, softern)
+p_times, objs = analyze_outputs(input_qubo, solutions, lp_sol, softern)
 print(objs)
 
 ground_sol = get_ground(case)

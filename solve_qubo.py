@@ -154,7 +154,7 @@ def solve_qubo(q_input, q_pars):
 
 
 
-def analyze_qubo(q_input, q_pars, softern):
+def analyze_qubo(q_input, q_pars, softern_pass_t):
     """ analyze results of computation on QUBO and comparison with LP """
     show_var_vals = False
 
@@ -182,7 +182,7 @@ def analyze_qubo(q_input, q_pars, softern):
         for sample in sampleset.samples():
             sol = list(sample.values())
             count += 1
-            no_feasible += update_hist(qubo_to_analyze, sol, stations, hist, qubo_objectives, softern_pass_t = softern)
+            no_feasible += update_hist(qubo_to_analyze, sol, stations, hist, qubo_objectives, softern_pass_t = softern_pass_t)
 
     perc_feasible = no_feasible/count
 
@@ -238,7 +238,7 @@ def make_plots(hist_pass, hist_obj, ground, q_pars, q_input, file_pass, file_obj
 
     xs = set(hist_obj)
     ys = [hist_obj.count(x) for x in set(hist_obj)]
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, _ = plt.subplots(figsize=(4, 3))
     fig.subplots_adjust(bottom=0.2, left = 0.15)
     plt.bar(list(xs),ys, width = 0.1, color = "gray", label = "QUBO")
     plt.axvline(x = ground, lw = 2, color = 'red', label = 'ground state')
@@ -270,10 +270,10 @@ def display_results(res_dict, q_pars, q_input):
     print("percentage of feasible", res_dict["perc feasible"])
 
 
-def plot_hist(q_input, q_pars, softern):
+def plot_hist(q_input, q_pars, softern_pass_t):
     """ plot histograms of trains passing time from results from QUBO """
 
-    file = file_hist(q_input, q_pars, softern)
+    file = file_hist(q_input, q_pars, softern_pass_t)
 
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
@@ -283,7 +283,7 @@ def plot_hist(q_input, q_pars, softern):
     file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
     file_obj = file.replace(".json", "obj.pdf")
     ground = results["lp objective"]
-    
+
     make_plots(hist_pass, hist_obj, ground, q_pars, q_input, file_pass, file_obj)
 
     display_results(results, q_pars, q_input)
@@ -333,6 +333,7 @@ class Input_qubo():
         self.objective_stations = []
         self.delays = {}
         self.file = ""
+        self.notrains = 0
 
     def qubo1(self):
         """
@@ -635,4 +636,5 @@ if __name__ == "__main__":
         our_qubo.qubo2()
         q_par.method = "sim"
         process(our_qubo, q_par)
+
 

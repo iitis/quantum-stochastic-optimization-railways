@@ -387,3 +387,4 @@ def test_2trains():
         else:
             assert el + objective[k] == q.qubo[k]
 
+
