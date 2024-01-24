@@ -11,8 +11,6 @@ Files:
 6. ```histograms_soft``` - histograms from data analysis with soften check of minimal passing time constraint. Input QUBO is the same
 as in the original problem, but for output minimal passing time constraint is not checked
 
-Histograms concerns passing times between selected stations in comparison with ILP results.
-
-The main script for computing on ILP and QUBP far various scenarios in ```solve_qubo.py```
+The main script for computing on ILP and QUBO far various scenarios in ```solve_qubo.py```
 
 Script ```qubo4gates.py``` saves qubo and ground state as well as analyses output dedicted to gates computiond
