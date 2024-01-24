@@ -290,7 +290,7 @@ def plot_hist(q_input, q_pars, softern_pass_t):
 
 
 
-def process(q_input, q_pars, softern):
+def process(q_input, q_pars, softern_p_constr):
     """ the sequence of calculation  makes computation if results has not been saved already"""
     only_compute = False
     only_prepare = True
@@ -309,11 +309,11 @@ def process(q_input, q_pars, softern):
 
     if not only_compute:
         try:
-            file = file_hist(q_input, q_pars, softern)
+            file = file_hist(q_input, q_pars, softern_p_constr)
             if not os.path.isfile(file):
-                analyze_qubo(q_input, q_pars, softern)
+                analyze_qubo(q_input, q_pars, softern_p_constr)
 
-            plot_hist(q_input, q_pars, softern)
+            plot_hist(q_input, q_pars, softern_p_constr)
         except:
             file = file_QUBO_comp(q_input, q_pars)
             print(" XXXXXXXXXXXXXXXXXXXXXX  ")
@@ -551,6 +551,7 @@ class Comp_parameters():
 
 
 def series_of_computation(qubo, parameters, softern_c = False):
+    """ performs series of computation for 1 - 12 trains """
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
     for delays in delays_list:
@@ -621,20 +622,21 @@ if __name__ == "__main__":
 
     else:
         # testing
+        softern = False
         our_qubo = Input_qubo()
         our_qubo.qubo1()
         q_par = Comp_parameters()
         q_par.method = "sim"
-        process(our_qubo, q_par)
+        process(our_qubo, q_par, softern)
 
         q_par.ppair = 250.0
         q_par.psum = 500.0
-        process(our_qubo, q_par)
+        process(our_qubo, q_par, softern)
 
         q_par.ppair = 2.0
         q_par.psum = 4.0
         our_qubo.qubo2()
         q_par.method = "sim"
-        process(our_qubo, q_par)
+        process(our_qubo, q_par, softern)
 
 
