@@ -44,10 +44,10 @@ def file_QUBO_comp(q_input, q_pars):
     return file
 
 
-def file_hist(q_input, q_pars, softern):
+def file_hist(q_input, q_pars, softern_constr):
     """ file for histogram """
     file = file_QUBO_comp(q_input, q_pars)
-    if not softern:
+    if not softern_constr:
         file = file.replace("solutions", "histograms")
     else:
         file = file.replace("solutions", "histograms_soft")
@@ -208,10 +208,10 @@ def make_plots(hist_pass, hist_obj, ground, q_pars, q_input, file_pass, file_obj
     for el in hist_pass:
         assert el == int(el)
 
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, _ = plt.subplots(figsize=(4, 3))
     fig.subplots_adjust(bottom=0.2, left = 0.15)
     plt.bar(xs,ys)
-    
+
     if q_input.delays == {}:
         disturbed = "Not disturbed"
     else:
@@ -220,7 +220,7 @@ def make_plots(hist_pass, hist_obj, ground, q_pars, q_input, file_pass, file_obj
         plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
     else:
         plt.title(f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
- 
+
 
     plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
     plt.ylabel("counts")
@@ -245,7 +245,7 @@ def make_plots(hist_pass, hist_obj, ground, q_pars, q_input, file_pass, file_obj
     if q_pars.method == "real":
         plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
     else:
-        plt.title(f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")   
+        plt.title(f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
     plt.legend()
     plt.xlabel("Objective")
     plt.ylabel("counts")
@@ -312,14 +312,13 @@ def process(q_input, q_pars, softern):
             file = file_hist(q_input, q_pars, softern)
             if not os.path.isfile(file):
                 analyze_qubo(q_input, q_pars, softern)
-            
+
             plot_hist(q_input, q_pars, softern)
         except:
             file = file_QUBO_comp(q_input, q_pars)
             print(" XXXXXXXXXXXXXXXXXXXXXX  ")
             print( f"not working for {file}" )
 
-        
 
 
 
@@ -550,34 +549,34 @@ class Comp_parameters():
         assert self.annealing_time * self.num_reads < 1_000_000
 
 
-def series_of_computation(qubo, parameters, softern = False):
+def series_of_computation(qubo, parameters, softern_c = False):
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
     for delays in delays_list:
 
         qubo.qubo_real_1t(delays)
-        process(qubo, parameters, softern)
+        process(qubo, parameters, softern_c)
 
         qubo.qubo_real_2t(delays)
-        process(qubo, parameters, softern)
+        process(qubo, parameters, softern_c)
 
         qubo.qubo_real_4t(delays)
-        process(qubo, parameters, softern)
+        process(qubo, parameters, softern_c)
 
         qubo.qubo_real_6t(delays)
-        process(qubo, parameters, softern)
+        process(qubo, parameters, softern_c)
 
         qubo.qubo_real_8t(delays)
-        process(qubo, parameters, softern)
+        process(qubo, parameters, softern_c)
 
         qubo.qubo_real_10t(delays)
-        process(qubo, parameters, softern)
+        process(qubo, parameters, softern_c)
 
         qubo.qubo_real_11t(delays)
-        process(qubo, parameters, softern)
+        process(qubo, parameters, softern_c)
 
         qubo.qubo_real_12t(delays)
-        process(qubo, parameters, softern)
+        process(qubo, parameters, softern_c)
 
 
 if __name__ == "__main__":
@@ -637,4 +636,3 @@ if __name__ == "__main__":
         q_par.method = "sim"
         process(our_qubo, q_par)
 
-        

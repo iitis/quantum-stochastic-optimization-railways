@@ -345,10 +345,10 @@ def test_2trains():
                    (16, 13): 2, (14, 15): 2, (15, 14): 2, (14, 16): 2, (16, 14): 2,
                    (14, 17): 2, (17, 14): 2}
 
-    #12 
+    #12
 
-    for el in circ_constr:
-        assert circ_constr[el] == q.qubo[el]
+    for k, el in circ_constr.items():
+        assert el == q.qubo[k]
 
     pt_constrain = {(1, 6): 2, (6, 1): 2, (2, 6): 2, (6, 2): 2, (2, 7): 2, (7, 2): 2,
                     (7, 12): 2, (12, 7): 2, (8, 12): 2, (12, 8): 2, (8, 13): 2, (13, 8): 2,
@@ -357,14 +357,14 @@ def test_2trains():
 
     #24
 
-    for el in pt_constrain:
-        assert pt_constrain[el] == q.qubo[el]
+    for k, el in pt_constrain.items():
+        assert el == q.qubo[k]
 
     sum_constr = {(0, 0): -4, (0, 1): 4, (0, 2): 4, (1, 1): -4, (1, 0): 4,
                   (1, 2): 4, (2, 2): -4, (2, 0): 4, (2, 1): 4, (3, 3): -4,
                   (3, 4): 4, (3, 5): 4, (4, 4): -4, (4, 3): 4, (4, 5): 4,
                   (5, 5): -4, (5, 3): 4, (5, 4): 4, (6, 6): -4, (6, 7): 4, (6, 8): 4,
-                  (7, 7): -4, (7, 6): 4, (7, 8): 4, (8, 8): -4, (8, 6): 4, (8, 7): 4, 
+                  (7, 7): -4, (7, 6): 4, (7, 8): 4, (8, 8): -4, (8, 6): 4, (8, 7): 4,
                   (9, 9): -4, (9, 10): 4, (9, 11): 4, (10, 10): -4, (10, 9): 4,
                   (10, 11): 4, (11, 11): -4, (11, 9): 4, (11, 10): 4,
                   (12, 12): -4, (12, 13): 4, (12, 14): 4, (13, 13): -4,
@@ -372,7 +372,7 @@ def test_2trains():
                   (14, 13): 4, (15, 15): -4, (15, 16): 4, (15, 17): 4,
                   (16, 16): -4, (16, 15): 4, (16, 17): 4, (17, 17): -4,
                   (17, 15): 4, (17, 16): 4}
-    
+
     objective = {(6, 6): 2.5, (7, 7): 3.0, (8, 8): 3.5, (9, 9): 0.0,
                 (10, 10): 0.5, (11, 11): 1.0, (12, 12): 2.5,
                 (13, 13): 3.0, (14, 14): 3.5, (15, 15): 0.0,
@@ -381,10 +381,9 @@ def test_2trains():
 
     assert len( q.qubo )  == len( circ_constr ) + len(pt_constrain) + len(sum_constr)
 
-    for el in sum_constr:
-        if el not in objective:
-            assert sum_constr[el] == q.qubo[el]
+    for k, el in sum_constr.items():
+        if k not in objective:
+            assert el == q.qubo[k]
         else:
-            assert sum_constr[el] + objective[el] == q.qubo[el]
-
+            assert el + objective[k] == q.qubo[k]
 

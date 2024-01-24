@@ -1,29 +1,29 @@
 """ prepare and analyze small qubos for gate computiong """
 import pickle
+import os
+import json
 from QTrains import Analyze_qubo, update_hist
 from solve_qubo import Input_qubo, Comp_parameters, file_QUBO, file_LP_output, make_plots
-import os
-import json 
 
 
-def dsiplay_analysis(qubo, solution, lp_sol, timetable = False):
+def dsiplay_analysis(input, our_solution, lp_solution, timetable = False):
     "prints features of the solution"
     print( "..........  QUBO ........   " )
-    print("qubo size=", len( qubo.qubo ), " number of Q-bits=", len( solution ))
-    print("energy=", qubo.energy(solution))
-    print("energy + ofset=", qubo.energy(solution) + qubo.sum_ofset)
-    print("QUBO objective=", qubo.objective_val(solution), "  ILP objective=", lp_sol["objective"] )
+    print("qubo size=", len( input.qubo ), " number of Q-bits=", len( our_solution ))
+    print("energy=", input.energy( our_solution ))
+    print("energy + ofset=", input.energy( our_solution ) + input.sum_ofset)
+    print("QUBO objective=", input.objective_val( our_solution ), "  ILP objective=", lp_solution["objective"] )
 
-    print("broken (sum, headway, pass, circ)", qubo.count_broken_constrains(solution))
-    print("broken MO", qubo.broken_MO_conditions(solution))
+    print("broken (sum, headway, pass, circ)", input.count_broken_constrains( our_solution ))
+    print("broken MO", input.broken_MO_conditions( our_solution ))
 
     if timetable:
         print(" ........ vars values  ........ ")
         print(" key, qubo, LP ")
 
-        vq = our_qubo.qubo2int_vars(solution)
+        vq = input.qubo2int_vars( our_solution )
         for k, v in vq.items():
-            print(k, v.value, lp_sol["variables"][k].value)
+            print(k, v.value, lp_solution["variables"][k].value)
         print("  ..............................  ")
 
 
@@ -53,13 +53,14 @@ def get_ground(case):
     return solution
 
 
-def analyze_outputs(our_qubo, solutions, lp_sol, softern):
+def analyze_outputs(input, our_solutions, lp_solution, softern_constr):
+    """  returns histogram of passing times between selected stations and objective """
     hist = list([])
     qubo_objectives = list([])
-    for solution in solutions:
-        dsiplay_analysis(our_qubo, solution, lp_sol)
+    for solution in our_solutions:
+        dsiplay_analysis(input, solution, lp_solution)
 
-        feasible = update_hist(our_qubo, solution, ["MR", "CS"], hist, qubo_objectives, softern)
+        feasible = update_hist(input, solution, ["MR", "CS"], hist, qubo_objectives, softern_constr)
         print("feasible", bool(feasible))
         print(hist)
         print(qubo_objectives)
@@ -126,10 +127,10 @@ else:
         data = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_2.0_4.0.json"
     if case == 10:
         data = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_20.0_40.0.json"
-    
+
     with open(data, 'r') as fp:
         solutions_input = json.load(fp)
-        
+
     solutions = [sol["vars"] for sol in solutions_input]
     print([sol["energy"] for sol in solutions_input])
 
@@ -151,6 +152,3 @@ file_pass = f"{folder}pass_IonQsim{case}{soft}.pdf"
 file_obj = f"{folder}obj_IonQsim{case}{soft}.pdf"
 q_pars.method = "IonQsim"
 make_plots(p_times, objs, ground, q_pars, q_input, file_pass, file_obj)
-
-
-

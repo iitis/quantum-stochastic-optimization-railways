@@ -1,3 +1,4 @@
+""" reads json file with QUBOs - 1 train """
 import pickle
 
 # add file name
