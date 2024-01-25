@@ -292,8 +292,8 @@ def plot_hist(q_input, q_pars, softern_pass_t):
 
 def process(q_input, q_pars, softern_p_constr):
     """ the sequence of calculation  makes computation if results has not been saved already"""
-    only_compute = False
-    only_prepare = True
+    compute = False
+    analyze = True
     file = file_LP_output(q_input, q_pars)
     if not os.path.isfile(file):
         solve_on_LP(q_input, q_pars)
@@ -302,12 +302,12 @@ def process(q_input, q_pars, softern_p_constr):
     if not os.path.isfile(file):
         prepare_qubo(q_input, q_pars)
 
-    if not only_prepare:
+    if compute:
         file = file_QUBO_comp(q_input, q_pars)
         if not os.path.isfile(file):
             solve_qubo(q_input, q_pars)
 
-    if not only_compute:
+    if analyze:
         try:
             file = file_hist(q_input, q_pars, softern_p_constr)
             if not os.path.isfile(file):
@@ -545,7 +545,7 @@ class Comp_parameters():
         # for real annealing
         self.annealing_time = 1000
         self.solver = "Advantage_system6.3"
-        #self.token = "DEV-d9e97c25806c8aa7d2fb3d9aca04b230fcec5f07"
+        self.token = "DEV-d9e97c25806c8aa7d2fb3d9aca04b230fcec5f07"
         #self.token = "OBi2-bf11ab4b1a5f98d4d14ea244a5f25e048d6f764c"
         assert self.annealing_time * self.num_reads < 1_000_000
 
