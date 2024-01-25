@@ -67,9 +67,37 @@ def analyze_outputs(input, our_solutions, lp_solution, softern_constr):
         print(qubo_objectives)
     return hist, qubo_objectives
 
-case = 8
+def results_file_dir(d_folder, problem_case, small, ionq_sim = True):
+    """ rerurns string of the name and dir of file with results on gate computers or its simulators """
+    if ionq_sim:
+        if problem_case == 4:
+            if small:
+                data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_2.0_4.0.json"
+            else:
+                data_file = f"{d_folder}summary.53.qubo_2t_delays_no_2_2.0_4.0.json"
+        if problem_case == 8:
+            if small:
+                data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_20.0_40.0.json"
+            else:
+                data_file = f"{d_folder}summary.51.qubo_2t_delays_no_2_20.0_40.0.json"
+        if problem_case == 9:
+            if small:
+                data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_2.0_4.0.json"
+            else:
+                data_file = f"{d_folder}summary.51.qubo_2t_delays_124_525_2_2.0_4.0.json"
+        if problem_case == 10:
+            if small:
+                data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_20.0_40.0.json"
+            else:
+                data_file = f"{d_folder}summary.50.qubo_2t_delays_124_525_2_20.0_40.0.json"
+    else:
+        data_file = ""
+    return data_file
+
+case = 10
 assert case in [1,2,3,4,5,6,7,8, 9, 10]
 save = False
+small = False
 
 q_input = Input_qubo()
 q_pars = Comp_parameters()
@@ -120,14 +148,8 @@ if save:
 else:
     folder = "solutions/LR_timetable/2trains_IonQSimulatorResults_18_Qubits/"
     print( os.path.isdir(folder) )
-    if case == 4:
-        data_file = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_2.0_4.0.json"
-    if case == 8:
-        data_file = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_20.0_40.0.json"
-    if case == 9:
-        data_file = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_2.0_4.0.json"
-    if case == 10:
-        data_file = f"{folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_20.0_40.0.json"
+    data_file = results_file_dir(folder, case, small)
+    
 
     with open(data_file, 'r') as fp:
         solutions_input = json.load(fp)
