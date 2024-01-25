@@ -99,7 +99,7 @@ assert case in [1,2,3,4,5,6,7,8, 9, 10]
 save = False
 small = False
 
-qubo_input = Input_qubo()
+input4qubo = Input_qubo()
 q_pars = Comp_parameters()
 if case in [1,2,3,4, 9]:
     q_pars.ppair = 2.0
@@ -121,17 +121,17 @@ if case in [9,10]:
     delays = {1:5, 2:2, 4:5}
 
 if case in [1,2,3,5,6,7]:
-    qubo_input.qubo_real_1t(delays)
+    input4qubo.qubo_real_1t(delays)
 if case in [4, 8,9,10]:
-    qubo_input.qubo_real_2t(delays)
+    input4qubo.qubo_real_2t(delays)
 
-file_q = file_QUBO(qubo_input, q_pars)
+file_q = file_QUBO(input4qubo, q_pars)
 with open(file_q, 'rb') as fp:
     dict_read = pickle.load(fp)
 
 print("qubo file", file_q)
 
-file = file_LP_output(qubo_input, q_pars)
+file = file_LP_output(input4qubo, q_pars)
 with open(file, 'rb') as fp:
     lp_sol = pickle.load(fp)
 
@@ -139,11 +139,11 @@ print("lp file", file)
 
 if save:
 
-    ground_solution = get_ground(case)
+    ground_state = get_ground(case)
 
-    save_qubo4gates(dict_read, ground_solution, file_q)
+    save_qubo4gates(dict_read, ground_state, file_q)
 
-    solutions = [ground_solution]
+    solutions = [ground_state]
 
 else:
     folder = "solutions/LR_timetable/2trains_IonQSimulatorResults_18_Qubits/"
@@ -173,4 +173,4 @@ else:
 file_pass = f"{folder}pass_IonQsim{case}{soft}.pdf"
 file_obj = f"{folder}obj_IonQsim{case}{soft}.pdf"
 q_pars.method = "IonQsim"
-make_plots(p_times, objs, ground, q_pars, qubo_input, file_pass, file_obj)
+make_plots(p_times, objs, ground, q_pars, input4qubo, file_pass, file_obj)
