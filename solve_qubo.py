@@ -87,8 +87,11 @@ def solve_on_LP(q_input, q_pars):
 
 
 
-def prepare_qubo(q_input, q_pars):
-    """ create and save QUBO given railway input and parameters """
+def prepare_qubo(q_input, q_pars, delta):
+    """ create and save QUBO given railway input and parameters 
+    
+    delta is the parameter that increases passing time, for stochastic purpose
+    """
     stay = q_input.stay
     headways = q_input.headways
     preparation_t = q_input.preparation_t
@@ -104,7 +107,7 @@ def prepare_qubo(q_input, q_pars):
                    preparation_t=preparation_t, dmax=dmax, circulation=q_input.circ)
     rail_input = Railway_input(p, objective_stations, delays = q_input.delays)
     q = QuboVars(rail_input, ppair=ppair, psum=psum)
-    q.make_qubo(rail_input)
+    q.make_qubo(rail_input, delta)
     qubo_dict = q.store_in_dict(rail_input)
 
     file = file_QUBO(q_input, q_pars)
@@ -300,7 +303,7 @@ def process(q_input, q_pars, softern_p_constr):
 
     file = file_QUBO(q_input, q_pars)
     if not os.path.isfile(file):
-        prepare_qubo(q_input, q_pars)
+        prepare_qubo(q_input, q_pars, delta = 0)
 
     if compute:
         file = file_QUBO_comp(q_input, q_pars)

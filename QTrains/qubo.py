@@ -123,17 +123,20 @@ class QuboVars:
 
 
 
-    def add_passing_time_constrain(self, Railway_input):
+    def add_passing_time_constrain(self, Railway_input, delta = 0):
         """ add minimal passing time + stay to QuboVars class in the form of 
-        dict {..., (k,kp): ppair, (kp,k): ppair,  ...} """
+        dict {..., (k,kp): ppair, (kp,k): ppair,  ...} 
+
+        delta is the parameter that increases passing time, for stochastic purpose
+        """
         passing_time_constrain = {}
         for (j, s, sp) in station_pairs(Railway_input.trains_paths):
             for t in self.sjt_inds[s][j]:
                 for tp in self.sjt_inds[sp][j]:
                     if (j % 2) == 1:
-                        ub = t + Railway_input.stay + Railway_input.pass_time[f"{s}_{sp}"]
+                        ub = t + Railway_input.stay + Railway_input.pass_time[f"{s}_{sp}"] + delta
                     else:
-                        ub = t + Railway_input.stay + Railway_input.pass_time[f"{sp}_{s}"]
+                        ub = t + Railway_input.stay + Railway_input.pass_time[f"{sp}_{s}"] + delta
                     if  tp < ub:
                         k = self.sjt_inds[s][j][t]
                         kp = self.sjt_inds[sp][j][tp]
@@ -158,12 +161,16 @@ class QuboVars:
         self.circ_constrain = circ_constrain
 
 
-    def make_qubo(self, Railway_input):
-        """create sorted QUBO dict with all constrains """
+    def make_qubo(self, Railway_input, delta = 0):
+        """
+        create sorted QUBO dict with all constrains 
+        
+        delta is the parameter that increases passing time, for stochastic purpose
+        """
         self.add_objective(Railway_input)
         self.add_sum_to_one_constrain()
         self.add_headway_constrain(Railway_input)
-        self.add_passing_time_constrain( Railway_input)
+        self.add_passing_time_constrain( Railway_input, delta)
         self.add_circ_constrain( Railway_input)
         qubo = {}
         add_update( qubo, self.objective )
