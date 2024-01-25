@@ -54,39 +54,39 @@ def get_ground(case_no):
     return ground_solution
 
 
-def analyze_outputs(input, our_solutions, lp_solution, softern_constr):
+def analyze_outputs(qubo_input, our_solutions, lp_solution, softern_constr):
     """  returns histogram of passing times between selected stations and objective """
     hist = list([])
     qubo_objectives = list([])
     for solution in our_solutions:
-        dsiplay_analysis(input, solution, lp_solution)
+        dsiplay_analysis(qubo_input, solution, lp_solution)
 
-        feasible = update_hist(input, solution, ["MR", "CS"], hist, qubo_objectives, softern_constr)
+        feasible = update_hist(qubo_input, solution, ["MR", "CS"], hist, qubo_objectives, softern_constr)
         print("feasible", bool(feasible))
         print(hist)
         print(qubo_objectives)
     return hist, qubo_objectives
 
-def results_file_dir(d_folder, problem_case, small, ionq_sim = True):
+def results_file_dir(d_folder, problem_case, small_sample, ionq_sim = True):
     """ rerurns string of the name and dir of file with results on gate computers or its simulators """
     if ionq_sim:
         if problem_case == 4:
-            if small:
+            if small_sample:
                 data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_2.0_4.0.json"
             else:
                 data_file = f"{d_folder}summary.53.qubo_2t_delays_no_2_2.0_4.0.json"
         if problem_case == 8:
-            if small:
+            if small_sample:
                 data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_20.0_40.0.json"
             else:
                 data_file = f"{d_folder}summary.51.qubo_2t_delays_no_2_20.0_40.0.json"
         if problem_case == 9:
-            if small:
+            if small_sample:
                 data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_2.0_4.0.json"
             else:
                 data_file = f"{d_folder}summary.51.qubo_2t_delays_124_525_2_2.0_4.0.json"
         if problem_case == 10:
-            if small:
+            if small_sample:
                 data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_20.0_40.0.json"
             else:
                 data_file = f"{d_folder}summary.50.qubo_2t_delays_124_525_2_20.0_40.0.json"
@@ -99,7 +99,7 @@ assert case in [1,2,3,4,5,6,7,8, 9, 10]
 save = False
 small = False
 
-q_input = Input_qubo()
+qubo_input = Input_qubo()
 q_pars = Comp_parameters()
 if case in [1,2,3,4, 9]:
     q_pars.ppair = 2.0
@@ -121,17 +121,17 @@ if case in [9,10]:
     delays = {1:5, 2:2, 4:5}
 
 if case in [1,2,3,5,6,7]:
-    q_input.qubo_real_1t(delays)
+    qubo_input.qubo_real_1t(delays)
 if case in [4, 8,9,10]:
-    q_input.qubo_real_2t(delays)
+    qubo_input.qubo_real_2t(delays)
 
-file_q = file_QUBO(q_input, q_pars)
+file_q = file_QUBO(qubo_input, q_pars)
 with open(file_q, 'rb') as fp:
     dict_read = pickle.load(fp)
 
 print("qubo file", file_q)
 
-file = file_LP_output(q_input, q_pars)
+file = file_LP_output(qubo_input, q_pars)
 with open(file, 'rb') as fp:
     lp_sol = pickle.load(fp)
 
@@ -139,29 +139,28 @@ print("lp file", file)
 
 if save:
 
-    solution = get_ground(case)
+    ground_solution = get_ground(case)
 
-    save_qubo4gates(dict_read, solution, file_q)
+    save_qubo4gates(dict_read, ground_solution, file_q)
 
-    solutions = [solution]
+    solutions = [ground_solution]
 
 else:
     folder = "solutions/LR_timetable/2trains_IonQSimulatorResults_18_Qubits/"
     print( os.path.isdir(folder) )
-    data_file = results_file_dir(folder, case, small)
+    data_f = results_file_dir(folder, case, small)
     
 
-    with open(data_file, 'r') as fp:
+    with open(data_f, 'r') as fp:
         solutions_input = json.load(fp)
 
     solutions = [sol["vars"] for sol in solutions_input]
     print([sol["energy"] for sol in solutions_input])
 
 
-
-input_qubo = Analyze_qubo(dict_read)
+Q = Analyze_qubo(dict_read)
 softern = False
-p_times, objs = analyze_outputs(input_qubo, solutions, lp_sol, softern)
+p_times, objs = analyze_outputs(Q, solutions, lp_sol, softern)
 print(objs)
 
 ground_sol = get_ground(case)
@@ -174,4 +173,4 @@ else:
 file_pass = f"{folder}pass_IonQsim{case}{soft}.pdf"
 file_obj = f"{folder}obj_IonQsim{case}{soft}.pdf"
 q_pars.method = "IonQsim"
-make_plots(p_times, objs, ground, q_pars, q_input, file_pass, file_obj)
+make_plots(p_times, objs, ground, q_pars, qubo_input, file_pass, file_obj)
