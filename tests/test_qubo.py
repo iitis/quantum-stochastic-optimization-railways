@@ -275,7 +275,6 @@ def test_qubo_vs_LP():
     assert qubo_to_analyze.objective_val(solution) == 1.0
 
 
-    print(qubo_to_analyze.stay)
     hist = hist_passing_times(vq, ["A", "B"], qubo_to_analyze)
     assert hist == [1.0, 3.0]
 
@@ -319,6 +318,44 @@ def test_qubo_vs_LP():
     assert vl['t_B_1'].value == 2
     assert vl['t_B_3'].value == 4
     assert prob.compute_objective(v, rail_input) == 0.0
+
+
+    #stochastic  LP
+    v = Variables(rail_input)
+    bounds, integrality = v.bonds_and_integrality()
+    prob = LinearPrograming(v, rail_input, M = 15, delta = 1)
+    opt = linprog(c=prob.obj, A_ub=prob.lhs_ineq,
+                  b_ub=prob.rhs_ineq, bounds=bounds, method='highs',
+                  integrality = integrality)
+    v.linprog2vars(opt)
+    vl = v.variables
+    assert vl['t_A_1'].value == 0
+    assert vl['t_A_3'].value == 2
+    assert vl['t_B_1'].value == 3
+    assert vl['t_B_3'].value == 5
+    assert prob.compute_objective(v, rail_input) == 1.0
+
+    # QUBO
+    hist_list = list([])
+    qubo_objective = list([])
+    q = QuboVars(rail_input)
+    q.make_qubo(rail_input, delta = 1)
+    qubo_dict = q.store_in_dict(rail_input)
+    qubo_to_analyze = Analyze_qubo(qubo_dict)
+
+    solution = [1,0,0,1,0,0,0,1,0,0,1,0]
+    vq = qubo_to_analyze.qubo2int_vars(solution)
+    assert vq['t_A_1'].value == 0
+    assert vq['t_A_3'].value == 2
+    assert vq['t_B_1'].value == 3
+    assert vq['t_B_3'].value == 5
+
+    feasible = update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, qubo_objective)
+
+    assert hist_list == [2.0, 2.0]
+    assert qubo_objective == [1.0]
+    assert bool(feasible)
+
 
 
 def test_2trains():
@@ -384,5 +421,7 @@ def test_2trains():
             assert el == q.qubo[k]
         else:
             assert el + objective[k] == q.qubo[k]
+
+
 
 

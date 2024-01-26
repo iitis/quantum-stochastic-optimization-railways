@@ -217,7 +217,11 @@ class LinearPrograming():
 
 
     def add_passing_times(self, variables, Railway_input, delta = 0):
-        "ad passing time constrain to inequality matrix"
+        """
+        adds passing time constrain to inequality matrix
+        
+        delta is the parameter that increases passing time, for stochastic purpose
+        """
         for (j, s, sp) in station_pairs(Railway_input.trains_paths):
             lhs_el = [0 for _ in variables.variables]
             i = variables.variables[f"t_{s}_{j}"].int_id
