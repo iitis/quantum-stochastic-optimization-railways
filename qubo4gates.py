@@ -3,7 +3,7 @@ import pickle
 import os
 import json
 from QTrains import Analyze_qubo, update_hist
-from solve_qubo import Input_qubo, Comp_parameters, file_QUBO, file_LP_output, make_plots
+from solve_qubo import Input_qubo, Comp_parameters, Process_parameters, file_QUBO, file_LP_output, make_plots
 
 
 def dsiplay_analysis(q_input, our_solution, lp_solution, timetable = False):
@@ -43,10 +43,16 @@ def get_ground(case_no):
     """ returns ground state solution given case number """
     if case_no in [1, 5]:
         ground_solution = [1,0,0,1,0,0]
+    if case in [-1, -5]:
+        ground_solution = [1,0,0,0,1,0]
     if case_no in [2, 6]:
         ground_solution = [1,0,0,0,0,1,0,0,0,0]
+    if case_no in [-2, -6]:
+        ground_solution = [1,0,0,0,0,0,1,0,0,0]
     if case_no in [3, 7]:
         ground_solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
+    if case_no in [-3, -7]:
+        ground_solution = [1,0,0,0,0,0,0,0,1,0,0,0,0,0]
     if case_no in [4, 8]:
         ground_solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
     if case_no in [9, 10]:
@@ -95,82 +101,90 @@ def results_file_dir(d_folder, problem_case, small_sample, ionq_sim = True):
     return data_file
 
 case = 10
-assert case in [1,2,3,4,5,6,7,8, 9, 10]
-save = False
-small = False
-
-input4qubo = Input_qubo()
-q_pars = Comp_parameters()
-if case in [1,2,3,4, 9]:
-    q_pars.ppair = 2.0
-    q_pars.psum = 4.0
-if case in [5,6,7,8, 10]:
-    q_pars.ppair = 20.0
-    q_pars.psum = 40.0
-
-if case in [1, 4, 5, 8,9,10]:
-    q_pars.dmax = 2
-if case in [2, 6]:
-    q_pars.dmax = 4
-if case in [3, 7]:
-    q_pars.dmax = 6
-
-if case in [1,2,3,4,5,6,7,8]:
-    delays = {}
-if case in [9,10]:
-    delays = {1:5, 2:2, 4:5}
-
-if case in [1,2,3,5,6,7]:
-    input4qubo.qubo_real_1t(delays)
-if case in [4, 8,9,10]:
-    input4qubo.qubo_real_2t(delays)
-
-file_q = file_QUBO(input4qubo, q_pars)
-with open(file_q, 'rb') as fp:
-    dict_read = pickle.load(fp)
-
-print("qubo file", file_q)
-
-file = file_LP_output(input4qubo, q_pars)
-with open(file, 'rb') as fp:
-    lp_sol = pickle.load(fp)
-
-print("lp file", file)
-
-if save:
-
-    ground_state = get_ground(case)
-
-    save_qubo4gates(dict_read, ground_state, file_q)
-
-    solutions = [ground_state]
-
-else:
-    folder = "solutions/LR_timetable/2trains_IonQSimulatorResults_18_Qubits/"
-    print( os.path.isdir(folder) )
-    data_f = results_file_dir(folder, case, small)
-    
-
-    with open(data_f, 'r') as fp:
-        solutions_input = json.load(fp)
-
-    solutions = [sol["vars"] for sol in solutions_input]
-    print([sol["energy"] for sol in solutions_input])
+save = True
+small_sample_results = False
 
 
-Q = Analyze_qubo(dict_read)
-softern = False
-p_times, objs = analyze_outputs(Q, solutions, lp_sol, softern)
-print(objs)
+if __name__ == "__main__":
 
-ground_sol = get_ground(case)
-ground = lp_sol["objective"]
-folder = folder.replace("solutions", "histograms")
-if softern:
-    soft = "soft"
-else:
-    soft = ""
-file_pass = f"{folder}pass_IonQsim{case}{soft}.pdf"
-file_obj = f"{folder}obj_IonQsim{case}{soft}.pdf"
-q_pars.method = "IonQsim"
-make_plots(p_times, objs, ground, q_pars, input4qubo, file_pass, file_obj)
+    assert case in [-7, -6, -5, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    input4qubo = Input_qubo()
+    q_pars = Comp_parameters()
+    if case in [-3, -2, -1, 1, 2, 3, 4, 9]:
+        q_pars.ppair = 2.0
+        q_pars.psum = 4.0
+    if case in [-7, -6, -5, 5, 6, 7, 8, 10 ]:
+        q_pars.ppair = 20.0
+        q_pars.psum = 40.0
+
+    if case in [-5, -1, 1, 4, 5, 8, 9, 10]:
+        q_pars.dmax = 2
+    if case in [-6, -2, 2, 6]:
+        q_pars.dmax = 4
+    if case in [-7, -3, 3, 7]:
+        q_pars.dmax = 6
+
+    if case in [-7, -6, -5, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8]:
+        delays = {}
+    if case in [9,10]:
+        delays = {1:5, 2:2, 4:5}
+
+    if case in [-7, -6, -5, -3, -2, -1, 1, 2, 3, 5, 6, 7]:
+        input4qubo.qubo_real_1t(delays)
+    if case in [4, 8,9,10]:
+        input4qubo.qubo_real_2t(delays)
+
+
+    p = Process_parameters()
+    if case < 0:
+        p.delta = 1
+
+    file_q = file_QUBO(input4qubo, q_pars, p)
+    with open(file_q, 'rb') as fp:
+        dict_read = pickle.load(fp)
+
+    print("qubo file", file_q)
+
+    file = file_LP_output(input4qubo, q_pars, p)
+    with open(file, 'rb') as fp:
+        lp_sol = pickle.load(fp)
+
+    print("lp file", file)
+
+    if save:
+
+        ground_state = get_ground(case)
+
+        save_qubo4gates(dict_read, ground_state, file_q)
+
+        solutions = [ground_state]
+
+    else:
+        folder = "solutions/LR_timetable/2trains_IonQSimulatorResults_18_Qubits/"
+        print( os.path.isdir(folder) )
+        data_f = results_file_dir(folder, case, small_sample_results)
+        
+
+        with open(data_f, 'r') as fp:
+            solutions_input = json.load(fp)
+
+        solutions = [sol["vars"] for sol in solutions_input]
+        print([sol["energy"] for sol in solutions_input])
+
+
+    Q = Analyze_qubo(dict_read)
+    softern = False
+    p_times, objs = analyze_outputs(Q, solutions, lp_sol, softern)
+    print(objs)
+
+    ground_sol = get_ground(case)
+    ground = lp_sol["objective"]
+    folder = folder.replace("solutions", "histograms")
+    if softern:
+        soft = "soft"
+    else:
+        soft = ""
+    file_pass = f"{folder}pass_IonQsim{case}{soft}.pdf"
+    file_obj = f"{folder}obj_IonQsim{case}{soft}.pdf"
+    q_pars.method = "IonQsim"
+    make_plots(p_times, objs, ground, q_pars, input4qubo, file_pass, file_obj)

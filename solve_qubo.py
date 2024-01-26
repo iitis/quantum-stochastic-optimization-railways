@@ -573,8 +573,6 @@ class Process_parameters():
 def series_of_computation(qubo, parameters, p):
     """ performs series of computation for 1 - 12 trains """
     delays_list = [{}, {1:5, 2:2, 4:5}]
-    p = Process_parameters()
-
 
     for delays in delays_list:
 
@@ -606,11 +604,15 @@ def series_of_computation(qubo, parameters, p):
 if __name__ == "__main__":
 
     real_problem = False
-    sim = False
+    make_stochatic_qubos = False
+
     p = Process_parameters()
 
     if real_problem:
-
+        #p.compute = True
+        #p.analyze = True
+        #p.softern_pass = True
+        sim = False
         our_qubo = Input_qubo()
         q_par = Comp_parameters()
 
@@ -640,11 +642,25 @@ if __name__ == "__main__":
                     q_par.ppair = 20.0
                     q_par.psum = 40.0
                     series_of_computation(our_qubo, q_par, p)
+    
+    elif make_stochatic_qubos:
+
+        p.delta = 1
+        our_qubo = Input_qubo()
+        q_par = Comp_parameters()
+        delays_list = [{}, {1:5, 2:2, 4:5}]
+
+        for delays in delays_list:
+
+            for d_max in [2,6]:
+                q_par.dmax = d_max
+
+                our_qubo.qubo_real_1t(delays)
+                process(our_qubo, q_par, p)
 
 
     else:
         # testing
-        p = Process_parameters()
         p.compute = True
         p.analyze = True
         #p.softern_pass = True
