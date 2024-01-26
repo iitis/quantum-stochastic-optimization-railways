@@ -323,7 +323,7 @@ def process(q_input, q_pars, p):
 
             plot_hist(q_input, q_pars, p)
         except:
-            file = file_QUBO_comp(q_input, q_pars)
+            file = file_QUBO_comp(q_input, q_pars, p)
             print(" XXXXXXXXXXXXXXXXXXXXXX  ")
             print( f"not working for {file}" )
 
