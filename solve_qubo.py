@@ -19,23 +19,29 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 plt.rc('font', size=10)
 
-def file_LP_output(q_input, q_pars):
+def file_LP_output(q_input, q_pars, delta = 0):
     """ returns string, the file name and dir to store LP results """
     file = q_input.file
     file = file.replace("qubo", "LP")
-    file = f"{file}_{q_pars.dmax}.json"
+    if delta == 0:
+        file = f"{file}_{q_pars.dmax}.json"
+    else:
+        file = f"{file}_{q_pars.dmax}_stochastic{delta}.json"
     file = file.replace("QUBOs", "solutions")
     return file
 
 
-def file_QUBO(q_input, q_pars):
+def file_QUBO(q_input, q_pars, delta = 0):
     """ returns string, the file name and dir to store QUBO and its features """
-    file = f"{q_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}.json"
+    if delta == 0:
+        file = f"{q_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}.json"
+    else:
+        file = f"{q_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}_stochastic{delta}.json"
     return file
 
-def file_QUBO_comp(q_input, q_pars):
+def file_QUBO_comp(q_input, q_pars, delta = 0):
     """ returns string, the file name and dir to store results of computaiton on QUBO """
-    file = file_QUBO(q_input, q_pars)
+    file = file_QUBO(q_input, q_pars, delta)
     file = file.replace("QUBOs", "solutions")
     if q_pars.method == "sim":
         file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.beta_range[0]}_{q_pars.num_sweeps}.json")
@@ -44,9 +50,9 @@ def file_QUBO_comp(q_input, q_pars):
     return file
 
 
-def file_hist(q_input, q_pars, softern_constr):
+def file_hist(q_input, q_pars, softern_constr, delta = 0):
     """ file for histogram """
-    file = file_QUBO_comp(q_input, q_pars)
+    file = file_QUBO_comp(q_input, q_pars, delta)
     if not softern_constr:
         file = file.replace("solutions", "histograms")
     else:
@@ -54,7 +60,7 @@ def file_hist(q_input, q_pars, softern_constr):
         file = file.replace("qubo", "qubo_softern")
     return file
 
-def solve_on_LP(q_input, q_pars):
+def solve_on_LP(q_input, q_pars, delta = 0):
     """ solve the problem using LP, and save results """
     stay = q_input.stay
     headways = q_input.headways
@@ -69,7 +75,7 @@ def solve_on_LP(q_input, q_pars):
     rail_input = Railway_input(p, objective_stations, delays = q_input.delays)
     v = Variables(rail_input)
     bounds, integrality = v.bonds_and_integrality()
-    problem = LinearPrograming(v, rail_input, M = q_pars.M)
+    problem = LinearPrograming(v, rail_input, M = q_pars.M, delta=delta)
     opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
                   b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
@@ -293,13 +299,12 @@ def plot_hist(q_input, q_pars, softern_pass_t):
 
 
 
-def process(q_input, q_pars, softern_p_constr):
+def process(q_input, q_pars, softern_p_constr, compute, analyze):
     """ the sequence of calculation  makes computation if results has not been saved already"""
-    compute = False
-    analyze = True
+
     file = file_LP_output(q_input, q_pars)
     if not os.path.isfile(file):
-        solve_on_LP(q_input, q_pars)
+        solve_on_LP(q_input, q_pars, delta = 0)
 
     file = file_QUBO(q_input, q_pars)
     if not os.path.isfile(file):
@@ -555,32 +560,34 @@ class Comp_parameters():
 def series_of_computation(qubo, parameters, softern_c = False):
     """ performs series of computation for 1 - 12 trains """
     delays_list = [{}, {1:5, 2:2, 4:5}]
+    compute = False
+    analyze = True
 
     for delays in delays_list:
 
         qubo.qubo_real_1t(delays)
-        process(qubo, parameters, softern_c)
+        process(qubo, parameters, softern_c, compute, analyze)
 
         qubo.qubo_real_2t(delays)
-        process(qubo, parameters, softern_c)
+        process(qubo, parameters, softern_c, compute, analyze)
 
         qubo.qubo_real_4t(delays)
-        process(qubo, parameters, softern_c)
+        process(qubo, parameters, softern_c, compute, analyze)
 
         qubo.qubo_real_6t(delays)
-        process(qubo, parameters, softern_c)
+        process(qubo, parameters, softern_c, compute, analyze)
 
         qubo.qubo_real_8t(delays)
-        process(qubo, parameters, softern_c)
+        process(qubo, parameters, softern_c, compute, analyze)
 
         qubo.qubo_real_10t(delays)
-        process(qubo, parameters, softern_c)
+        process(qubo, parameters, softern_c, compute, analyze)
 
         qubo.qubo_real_11t(delays)
-        process(qubo, parameters, softern_c)
+        process(qubo, parameters, softern_c, compute, analyze)
 
         qubo.qubo_real_12t(delays)
-        process(qubo, parameters, softern_c)
+        process(qubo, parameters, softern_c, compute, analyze)
 
 
 if __name__ == "__main__":
@@ -625,20 +632,22 @@ if __name__ == "__main__":
     else:
         # testing
         softern = False
+        compute = False
+        analyze = True
         our_qubo = Input_qubo()
         our_qubo.qubo1()
         q_par = Comp_parameters()
         q_par.method = "sim"
-        process(our_qubo, q_par, softern)
+        process(our_qubo, q_par, softern, compute, analyze)
 
         q_par.ppair = 250.0
         q_par.psum = 500.0
-        process(our_qubo, q_par, softern)
+        process(our_qubo, q_par, softern, compute, analyze)
 
         q_par.ppair = 2.0
         q_par.psum = 4.0
         our_qubo.qubo2()
         q_par.method = "sim"
-        process(our_qubo, q_par, softern)
+        process(our_qubo, q_par, softern, compute, analyze)
 
 

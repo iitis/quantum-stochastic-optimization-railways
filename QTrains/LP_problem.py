@@ -148,7 +148,7 @@ class LinearPrograming():
     - M - parameter of LP
 
     """
-    def __init__(self, variables, Railway_input, M = 10):
+    def __init__(self, variables, Railway_input, M = 10, delta = 0):
         self.obj = []
         self.obj_ofset = 0
         self.lhs_ineq = []
@@ -160,7 +160,7 @@ class LinearPrograming():
         self.make_objective(variables, Railway_input)
         self.make_objective_ofset(variables, Railway_input)
         self.add_headways(variables, Railway_input)
-        self.add_passing_times(variables, Railway_input)
+        self.add_passing_times(variables, Railway_input, delta)
         self.add_circ_constrain(variables, Railway_input)
 
 
@@ -216,7 +216,7 @@ class LinearPrograming():
                 self.rhs_ineq.append(-p)
 
 
-    def add_passing_times(self, variables, Railway_input):
+    def add_passing_times(self, variables, Railway_input, delta = 0):
         "ad passing time constrain to inequality matrix"
         for (j, s, sp) in station_pairs(Railway_input.trains_paths):
             lhs_el = [0 for _ in variables.variables]
@@ -226,9 +226,9 @@ class LinearPrograming():
             lhs_el[ip] = -1
             self.lhs_ineq.append(lhs_el)
             if (j % 2) == 1:
-                self.rhs_ineq.append(-Railway_input.stay -Railway_input.pass_time[f"{s}_{sp}"])
+                self.rhs_ineq.append(-Railway_input.stay -Railway_input.pass_time[f"{s}_{sp}"] - delta)
             else:
-                self.rhs_ineq.append(-Railway_input.stay -Railway_input.pass_time[f"{sp}_{s}"])
+                self.rhs_ineq.append(-Railway_input.stay -Railway_input.pass_time[f"{sp}_{s}"] - delta)
 
     def add_circ_constrain(self, variables, Railway_input):
         "ass rolling stock circulation constrain into the inequality matrix"
