@@ -100,7 +100,7 @@ def results_file_dir(d_folder, problem_case, small_sample, ionq_sim = True):
         data_file = ""
     return data_file
 
-case = 10
+case = -6
 save = True
 small_sample_results = False
 
@@ -179,12 +179,14 @@ if __name__ == "__main__":
 
     ground_sol = get_ground(case)
     ground = lp_sol["objective"]
-    folder = folder.replace("solutions", "histograms")
-    if softern:
-        soft = "soft"
-    else:
-        soft = ""
-    file_pass = f"{folder}pass_IonQsim{case}{soft}.pdf"
-    file_obj = f"{folder}obj_IonQsim{case}{soft}.pdf"
-    q_pars.method = "IonQsim"
-    make_plots(p_times, objs, ground, q_pars, input4qubo, file_pass, file_obj)
+
+    if not save:
+        folder = folder.replace("solutions", "histograms")
+        if softern:
+            soft = "soft"
+        else:
+            soft = ""
+        file_pass = f"{folder}pass_IonQsim{case}{soft}.pdf"
+        file_obj = f"{folder}obj_IonQsim{case}{soft}.pdf"
+        q_pars.method = "IonQsim"
+        make_plots(p_times, objs, ground, q_pars, input4qubo, file_pass, file_obj)

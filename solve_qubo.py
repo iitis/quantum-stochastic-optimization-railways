@@ -603,14 +603,14 @@ def series_of_computation(qubo, parameters, p):
 
 if __name__ == "__main__":
 
-    real_problem = False
+    real_problem = True
     make_stochatic_qubos = False
 
     p = Process_parameters()
 
     if real_problem:
         #p.compute = True
-        #p.analyze = True
+        p.analyze = True
         #p.softern_pass = True
         sim = False
         our_qubo = Input_qubo()
@@ -652,10 +652,16 @@ if __name__ == "__main__":
 
         for delays in delays_list:
 
-            for d_max in [2,6]:
+            for d_max in [2,4, 6]:
                 q_par.dmax = d_max
 
                 our_qubo.qubo_real_1t(delays)
+                q_par.ppair = 2.0
+                q_par.psum = 4.0
+                process(our_qubo, q_par, p)
+
+                q_par.ppair = 20.0
+                q_par.psum = 40.0
                 process(our_qubo, q_par, p)
 
 
