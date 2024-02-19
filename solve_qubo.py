@@ -211,58 +211,108 @@ def analyze_qubo(q_input, q_pars, p):
     with open(file, 'wb') as fp:
         pickle.dump(results, fp)
 
-def make_plots(hist_pass, hist_obj, ground, q_pars, q_input, file_pass, file_obj):
-    xs = list( range(np.max(hist_pass) + 1) )
-    ys = [hist_pass.count(x) for x in xs]
-    for el in hist_pass:
-        assert el == int(el)
 
-    fig, _ = plt.subplots(figsize=(4, 3))
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-    plt.bar(xs,ys)
-
+def plot_title(q_input, q_pars):
     if q_input.delays == {}:
         disturbed = "Not disturbed"
     else:
         disturbed = "Disturbed"
     if q_pars.method == "real":
-        plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
+        tit = f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
     else:
-        plt.title(f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}")
+        tit = f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
+    return tit
 
 
-    plt.xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
-    plt.ylabel("counts")
+def _ax_hist_passing_times(ax, q_input, q_pars, p, dir=""):
+
+    file = f"{dir}{file_hist(q_input, q_pars, p)}"
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+
+    hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
+
+    xs = list( range(np.max(hist_pass) + 1) )
+    ys = [hist_pass.count(x) for x in xs]
+    ax.bar(xs,ys)
+
+    ax.set_xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
+    ax.set_ylabel("counts")
     k = np.max(ys)/12
-    plt.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}", fontsize=10)
-    if "softern" in file_pass:
-        plt.gca().set_xlim(left=0, right = 30)
-        plt.xticks(range(0, 30, 2))
+    ax.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}", fontsize=10)
+
+    if "softern" in file:
+        ax.set_xlim(left=0, right = 30)
+        ax.set_xticks(range(0, 30, 2))
     else:
-        plt.gca().set_xlim(left=0)
+        ax.set_xlim(left=0)
         xx = [i for i in xs if i % 2 == 0]
-        plt.xticks(xx)
-    plt.savefig(file_pass)
-    plt.clf()
+        ax.set_xticks(xx)
+
+
+
+def _ax_objective(ax, q_input, q_pars, p, dir = ""):
+
+    file = f"{dir}{file_hist(q_input, q_pars, p)}"
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+
+    hist_obj = results["qubo objectives"]
+    ground = results["lp objective"]
 
     xs = set(hist_obj)
     ys = [hist_obj.count(x) for x in set(hist_obj)]
-    fig, _ = plt.subplots(figsize=(4, 3))
+    
+    ax.bar(list(xs),ys, width = 0.1, color = "gray", label = "QUBO")
+    ax.axvline(x = ground, lw = 2, color = 'red', label = 'ground state')
+
+    ax.legend()
+    ax.set_xlabel("Objective")
+    ax.set_ylabel("counts")
+
+    
+
+def make_plots(q_input, q_pars, p):
+
+
+    fig, ax = plt.subplots(figsize=(4, 3))
+
+    _ax_hist_passing_times(ax, q_input, q_pars, p)
+    our_title = plot_title(q_input, q_pars)
+
     fig.subplots_adjust(bottom=0.2, left = 0.15)
-    plt.bar(list(xs),ys, width = 0.1, color = "gray", label = "QUBO")
-    plt.axvline(x = ground, lw = 2, color = 'red', label = 'ground state')
-    if q_pars.method == "real":
-        plt.title(f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
-    else:
-        plt.title(f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}, dmax={int(q_pars.dmax)}")
-    plt.legend()
-    plt.xlabel("Objective")
-    plt.ylabel("counts")
+
+    plt.title(our_title)
+
+    file = file_hist(q_input, q_pars, p)
+    file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
+    plt.savefig(file_pass)
+    plt.clf()
+
+
+    fig, ax = plt.subplots(figsize=(4, 3))
+
+    _ax_objective(ax, q_input, q_pars, p)
+    our_title= f"{plot_title(q_input, q_pars)}, dmax={int(q_pars.dmax)}"
+
+    fig.subplots_adjust(bottom=0.2, left = 0.15)
+    
+    plt.title(our_title)
+
+    file = file_hist(q_input, q_pars, p)
+    file_obj = file.replace(".json", "obj.pdf")
     plt.savefig(file_obj)
     plt.clf()
 
-def display_results(res_dict, q_pars, q_input):
+def display_results(q_input, q_pars, p):
     """ print results of computation """
+
+
+    file = file_hist(q_input, q_pars, p)
+    
+    with open(file, 'rb') as fp:
+        res_dict = pickle.load(fp)
+    
     print("xxxxxxxxx    RESULTS     xxxxxx ", q_input.file,  "xxxxx")
     print("delays", q_input.delays )
     print("method", q_pars.method)
@@ -282,20 +332,10 @@ def display_results(res_dict, q_pars, q_input):
 def plot_hist(q_input, q_pars, p):
     """ plot histograms of trains passing time from results from QUBO """
 
-    file = file_hist(q_input, q_pars, p)
 
-    with open(file, 'rb') as fp:
-        results = pickle.load(fp)
+    make_plots(q_input, q_pars, p)
 
-    hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
-    hist_obj = results["qubo objectives"]
-    file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
-    file_obj = file.replace(".json", "obj.pdf")
-    ground = results["lp objective"]
-
-    make_plots(hist_pass, hist_obj, ground, q_pars, q_input, file_pass, file_obj)
-
-    display_results(results, q_pars, q_input)
+    display_results(q_input, q_pars, p)
 
 
 
@@ -316,12 +356,14 @@ def process(q_input, q_pars, p):
             solve_qubo(q_input, q_pars, p)
 
     if p.analyze:
+        #if True:
         try:
             file = file_hist(q_input, q_pars, p)
             if not os.path.isfile(file):
                 analyze_qubo(q_input, q_pars, p)
 
             plot_hist(q_input, q_pars, p)
+        #else:
         except:
             file = file_QUBO_comp(q_input, q_pars, p)
             print(" XXXXXXXXXXXXXXXXXXXXXX  ")

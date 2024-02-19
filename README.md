@@ -14,3 +14,5 @@ as in the original problem, but for output minimal passing time constraint is no
 The main script for computing on ILP and QUBO far various scenarios in ```solve_qubo.py```
 
 Script ```qubo4gates.py``` saves QUBO and ground state as well as analyses output dedicated to gates computing.
+
+Script ```plots4article.py``` creates selected high quality plots for the purpose of article, and save them in ```article_plots``` folder.
