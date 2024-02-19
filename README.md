@@ -3,8 +3,8 @@ Application of quantum computation for stochastic optimization on example of rai
 
 Files:
 
-1. '''QTrains''' - source code
-2. '''tests''' - testing source code
+1. ```QTrains``` - source code
+2. ```tests``` - testing source code
 3. '''solutions''' - stored solutions of railway problems
 4. '''QUBOs''' - qubos of railway problems
 5. '''histograms''' - histograms from data analysis
