@@ -224,7 +224,7 @@ def plot_title(q_input, q_pars):
     return tit
 
 
-def _ax_hist_passing_times(ax, q_input, q_pars, p, dir=""):
+def _ax_hist_passing_times(ax, q_input, q_pars, p, add_text = True, dir=""):
 
     file = f"{dir}{file_hist(q_input, q_pars, p)}"
     with open(file, 'rb') as fp:
@@ -238,8 +238,9 @@ def _ax_hist_passing_times(ax, q_input, q_pars, p, dir=""):
 
     ax.set_xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
     ax.set_ylabel("counts")
-    k = np.max(ys)/12
-    ax.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}", fontsize=10)
+    if add_text:
+        k = np.max(ys)/12
+        ax.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}", fontsize=10)
 
     if "softern" in file:
         ax.set_xlim(left=0, right = 30)
@@ -263,8 +264,8 @@ def _ax_objective(ax, q_input, q_pars, p, dir = ""):
     xs = set(hist_obj)
     ys = [hist_obj.count(x) for x in set(hist_obj)]
     
-    ax.bar(list(xs),ys, width = 0.1, color = "gray", label = "QUBO")
-    ax.axvline(x = ground, lw = 2, color = 'red', label = 'ground state')
+    ax.bar(list(xs),ys, width = 0.3, color = "gray", label = "QUBO")
+    ax.axvline(x = ground, lw = 2, color = 'red', linestyle = 'dashed', label = 'ground state')
 
     ax.legend()
     ax.set_xlabel("Objective")
