@@ -88,19 +88,19 @@ def plot10_11trains_dmax6_DWave():
     our_qubo.qubo_real_10t(delays_list[0])
     _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
     our_title = f"{plot_title(our_qubo, q_par)} dmax={int(q_par.dmax)}"
-    ax.set_xlabel("passing time MR-CS, 10 trains")
+    ax.set_xlabel("Passing time MR-CS, 10 trains")
     our_qubo.qubo_real_11t(delays_list[0])
     _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
     subfig1.suptitle(our_title)
-    ax1.set_xlabel("passing time MR-CS, 11 trains")
+    ax1.set_xlabel("Passing time MR-CS, 11 trains")
 
     our_qubo.qubo_real_10t(delays_list[1])
     _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
-    ax2.set_xlabel("passing time MR-CS, 10 trains")
+    ax2.set_xlabel("Passing time MR-CS, 10 trains")
     our_title = "Disturbed, other parameters as above"
     our_qubo.qubo_real_11t(delays_list[1])
     _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
-    ax3.set_xlabel("passing time MR-CS, 11 trains")
+    ax3.set_xlabel("Passing time MR-CS, 11 trains")
     subfig2.suptitle(our_title)
 
 
@@ -143,7 +143,7 @@ def plot6trains_intermediate():
     _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     ax.set_title(f"{our_title[14:len(our_title)]}, dmax={q_par.dmax}")
-    ax.set_xlabel("passing time, MR-CS")
+    ax.set_xlabel("Passing time MR-CS")
 
     q_par.dmax = 6
     q_par.ppair = 2.0
@@ -153,7 +153,7 @@ def plot6trains_intermediate():
     _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     ax1.set_title(f"{our_title[14:len(our_title)]},dm={q_par.dmax}")
-    ax1.set_xlabel("passing time, MR-CS")
+    ax1.set_xlabel("Passing time MR-CS")
 
 
     q_par.dmax = 6
@@ -164,7 +164,7 @@ def plot6trains_intermediate():
     _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     ax2.set_title(f"{our_title[14:len(our_title)]}, dmax={q_par.dmax}")
-    ax2.set_xlabel("passing time, MR-CS")
+    ax2.set_xlabel("Passing time MR-CS")
 
 
 
@@ -176,7 +176,7 @@ def plot6trains_intermediate():
     _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     ax3.set_title(f"{our_title[14:len(our_title)]},d={q_par.dmax}")
-    ax3.set_xlabel("passing time, MR-CS")
+    ax3.set_xlabel("Passing time MR-CS")
 
 
     ax3.set_xlim(left=11, right = 21)
@@ -294,11 +294,11 @@ def plot11trains_dmax6_DWavesoft_real():
     our_qubo.qubo_real_11t(delays)
     _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
     our_title = f"Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
-    ax.set_xlabel(f"passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+    ax.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
     q_par.annealing_time = 1000
     _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
     subfig1.suptitle(our_title)
-    ax1.set_xlabel(f"passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+    ax1.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
 
 
     q_par.ppair = 20.0
@@ -307,11 +307,11 @@ def plot11trains_dmax6_DWavesoft_real():
     our_qubo.qubo_real_11t(delays)
     _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
     our_title = f"Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
-    ax2.set_xlabel(f"passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+    ax2.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
     q_par.annealing_time = 1000
     _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
     subfig2.suptitle(our_title)
-    ax3.set_xlabel(f"passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+    ax3.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
 
 
     ax3.set_xlim(left=7, right = 23)
@@ -329,9 +329,9 @@ def plot11trains_dmax6_DWavesoft_real():
 
 
 if __name__ == "__main__":
-    #plot2trains_dmax2_DWave()
-    #plot10_11trains_dmax6_DWave()
-    #plot6trains_intermediate()
-    #plot2trains_gates_simulations(2.0,4.0)
-    #plot2trains_gates_simulations(20.0,40.0)
+    plot2trains_dmax2_DWave()
+    plot10_11trains_dmax6_DWave()
+    plot6trains_intermediate()
+    plot2trains_gates_simulations(2.0,4.0)
+    plot2trains_gates_simulations(20.0,40.0)
     plot11trains_dmax6_DWavesoft_real()
