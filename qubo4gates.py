@@ -2,8 +2,16 @@
 import pickle
 import os
 import json
+import matplotlib.pyplot as plt
+
 from QTrains import Analyze_qubo, update_hist
-from solve_qubo import Input_qubo, Comp_parameters, Process_parameters, file_QUBO, file_LP_output, make_plots
+from solve_qubo import Input_qubo, Comp_parameters, Process_parameters
+from solve_qubo import file_QUBO_comp, file_hist, file_QUBO, file_LP_output
+from solve_qubo import _ax_hist_passing_times, plot_title
+
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
+plt.rc('font', size=10)
 
 
 def dsiplay_analysis(q_input, our_solution, lp_solution, timetable = False):
@@ -39,8 +47,77 @@ def save_qubo4gates(dict_qubo, qround_sol, input_file):
         pickle.dump(qubo4gates, fp_w)
 
 
+
+
+def analyze_outputs(qubo, q_input, our_solutions, lp_solution, p):
+    """  returns histogram of passing times between selected stations and objective """
+    hist = list([])
+    qubo_objectives = list([])
+
+    count = 0
+    no_feasible = 0
+    stations = q_input.objective_stations
+
+    for solution in our_solutions:
+        dsiplay_analysis(qubo, solution, lp_solution)
+
+        count += 1
+        no_feasible += update_hist(qubo, solution, stations, hist, qubo_objectives, p.softern_pass)
+        print("feasible", bool(no_feasible))
+        print(hist)
+        print(qubo_objectives)
+    
+    perc_feasible = no_feasible/count
+
+    results = {"perc feasible": perc_feasible, f"{stations[0]}_{stations[1]}": hist}
+    results["no qubits"] = qubo.noqubits
+    results["no qubo terms"] = len(qubo.qubo)
+    results["lp objective"] = lp_sol["objective"]
+    results["q ofset"] = qubo.sum_ofset
+    results["qubo objectives"] = qubo_objectives
+    return results
+
+
+def gate_specifics(problem_case, small_sample, ionq_sim = True):
+    """ returns string of the if gate computers or its simulators """
+    if ionq_sim:
+        if small_sample:
+            return "summary.ionq-sim-aria."
+        else:
+            if problem_case == 4:
+                return "summary.53."
+            if problem_case == 8:
+                return  "summary.51."
+            if problem_case == 9:
+                return "summary.51."
+        if problem_case == 10:
+            return "summary.50."
+    return ""
+
+
+
+def plot_gate(q_pars, input4qubo, p, file_pass, file_obj):
+    fig, ax = plt.subplots(figsize=(4, 3))
+
+    _ax_hist_passing_times(ax, input4qubo, q_pars, p, dir = "TODO")
+    our_title = plot_title(input4qubo, q_pars)
+
+    fig.subplots_adjust(bottom=0.2, left = 0.15)
+
+    plt.title(our_title)
+
+
+    plt.savefig(file_pass)
+    plt.clf()
+
+case = 4
+save_qubo = False
+small_sample_results = True
+
+
 def get_ground(case_no):
-    """ returns ground state solution given case number """
+    """ returns ground state solution given case number 
+    TODO integrate with what is after"""
     if case_no in [1, 5]:
         ground_solution = [1,0,0,1,0,0]
     if case in [-1, -5]:
@@ -59,57 +136,12 @@ def get_ground(case_no):
         ground_solution = [1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0]
     return ground_solution
 
-
-def analyze_outputs(qubo_input, our_solutions, lp_solution, softern_constr):
-    """  returns histogram of passing times between selected stations and objective """
-    hist = list([])
-    qubo_objectives = list([])
-    for solution in our_solutions:
-        dsiplay_analysis(qubo_input, solution, lp_solution)
-
-        feasible = update_hist(qubo_input, solution, ["MR", "CS"], hist, qubo_objectives, softern_constr)
-        print("feasible", bool(feasible))
-        print(hist)
-        print(qubo_objectives)
-    return hist, qubo_objectives
-
-def results_file_dir(d_folder, problem_case, small_sample, ionq_sim = True):
-    """ rerurns string of the name and dir of file with results on gate computers or its simulators """
-    if ionq_sim:
-        if problem_case == 4:
-            if small_sample:
-                data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_2.0_4.0.json"
-            else:
-                data_file = f"{d_folder}summary.53.qubo_2t_delays_no_2_2.0_4.0.json"
-        if problem_case == 8:
-            if small_sample:
-                data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_no_2_20.0_40.0.json"
-            else:
-                data_file = f"{d_folder}summary.51.qubo_2t_delays_no_2_20.0_40.0.json"
-        if problem_case == 9:
-            if small_sample:
-                data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_2.0_4.0.json"
-            else:
-                data_file = f"{d_folder}summary.51.qubo_2t_delays_124_525_2_2.0_4.0.json"
-        if problem_case == 10:
-            if small_sample:
-                data_file = f"{d_folder}summary.ionq-sim-aria.qubo_2t_delays_124_525_2_20.0_40.0.json"
-            else:
-                data_file = f"{d_folder}summary.50.qubo_2t_delays_124_525_2_20.0_40.0.json"
-    else:
-        data_file = ""
-    return data_file
-
-case = -6
-save = True
-small_sample_results = False
-
-
 if __name__ == "__main__":
 
     assert case in [-7, -6, -5, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     input4qubo = Input_qubo()
     q_pars = Comp_parameters()
+    q_pars.method = "IonQsim"
     if case in [-3, -2, -1, 1, 2, 3, 4, 9]:
         q_pars.ppair = 2.0
         q_pars.psum = 4.0
@@ -136,57 +168,58 @@ if __name__ == "__main__":
 
 
     p = Process_parameters()
+    p.softern_pass = False
     if case < 0:
         p.delta = 1
+
+    comp_specifics = gate_specifics(case, small_sample_results,  q_pars.method == "IonQsim")
 
     file_q = file_QUBO(input4qubo, q_pars, p)
     with open(file_q, 'rb') as fp:
         dict_read = pickle.load(fp)
 
-    print("qubo file", file_q)
 
     file = file_LP_output(input4qubo, q_pars, p)
     with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
-    print("lp file", file)
+    file_comp = file_QUBO_comp(input4qubo, q_pars, p)
+    file_comp = file_comp.replace("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics}")
+    print("qubo comp", file_comp)
 
-    if save:
+
+    file_h = file_hist(input4qubo, q_pars, p)
+    file_h = file_h.replace("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics}")
+
+    print("qubo hist", file_h)
+
+
+
+    if save_qubo:
 
         ground_state = get_ground(case)
-
         save_qubo4gates(dict_read, ground_state, file_q)
-
         solutions = [ground_state]
+        Q = Analyze_qubo(dict_read)
+        results = analyze_outputs(Q, input4qubo, solutions, lp_sol, p)
 
     else:
-        folder = "solutions/LR_timetable/2trains_IonQSimulatorResults_18_Qubits/"
-        print( os.path.isdir(folder) )
-        data_f = results_file_dir(folder, case, small_sample_results)
-        
 
-        with open(data_f, 'r') as fp:
+        with open(file_comp, 'r') as fp:
             solutions_input = json.load(fp)
 
         solutions = [sol["vars"] for sol in solutions_input]
         print([sol["energy"] for sol in solutions_input])
 
+        Q = Analyze_qubo(dict_read)
+        results = analyze_outputs(Q, input4qubo, solutions, lp_sol, p)
 
-    Q = Analyze_qubo(dict_read)
-    softern = False
-    p_times, objs = analyze_outputs(Q, solutions, lp_sol, softern)
-    print(objs)
+        with open(file_h, 'wb') as fp:
+            pickle.dump(results, fp)
 
-    ground_sol = get_ground(case)
-    ground = lp_sol["objective"]
+        
 
-    if not save:
-        folder = folder.replace("solutions", "histograms")
-        if softern:
-            soft = "soft"
-        else:
-            soft = ""
-        file_pass = f"{folder}pass_IonQsim{case}{soft}.pdf"
-        file_obj = f"{folder}obj_IonQsim{case}{soft}.pdf"
-        q_pars.method = "IonQsim"
-        make_plots(p_times, objs, ground, q_pars, input4qubo, file_pass, file_obj)
+        file_pass = f"{file_h}time_hists.pdf"
+        file_obj = f"{file_h}obj.pdf"
+        
+        plot_gate(q_pars, input4qubo, p, file_pass, file_obj)
