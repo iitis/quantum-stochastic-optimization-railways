@@ -327,6 +327,101 @@ def plot11trains_dmax6_DWavesoft_real():
     fig.clf()
 
 
+def real_data_dirs(part_of_day, direction):
+
+    assert part_of_day in ["morning ", "afternoon", "morning afternoon"]
+    assert direction in ["north", "south"]
+    days = "11-31"
+
+    file = f"histograms/real_data/Realdata_{part_of_day}_{days}012024{direction}.json"
+    return file
+
+def _ax_hist_real_data(ax, file):
+
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+
+    h = results["hist"]
+    days = results["days"]
+    month = results["month"]
+    year = results["year"]
+    direction = results["direction"]
+    period = results["period"]
+
+    r1 = np.ceil(max(h))
+    bins = np.arange(- 0.5, r1 + 1.5, 1.)
+
+    ax.hist( h, bins = bins, color = "gray",  ec="darkblue")
+    ax.set_title(f"{period} {days}  {month}  {year}")
+    ax.set_xlabel(f"measured passing time CS -- MR {direction}")
+    ax.set_xlim(left=6, right = 24)
+    ax.set_xticks(range(6, 24, 2))
+    ax.set_ylabel("counts")
+
+
+def plot_real_live_MLR_4():
+
+
+    fig = plt.figure(constrained_layout=True, figsize=(6, 4))
+    fig.suptitle("Real data from MLR, pick hours", size = 16)
+    (subfig1, subfig2) = fig.subfigures(2,1)
+    (ax, ax1) = subfig1.subplots(1, 2)
+    (ax2, ax3) = subfig2.subplots(1, 2)
+
+    part_of_day = "morning "
+    direction = "north"
+
+    file = real_data_dirs(part_of_day, direction)
+    _ax_hist_real_data(ax, file)
+
+    direction = "south"
+
+    file = real_data_dirs(part_of_day, direction)
+    _ax_hist_real_data(ax1, file)
+
+
+    part_of_day = "afternoon"
+    direction = "north"
+
+    file = real_data_dirs(part_of_day, direction)
+    _ax_hist_real_data(ax2, file)
+
+    direction = "south"
+
+    file = real_data_dirs(part_of_day, direction)
+    _ax_hist_real_data(ax3, file)
+
+    fig.savefig("article_plots/real_data4.pdf")
+    fig.clf()
+
+
+
+def plot_real_live_MLR_2():
+
+
+    fig = plt.figure(constrained_layout=True, figsize=(6, 2.2))
+    fig.suptitle("Real data from MLR, pick hours", size = 16)
+    (ax, ax1) = fig.subplots(1,2)
+
+
+    part_of_day = "morning afternoon"
+    direction = "north"
+
+    file = real_data_dirs(part_of_day, direction)
+    _ax_hist_real_data(ax, file)
+
+    direction = "south"
+
+    file = real_data_dirs(part_of_day, direction)
+    _ax_hist_real_data(ax1, file)
+
+
+    fig.savefig("article_plots/real_data2.pdf")
+    fig.clf()
+
+
+
+
 
 if __name__ == "__main__":
     plot2trains_dmax2_DWave()
@@ -335,3 +430,5 @@ if __name__ == "__main__":
     plot2trains_gates_simulations(2.0,4.0)
     plot2trains_gates_simulations(20.0,40.0)
     plot11trains_dmax6_DWavesoft_real()
+    plot_real_live_MLR_4()
+    plot_real_live_MLR_2()
