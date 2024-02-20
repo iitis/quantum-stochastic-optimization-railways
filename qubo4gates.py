@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from QTrains import Analyze_qubo, update_hist
 from solve_qubo import Input_qubo, Comp_parameters, Process_parameters
 from solve_qubo import file_QUBO_comp, file_hist, file_QUBO, file_LP_output
-from solve_qubo import _ax_hist_passing_times, plot_title
+from solve_qubo import _ax_hist_passing_times, _ax_objective, plot_title
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
@@ -78,148 +78,168 @@ def analyze_outputs(qubo, q_input, our_solutions, lp_solution, p):
     return results
 
 
-def gate_specifics(problem_case, small_sample, ionq_sim = True):
-    """ returns string of the if gate computers or its simulators """
-    if ionq_sim:
-        if small_sample:
-            return "summary.ionq-sim-aria."
-        else:
-            if problem_case == 4:
-                return "summary.53."
-            if problem_case == 8:
-                return  "summary.51."
-            if problem_case == 9:
-                return "summary.51."
-        if problem_case == 10:
-            return "summary.50."
-    return ""
 
+def plot_gate(q_pars, input4qubo, p, file_pass, file_obj, replace_pair):
+    """ plots histrogram fro gate computers output """
 
-
-def plot_gate(q_pars, input4qubo, p, file_pass, file_obj):
     fig, ax = plt.subplots(figsize=(4, 3))
-
-    _ax_hist_passing_times(ax, input4qubo, q_pars, p, dir = "TODO")
+    _ax_hist_passing_times(ax, input4qubo, q_pars, p, replace_string = replace_pair)
     our_title = plot_title(input4qubo, q_pars)
 
     fig.subplots_adjust(bottom=0.2, left = 0.15)
 
     plt.title(our_title)
 
-
     plt.savefig(file_pass)
     plt.clf()
 
-case = 4
-save_qubo = False
-small_sample_results = True
+
+    fig, ax = plt.subplots(figsize=(4, 3))
+
+    _ax_objective(ax, input4qubo, q_pars, p, replace_string = replace_pair)
+    our_title= f"{plot_title(input4qubo, q_pars)}, dmax={int(q_pars.dmax)}"
+
+    fig.subplots_adjust(bottom=0.2, left = 0.15)
+    
+    plt.title(our_title)
+
+    plt.savefig(file_obj)
+    plt.clf()
 
 
-def get_ground(case_no):
-    """ returns ground state solution given case number 
-    TODO integrate with what is after"""
-    if case_no in [1, 5]:
-        ground_solution = [1,0,0,1,0,0]
-    if case in [-1, -5]:
-        ground_solution = [1,0,0,0,1,0]
-    if case_no in [2, 6]:
-        ground_solution = [1,0,0,0,0,1,0,0,0,0]
-    if case_no in [-2, -6]:
-        ground_solution = [1,0,0,0,0,0,1,0,0,0]
-    if case_no in [3, 7]:
-        ground_solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
-    if case_no in [-3, -7]:
-        ground_solution = [1,0,0,0,0,0,0,0,1,0,0,0,0,0]
-    if case_no in [4, 8]:
-        ground_solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
-    if case_no in [9, 10]:
-        ground_solution = [1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0]
-    return ground_solution
+    
+class Cases:
+    """ Class for case based modifications """
+    def __init__(self, case):
+        assert case in [-7, -6, -5, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        self.case = case
+        self.ground = []
+        self.comp_specifics_string = ""
+
+
+
+    def gate_specifics(self, small_sample, q_pars):
+        """ assigns string of specifics of gate computers or its simulators """
+        if q_pars.method == "IonQsim":
+            if small_sample:
+                self.comp_specifics_string = "summary.ionq-sim-aria."
+            else:
+                if self.case == 4:
+                    self.comp_specifics_string = "summary.53."
+                if self.case == 8:
+                    self.comp_specifics_string =  "summary.51."
+                if self.case == 9:
+                    self.comp_specifics_string = "summary.51."
+            if self.case == 10:
+                self.comp_specifics_string = "summary.50."
+
+
+    def get_ground(self):
+        """ returns ground state solution given case number """
+        if self.case in [1, 5]:
+            ground_solution = [1,0,0,1,0,0]
+        if self.case in [-1, -5]:
+            ground_solution = [1,0,0,0,1,0]
+        if self.case in [2, 6]:
+            ground_solution = [1,0,0,0,0,1,0,0,0,0]
+        if self.case in [-2, -6]:
+            ground_solution = [1,0,0,0,0,0,1,0,0,0]
+        if self.case in [3, 7]:
+            ground_solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
+        if self.case in [-3, -7]:
+            ground_solution = [1,0,0,0,0,0,0,0,1,0,0,0,0,0]
+        if self.case in [4, 8]:
+            ground_solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
+        if self.case in [9, 10]:
+            ground_solution = [1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0]
+        self.ground = ground_solution
+
+
+    def update_problems_parameters(self, input4qubo, q_pars, p):
+
+        if self.case in [-3, -2, -1, 1, 2, 3, 4, 9]:
+            q_pars.ppair = 2.0
+            q_pars.psum = 4.0
+        if self.case in [-7, -6, -5, 5, 6, 7, 8, 10 ]:
+            q_pars.ppair = 20.0
+            q_pars.psum = 40.0
+
+        if self.case in [-5, -1, 1, 4, 5, 8, 9, 10]:
+            q_pars.dmax = 2
+        if self.case in [-6, -2, 2, 6]:
+            q_pars.dmax = 4
+        if self.case in [-7, -3, 3, 7]:
+            q_pars.dmax = 6
+
+        if self.case in [-7, -6, -5, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8]:
+            delays = {}
+        if self.case in [9,10]:
+            delays = {1:5, 2:2, 4:5}
+
+        if self.case in [-7, -6, -5, -3, -2, -1, 1, 2, 3, 5, 6, 7]:
+            input4qubo.qubo_real_1t(delays)
+        if self.case in [4, 8,9,10]:
+            input4qubo.qubo_real_2t(delays)
+
+        p.softern_pass = False
+        if self.case < 0:
+            p.delta = 1
 
 if __name__ == "__main__":
 
-    assert case in [-7, -6, -5, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    save_qubo = False
+    small_sample_results = False
+    
     input4qubo = Input_qubo()
     q_pars = Comp_parameters()
     q_pars.method = "IonQsim"
-    if case in [-3, -2, -1, 1, 2, 3, 4, 9]:
-        q_pars.ppair = 2.0
-        q_pars.psum = 4.0
-    if case in [-7, -6, -5, 5, 6, 7, 8, 10 ]:
-        q_pars.ppair = 20.0
-        q_pars.psum = 40.0
-
-    if case in [-5, -1, 1, 4, 5, 8, 9, 10]:
-        q_pars.dmax = 2
-    if case in [-6, -2, 2, 6]:
-        q_pars.dmax = 4
-    if case in [-7, -3, 3, 7]:
-        q_pars.dmax = 6
-
-    if case in [-7, -6, -5, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8]:
-        delays = {}
-    if case in [9,10]:
-        delays = {1:5, 2:2, 4:5}
-
-    if case in [-7, -6, -5, -3, -2, -1, 1, 2, 3, 5, 6, 7]:
-        input4qubo.qubo_real_1t(delays)
-    if case in [4, 8,9,10]:
-        input4qubo.qubo_real_2t(delays)
-
-
     p = Process_parameters()
-    p.softern_pass = False
-    if case < 0:
-        p.delta = 1
 
-    comp_specifics = gate_specifics(case, small_sample_results,  q_pars.method == "IonQsim")
-
-    file_q = file_QUBO(input4qubo, q_pars, p)
-    with open(file_q, 'rb') as fp:
-        dict_read = pickle.load(fp)
-
-
-    file = file_LP_output(input4qubo, q_pars, p)
-    with open(file, 'rb') as fp:
-        lp_sol = pickle.load(fp)
-
-    file_comp = file_QUBO_comp(input4qubo, q_pars, p)
-    file_comp = file_comp.replace("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics}")
-    print("qubo comp", file_comp)
-
-
-    file_h = file_hist(input4qubo, q_pars, p)
-    file_h = file_h.replace("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics}")
-
-    print("qubo hist", file_h)
-
-
-
-    if save_qubo:
-
-        ground_state = get_ground(case)
-        save_qubo4gates(dict_read, ground_state, file_q)
-        solutions = [ground_state]
-        Q = Analyze_qubo(dict_read)
-        results = analyze_outputs(Q, input4qubo, solutions, lp_sol, p)
-
-    else:
-
-        with open(file_comp, 'r') as fp:
-            solutions_input = json.load(fp)
-
-        solutions = [sol["vars"] for sol in solutions_input]
-        print([sol["energy"] for sol in solutions_input])
-
-        Q = Analyze_qubo(dict_read)
-        results = analyze_outputs(Q, input4qubo, solutions, lp_sol, p)
-
-        with open(file_h, 'wb') as fp:
-            pickle.dump(results, fp)
-
+    for case_no in [4,8,9,10]:
         
+        case = Cases(case_no)
 
-        file_pass = f"{file_h}time_hists.pdf"
-        file_obj = f"{file_h}obj.pdf"
-        
-        plot_gate(q_pars, input4qubo, p, file_pass, file_obj)
+        case.update_problems_parameters(input4qubo, q_pars, p)
+
+
+        file_q = file_QUBO(input4qubo, q_pars, p)
+        with open(file_q, 'rb') as fp:
+            dict_read = pickle.load(fp)
+
+
+        file = file_LP_output(input4qubo, q_pars, p)
+        with open(file, 'rb') as fp:
+            lp_sol = pickle.load(fp)
+
+        case.gate_specifics(small_sample_results,  q_pars)
+        replace_pair = ("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{case.comp_specifics_string}")
+        file_comp = file_QUBO_comp(input4qubo, q_pars, p, replace_pair)  
+        file_h = file_hist(input4qubo, q_pars, p, replace_pair)
+
+
+        if save_qubo:
+
+            ground_state = case.get_ground()
+            save_qubo4gates(dict_read, ground_state, file_q)
+            solutions = [ground_state]
+            Q = Analyze_qubo(dict_read)
+            results = analyze_outputs(Q, input4qubo, solutions, lp_sol, p)
+
+        else:
+
+            with open(file_comp, 'r') as fp:
+                solutions_input = json.load(fp)
+
+            solutions = [sol["vars"] for sol in solutions_input]
+            print([sol["energy"] for sol in solutions_input])
+
+            Q = Analyze_qubo(dict_read)
+            results = analyze_outputs(Q, input4qubo, solutions, lp_sol, p)
+
+            with open(file_h, 'wb') as fp:
+                pickle.dump(results, fp)
+
+            file_pass = f"{file_h}time_hists.pdf"
+            file_obj = f"{file_h}obj.pdf"
+            
+            plot_gate(q_pars, input4qubo, p, file_pass, file_obj, replace_pair)

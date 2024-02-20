@@ -39,7 +39,7 @@ def file_QUBO(q_input, q_pars, p):
         file = f"{q_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}_stochastic{p.delta}.json"
     return file
 
-def file_QUBO_comp(q_input, q_pars, p):
+def file_QUBO_comp(q_input, q_pars, p, replace_pair = ("", "")):
     """ returns string, the file name and dir to store results of computaiton on QUBO """
     file = file_QUBO(q_input, q_pars, p)
     file = file.replace("QUBOs", "solutions")
@@ -47,12 +47,13 @@ def file_QUBO_comp(q_input, q_pars, p):
         file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.beta_range[0]}_{q_pars.num_sweeps}.json")
     elif q_pars.method == "real":
         file = file.replace(".json", f"_{q_pars.solver}_{q_pars.num_all_runs}_{q_pars.annealing_time}.json")
+    file = file.replace(replace_pair[0], replace_pair[1])
     return file
 
 
-def file_hist(q_input, q_pars, p):
+def file_hist(q_input, q_pars, p, replace_pair = ("", "")):
     """ file for histogram """
-    file = file_QUBO_comp(q_input, q_pars, p)
+    file = file_QUBO_comp(q_input, q_pars, p, replace_pair = replace_pair)
     if not p.softern_pass:
         file = file.replace("solutions", "histograms")
     else:
@@ -224,9 +225,9 @@ def plot_title(q_input, q_pars):
     return tit
 
 
-def _ax_hist_passing_times(ax, q_input, q_pars, p, add_text = True, dir=""):
-
-    file = f"{dir}{file_hist(q_input, q_pars, p)}"
+def _ax_hist_passing_times(ax, q_input, q_pars, p, add_text = True, replace_string = ("", "")):
+    """ axes for the passing time plots """
+    file = file_hist(q_input, q_pars, p, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
@@ -252,9 +253,9 @@ def _ax_hist_passing_times(ax, q_input, q_pars, p, add_text = True, dir=""):
 
 
 
-def _ax_objective(ax, q_input, q_pars, p, dir = ""):
-
-    file = f"{dir}{file_hist(q_input, q_pars, p)}"
+def _ax_objective(ax, q_input, q_pars, p, replace_string = ("", "")):
+    """ axes for the objective plot """
+    file = file_hist(q_input, q_pars, p, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
