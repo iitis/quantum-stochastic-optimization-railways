@@ -188,12 +188,16 @@ def analyze_qubo(q_input, q_pars, p):
     qubo_objectives = list([])
     count = 0
     no_feasible = 0
+    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx")
     for sampleset in samplesets.values():
-        for sample in sampleset.samples():
-            sol = list(sample.values())
-            count += 1
-            no_feasible += update_hist(qubo_to_analyze, sol, stations, hist, qubo_objectives, softern_pass_t = p.softern_pass)
+        for (sol, energy, occ, other) in sampleset.record:
+            for _ in range(occ):
 
+                count += 1
+                no_feasible += update_hist(qubo_to_analyze, sol, stations, hist, qubo_objectives, softern_pass_t = p.softern_pass)
+
+    print("COUNT = ", count)
+    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx")
     perc_feasible = no_feasible/count
 
     if show_var_vals:
@@ -655,7 +659,7 @@ if __name__ == "__main__":
     if real_problem:
         #p.compute = True
         p.analyze = True
-        #p.softern_pass = True
+        p.softern_pass = True
         sim = False
         our_qubo = Input_qubo()
         q_par = Comp_parameters()
