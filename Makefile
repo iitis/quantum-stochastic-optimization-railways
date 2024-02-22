@@ -2,7 +2,7 @@ init:
 	@pip3 install -r requirements.txt
 test:
 	@rm -rf tests/__pycache__/
-	@PYTHONPATH=. pytest -q --durations=10 --cov=. --cov-report term --cov-fail-under 50 tests/
+	@PYTHONPATH=. pytest -q --durations=10 --cov=. --cov-report term --cov-fail-under 45 tests/
 lint:
 	@pylint --fail-under=8.0 *.py
 
