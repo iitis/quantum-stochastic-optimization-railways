@@ -650,20 +650,21 @@ def series_of_computation(qubo, parameters, p):
 
 
 if __name__ == "__main__":
-
+    softer_passing_time_constr = False
     real_problem = True
     make_stochatic_qubos = False
 
     p = Process_parameters()
 
     if real_problem:
-        #p.compute = True
-        p.analyze = True
-        p.softern_pass = True
-        sim = False
+        p.compute = False   # make computations / optimisation
+        p.analyze = True    # Analyze results
+        
+        p.softern_pass = softer_passing_time_constr
         our_qubo = Input_qubo()
         q_par = Comp_parameters()
 
+        sim = False  # simulation of DWave
         if sim:
             q_par.method = "sim"
             for d_max in [2,6]:

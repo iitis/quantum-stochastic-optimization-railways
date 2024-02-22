@@ -13,7 +13,9 @@ plt.rc('font', family='serif')
 plt.rc('font', size=10)
 
 
-def plot2trains_dmax2_DWave():
+############# DWave #########
+
+def plotDWave_2trains_dmax2():
 
     p = Process_parameters()
     p.analyze = True
@@ -62,62 +64,7 @@ def plot2trains_dmax2_DWave():
     fig.savefig("article_plots/2trains_dmax2_DWave.pdf")
     fig.clf()
 
-
-def plot10_11trains_dmax6_DWave():
-
-    p = Process_parameters()
-    p.analyze = True
-    our_qubo = Input_qubo()
-    q_par = Comp_parameters()
-
-    q_par.method = "real"
-    q_par.dmax = 6
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-    q_par.annealing_time = 10
-
-    delays_list = [{}, {1:5, 2:2, 4:5}]
-
-    fig = plt.figure(constrained_layout=True, figsize=(6, 4))
-    fig.suptitle("DWave results, passing times MR - CS both ways", size = 16)
-
-    (subfig1, subfig2) = fig.subfigures(2,1)
-    (ax, ax1) = subfig1.subplots(1, 2)
-    (ax2, ax3) = subfig2.subplots(1, 2)
-
-    our_qubo.qubo_real_10t(delays_list[0])
-    _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
-    our_title = f"{plot_title(our_qubo, q_par)} dmax={int(q_par.dmax)}"
-    ax.set_xlabel("Passing time MR-CS, 10 trains")
-    our_qubo.qubo_real_11t(delays_list[0])
-    _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
-    subfig1.suptitle(our_title)
-    ax1.set_xlabel("Passing time MR-CS, 11 trains")
-
-    our_qubo.qubo_real_10t(delays_list[1])
-    _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
-    ax2.set_xlabel("Passing time MR-CS, 10 trains")
-    our_title = "Disturbed, other parameters as above"
-    our_qubo.qubo_real_11t(delays_list[1])
-    _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
-    ax3.set_xlabel("Passing time MR-CS, 11 trains")
-    subfig2.suptitle(our_title)
-
-
-    ax3.set_xlim(left=11, right = 21)
-    ax3.set_xticks([12,14,16,18,20])
-
-    ax2.set_xlim(left=11, right = 21)
-    ax2.set_xticks([12,14,16,18,20])
-
-    ax.sharex(ax2)
-    ax1.sharex(ax3)
-
-    fig.savefig("article_plots/10_11trains_dmax6_DWave.pdf")
-    fig.clf()
-
-
-def plot6trains_intermediate():
+def plotDWave_6trains():
 
     p = Process_parameters()
     p.analyze = True
@@ -129,7 +76,7 @@ def plot6trains_intermediate():
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
     fig = plt.figure(constrained_layout=True, figsize=(6, 4))
-    fig.suptitle("DWave results, intermediate case of 6 trains", size = 16)
+    fig.suptitle("DWave results, intermediate 6 trains, Not disturbed", size = 16)
 
     (subfig1, subfig2) = fig.subfigures(2,1)
     (ax, ax1) = subfig1.subplots(1, 2)
@@ -190,6 +137,139 @@ def plot6trains_intermediate():
 
     fig.savefig("article_plots/6trains_DWave.pdf")
     fig.clf()
+
+
+def plotDWave_11trains_dmax6():
+
+    p = Process_parameters()
+    p.analyze = True
+    our_qubo = Input_qubo()
+    q_par = Comp_parameters()
+
+    q_par.method = "real"
+    q_par.dmax = 6
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+
+    delays_list = [{}, {1:5, 2:2, 4:5}]
+
+    fig = plt.figure(constrained_layout=True, figsize=(6, 4))
+    fig.suptitle("DWave results, 11 trains", size = 16)
+
+    (subfig1, subfig2) = fig.subfigures(2,1)
+    (ax, ax1) = subfig1.subplots(1, 2)
+    (ax2, ax3) = subfig2.subplots(1, 2)
+
+    q_par.annealing_time = 10
+    our_qubo.qubo_real_11t(delays_list[0])
+    _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
+    our_title = f"Not disturbed, ppair= {int(q_par.ppair)}, psum={int(q_par.psum)}, dmax={int(q_par.dmax)}"
+    ax.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time} $\mu$s")
+
+    q_par.annealing_time = 1000
+    our_qubo.qubo_real_11t(delays_list[0])
+    _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
+    subfig1.suptitle(our_title)
+    ax1.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time} $\mu$s")
+
+    q_par.annealing_time = 10
+    our_qubo.qubo_real_11t(delays_list[1])
+    _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
+    ax2.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time} $\mu$s")
+    our_title = f"Disturbed, ppair= {int(q_par.ppair)}, psum={int(q_par.psum)}, dmax={int(q_par.dmax)}"
+
+    q_par.annealing_time = 1000
+    our_qubo.qubo_real_11t(delays_list[1])
+    _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
+    ax3.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time} $\mu$s")
+    subfig2.suptitle(our_title)
+
+
+    ax3.set_xlim(left=11, right = 21)
+    ax3.set_xticks([12,14,16,18,20])
+
+    ax2.set_xlim(left=11, right = 21)
+    ax2.set_xticks([12,14,16,18,20])
+
+    ax.sharex(ax2)
+    ax1.sharex(ax3)
+
+    fig.savefig("article_plots/11trains_dmax6_DWave.pdf")
+    fig.clf()
+
+
+
+
+def plot_DWave_soft_dmax6(no_trains = 11):
+
+    p = Process_parameters()
+    p.analyze = True
+    our_qubo = Input_qubo()
+    q_par = Comp_parameters()
+
+    q_par.method = "real"
+    q_par.dmax = 6
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+    p.softern_pass = True
+
+    delays_list = [{}, {1:5, 2:2, 4:5}]
+    delays = delays_list[1]
+
+    fig = plt.figure(constrained_layout=True, figsize=(6, 4))
+    fig.suptitle("DWave output without filtering lower minimal passing times", size = 16)
+
+    (subfig1, subfig2) = fig.subfigures(2,1)
+    (ax, ax1) = subfig1.subplots(1, 2)
+    (ax2, ax3) = subfig2.subplots(1, 2)
+
+    q_par.annealing_time = 10
+    if no_trains == 10:
+        our_qubo.qubo_real_10t(delays)
+    elif no_trains == 11:
+        our_qubo.qubo_real_11t(delays)
+    elif no_trains == 12:
+        our_qubo.qubo_real_12t(delays)
+    _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
+    our_title = f"{no_trains} trains, Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
+    ax.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+    q_par.annealing_time = 1000
+    _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
+    subfig1.suptitle(our_title)
+    ax1.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+
+
+    q_par.ppair = 20.0
+    q_par.psum = 40.0
+    q_par.annealing_time = 10
+    if no_trains == 10:
+        our_qubo.qubo_real_10t(delays)
+    elif no_trains == 11:
+        our_qubo.qubo_real_11t(delays)
+    elif no_trains == 12:
+        our_qubo.qubo_real_12t(delays)
+    _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
+    our_title = f"{no_trains} trains, Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
+    ax2.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+    q_par.annealing_time = 1000
+    _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
+    subfig2.suptitle(our_title)
+    ax3.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+
+
+    ax3.set_xlim(left=7, right = 23)
+    ax3.set_xticks([8,10,12,14,16,18,20,22])
+
+    ax2.set_xlim(left=7, right = 23)
+    ax2.set_xticks([8,10,12,14,16,18,20,22])
+
+    ax.sharex(ax2)
+    ax1.sharex(ax3)
+
+    fig.savefig(f"article_plots/{no_trains}trains_DWave_soft.pdf")
+    fig.clf()
+
+####################  GATES  ########################
 
 
 def data_string_gates(q_par, delays):
@@ -267,65 +347,9 @@ def plot2trains_gates_simulations(ppair, psum):
     plt.clf()
 
 
-def plot11trains_dmax6_DWavesoft_real():
-
-    p = Process_parameters()
-    p.analyze = True
-    our_qubo = Input_qubo()
-    q_par = Comp_parameters()
-
-    q_par.method = "real"
-    q_par.dmax = 6
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-    p.softern_pass = True
-
-    delays_list = [{}, {1:5, 2:2, 4:5}]
-    delays = delays_list[1]
-
-    fig = plt.figure(constrained_layout=True, figsize=(6, 4))
-    fig.suptitle("DWave output without filtering lower minimal passing times", size = 16)
-
-    (subfig1, subfig2) = fig.subfigures(2,1)
-    (ax, ax1) = subfig1.subplots(1, 2)
-    (ax2, ax3) = subfig2.subplots(1, 2)
-
-    q_par.annealing_time = 10
-    our_qubo.qubo_real_11t(delays)
-    _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
-    our_title = f"Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
-    ax.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
-    q_par.annealing_time = 1000
-    _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
-    subfig1.suptitle(our_title)
-    ax1.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
 
 
-    q_par.ppair = 20.0
-    q_par.psum = 40.0
-    q_par.annealing_time = 10
-    our_qubo.qubo_real_11t(delays)
-    _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
-    our_title = f"Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
-    ax2.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
-    q_par.annealing_time = 1000
-    _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
-    subfig2.suptitle(our_title)
-    ax3.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
-
-
-    ax3.set_xlim(left=7, right = 23)
-    ax3.set_xticks([8,10,12,14,16,18,20,22])
-
-    ax2.set_xlim(left=7, right = 23)
-    ax2.set_xticks([8,10,12,14,16,18,20,22])
-
-    ax.sharex(ax2)
-    ax1.sharex(ax3)
-
-    fig.savefig("article_plots/11trains_DWave_soft.pdf")
-    fig.clf()
-
+# Real live data  from MRL
 
 def real_data_dirs(part_of_day, direction):
 
@@ -424,11 +448,14 @@ def plot_real_live_MLR_2():
 
 
 if __name__ == "__main__":
-    plot2trains_dmax2_DWave()
-    plot10_11trains_dmax6_DWave()
-    plot6trains_intermediate()
+    plotDWave_2trains_dmax2()
+    plotDWave_11trains_dmax6()
+    plotDWave_6trains()
+    plot_DWave_soft_dmax6(no_trains = 11)
+    plot_DWave_soft_dmax6(no_trains = 10)
+
     plot2trains_gates_simulations(2.0,4.0)
     plot2trains_gates_simulations(20.0,40.0)
-    plot11trains_dmax6_DWavesoft_real()
+
     plot_real_live_MLR_4()
     plot_real_live_MLR_2()
