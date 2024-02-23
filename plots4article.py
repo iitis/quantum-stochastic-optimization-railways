@@ -2,11 +2,10 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-
+from QTrains import _ax_hist_passing_times, _ax_objective, plot_title
 from trains_timetable import Input_qubo
-
 from solve_qubo import Comp_parameters, Process_parameters
-from solve_qubo import plot_title, _ax_hist_passing_times, _ax_objective
+
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')

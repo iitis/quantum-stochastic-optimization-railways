@@ -1,3 +1,5 @@
+import numpy as np
+import matplotlib.pyplot as plt
 import pickle
 from scipy.optimize import linprog
 import neal
@@ -242,3 +244,98 @@ def display_results(q_input, q_pars, p):
     print("no qubo terms", res_dict["no qubo terms"])
     print("percentage of feasible", res_dict["perc feasible"])
 
+
+##### plots
+
+def plot_title(q_input, q_pars):
+    if q_input.delays == {}:
+        disturbed = "Not disturbed"
+    else:
+        disturbed = "Disturbed"
+    if q_pars.method == "real":
+        tit = f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
+    else:
+        tit = f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
+    return tit
+
+
+def _ax_hist_passing_times(ax, q_input, q_pars, p, add_text = True, replace_string = ("", "")):
+    """ axes for the passing time plots """
+    file = file_hist(q_input, q_pars, p, replace_string)
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+
+    hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
+
+    xs = list( range(np.max(hist_pass) + 1) )
+    ys = [hist_pass.count(x) for x in xs]
+    ax.bar(xs,ys)
+
+    ax.set_xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
+    ax.set_ylabel("counts")
+    if add_text:
+        k = np.max(ys)/12
+        ax.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}", fontsize=10)
+
+    if "softern" in file:
+        ax.set_xlim(left=0, right = 30)
+        ax.set_xticks(range(0, 30, 2))
+    else:
+        ax.set_xlim(left=0)
+        xx = [i for i in xs if i % 2 == 0]
+        ax.set_xticks(xx)
+
+
+
+def _ax_objective(ax, q_input, q_pars, p, replace_string = ("", "")):
+    """ axes for the objective plot """
+    file = file_hist(q_input, q_pars, p, replace_string)
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+
+    hist_obj = results["qubo objectives"]
+    ground = results["lp objective"]
+
+    xs = set(hist_obj)
+    ys = [hist_obj.count(x) for x in set(hist_obj)]
+    
+    ax.bar(list(xs),ys, width = 0.3, color = "gray", label = "QUBO")
+    ax.axvline(x = ground, lw = 2, color = 'red', linestyle = 'dashed', label = 'ground state')
+
+    ax.legend()
+    ax.set_xlabel("Objective")
+    ax.set_ylabel("counts")
+
+    
+
+def make_plots(q_input, q_pars, p):
+    """ ferform plotting on DWave results """
+
+    fig, ax = plt.subplots(figsize=(4, 3))
+
+    _ax_hist_passing_times(ax, q_input, q_pars, p)
+    our_title = plot_title(q_input, q_pars)
+
+    fig.subplots_adjust(bottom=0.2, left = 0.15)
+
+    plt.title(our_title)
+
+    file = file_hist(q_input, q_pars, p)
+    file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
+    plt.savefig(file_pass)
+    plt.clf()
+
+
+    fig, ax = plt.subplots(figsize=(4, 3))
+
+    _ax_objective(ax, q_input, q_pars, p)
+    our_title= f"{plot_title(q_input, q_pars)}, dmax={int(q_pars.dmax)}"
+
+    fig.subplots_adjust(bottom=0.2, left = 0.15)
+    
+    plt.title(our_title)
+
+    file = file_hist(q_input, q_pars, p)
+    file_obj = file.replace(".json", "obj.pdf")
+    plt.savefig(file_obj)
+    plt.clf()

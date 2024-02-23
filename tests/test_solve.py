@@ -1,19 +1,12 @@
 import pickle
-import os.path
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
-
-#from scipy.optimize import linprog
-#import neal
-#from dwave.system import (    EmbeddingComposite,    DWaveSampler)
-
-from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
-#from QTrains import update_hist
+from QTrains import Analyze_qubo
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo
-from QTrains import display_results
-
+from QTrains import display_results, make_plots
+from QTrains import plot_title, _ax_hist_passing_times, _ax_objective
 
 # input
 
@@ -152,7 +145,19 @@ def test_solving_process():
     Q = qubo_to_analyze.qubo
     assert len(Q.keys()) == 306  # Number of non-zero couplings
 
+def test_solving_QUBO():
+    q_input = Input_qubo()
+    q_input.qubo1()
+    q_pars = Comp_parameters()
+    q_pars.dmax = 5
+    q_pars.method = "sim"
+    p = Process_parameters()
+
     solve_qubo(q_input, q_pars, p)
+
+    file = file_QUBO(q_input, q_pars, p)
+    with open(file, 'rb') as fp:
+        dict_read = pickle.load(fp)
 
     qubo_to_analyze = Analyze_qubo(dict_read)
     file = file_QUBO_comp(q_input, q_pars, p)
@@ -171,6 +176,14 @@ def test_solving_process():
     
     objective = 0
     assert np.min(energies) + qubo_to_analyze.sum_ofset == objective
+
+def test_qubo_analysis():
+    q_input = Input_qubo()
+    q_input.qubo1()
+    q_pars = Comp_parameters()
+    q_pars.dmax = 5
+    q_pars.method = "sim"
+    p = Process_parameters()
 
 
     analyze_qubo(q_input, q_pars, p)
@@ -205,4 +218,30 @@ def test_solving_process():
     test_list.sort(reverse=True)
     assert histogram_pass[12:17]==test_list  # decreasing histogram
 
+def test_plotting():
+    q_input = Input_qubo()
+    q_input.qubo1()
+    q_pars = Comp_parameters()
+    q_pars.dmax = 5
+    q_pars.method = "sim"
+    p = Process_parameters()
+
+    make_plots(q_input, q_pars, p)
     display_results(q_input, q_pars, p)
+
+def test_auxiliaty_plotting_functions():
+    q_input = Input_qubo()
+    q_input.qubo1()
+    q_pars = Comp_parameters()
+    q_pars.dmax = 5
+    q_pars.method = "sim"
+    p = Process_parameters()
+
+    plot_tit = plot_title(q_input, q_pars)
+    assert plot_tit == "Not disturbed, sim, ppair=2, psum=4"
+
+    fig, ax = plt.subplots(figsize=(4, 3))
+    _ax_objective(ax, q_input, q_pars, p)
+    _ax_hist_passing_times(ax, q_input, q_pars, p)
+    plt.clf()
+
