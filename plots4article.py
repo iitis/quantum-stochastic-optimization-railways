@@ -1,11 +1,11 @@
 import pickle
-import os.path
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
- 
 
-from solve_qubo import Input_qubo, Comp_parameters, Process_parameters, file_QUBO, file_LP_output, make_plots
+
+from trains_timetable import Input_qubo
+
+from solve_qubo import Comp_parameters, Process_parameters
 from solve_qubo import plot_title, _ax_hist_passing_times, _ax_objective
 
 plt.rc('text', usetex=True)

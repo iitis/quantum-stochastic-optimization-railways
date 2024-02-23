@@ -43,17 +43,6 @@ class Input_qubo():
         self.file = "QUBOs/qubo_1"
         self.notrains = 2
 
-    def qubo2(self):
-        """ 
-        two trains one following other disturbed
-        """
-        self.circ = {}
-        self.timetable = {"PS": {1: 0}, "MR" :{1: 3, 3: 0}, "CS" : {1: 16 , 3: 13}}
-        self.objective_stations = ["MR", "CS"]
-        self.delays = {3:2}
-        self.file = "QUBOs/qubo_2"
-        self.notrains = 2
-
 
 class Comp_parameters():
     """ stores parameters of QUBO and computaiton """
@@ -109,7 +98,6 @@ def test_solving_process():
 
     q_input = Input_qubo()
     q_input.qubo1()
-    #q_input.qubo2()
     q_pars = Comp_parameters()
     q_pars.dmax = 5
     q_pars.method = "sim"
@@ -214,3 +202,5 @@ def test_solving_process():
     test_list = histogram_pass[12:17]
     test_list.sort(reverse=True)
     assert histogram_pass[12:17]==test_list  # decreasing histogram
+
+    display_results(q_input, q_pars, p)

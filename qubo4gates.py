@@ -5,9 +5,13 @@ import json
 import matplotlib.pyplot as plt
 
 from QTrains import Analyze_qubo, update_hist
-from solve_qubo import Input_qubo, Comp_parameters, Process_parameters
-from solve_qubo import file_QUBO_comp, file_hist, file_QUBO, file_LP_output
-from solve_qubo import _ax_hist_passing_times, _ax_objective, plot_title
+from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
+from QTrains import file_QUBO_comp, file_hist, file_QUBO, file_LP_output
+from trains_timetable import Input_qubo
+
+from solve_qubo import Comp_parameters, Process_parameters
+
+
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
