@@ -122,7 +122,6 @@ def test_solving_process():
     with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
-    print(lp_sol)
 
     assert list(lp_sol["variables"].keys()) == ['t_PS_1', 't_MR_1', 't_CS_1', 't_MR_3', 't_CS_3', 'y_MR_1_3', 'y_CS_1_3']
     assert lp_sol["objective"] == 0
@@ -169,7 +168,7 @@ def test_solving_process():
 
     qubo_to_analyze = Analyze_qubo(dict_read)
     file = file_QUBO_comp(q_input, q_pars, p)
-    print( file )
+
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
 
@@ -188,5 +187,30 @@ def test_solving_process():
 
     analyze_qubo(q_input, q_pars, p)
 
-            #plot_hist(q_input, q_pars, p)
-        #else:
+    file = file_hist(q_input, q_pars, p)
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+
+    hist_obj = results["qubo objectives"]
+    ground = results["lp objective"]
+
+    assert ground == 0.0
+    assert np.min(hist_obj) == 0.0
+    histogram_obj = [hist_obj.count(x) for x in set(hist_obj)]
+    assert 950 < np.sum(histogram_obj) < 1001  #feasibility percentage above 0.9
+    for i in range(5):
+        assert histogram_obj[i] > 5
+
+    
+    hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
+
+    xs = list( range(np.max(hist_pass) + 1) )
+    histogram_pass = [hist_pass.count(x) for x in xs]
+    
+
+    assert 1900 < np.sum(histogram_pass) < 2001  # there ate 2 trains
+    assert histogram_pass[0:12] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    test_list = histogram_pass[12:17]
+    test_list.sort(reverse=True)
+    assert histogram_pass[12:17]==test_list  # decreasing histogram

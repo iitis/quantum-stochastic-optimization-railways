@@ -182,7 +182,6 @@ def analyze_qubo(q_input, q_pars, p):
     no_feasible = 0
 
     for sampleset in samplesets.values():
-        print( sampleset.record[0] )
         if q_pars.method == "sim":
             for (sol, energy, occ) in sampleset.record:
                 for _ in range(occ):
