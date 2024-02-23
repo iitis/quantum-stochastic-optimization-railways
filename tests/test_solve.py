@@ -48,7 +48,7 @@ class Comp_parameters():
 
         self.ppair = 2.0
         self.psum = 4.0
-        self.dmax = 6
+        self.dmax = 5
 
         # for simulated annelaing
         self.method = "sim"
@@ -69,7 +69,6 @@ def test_file_names():
     q_input.qubo1()
     #q_input.qubo2()
     q_pars = Comp_parameters()
-    q_pars.dmax = 5
     q_pars.method = "sim"
     p = Process_parameters()
 
@@ -92,7 +91,6 @@ def test_solving_process():
     q_input = Input_qubo()
     q_input.qubo1()
     q_pars = Comp_parameters()
-    q_pars.dmax = 5
     q_pars.method = "sim"
     p = Process_parameters()
 
@@ -149,7 +147,6 @@ def test_solving_QUBO():
     q_input = Input_qubo()
     q_input.qubo1()
     q_pars = Comp_parameters()
-    q_pars.dmax = 5
     q_pars.method = "sim"
     p = Process_parameters()
 
@@ -181,7 +178,6 @@ def test_qubo_analysis():
     q_input = Input_qubo()
     q_input.qubo1()
     q_pars = Comp_parameters()
-    q_pars.dmax = 5
     q_pars.method = "sim"
     p = Process_parameters()
 
@@ -195,6 +191,8 @@ def test_qubo_analysis():
     hist_obj = results["qubo objectives"]
     ground = results["lp objective"]
     assert results["perc feasible"] > 0.95
+    assert results["no qubits"] == 30
+    assert results["no qubo terms"] == 306
 
 
     assert ground == 0.0
@@ -222,7 +220,6 @@ def test_plotting():
     q_input = Input_qubo()
     q_input.qubo1()
     q_pars = Comp_parameters()
-    q_pars.dmax = 5
     q_pars.method = "sim"
     p = Process_parameters()
 
@@ -233,7 +230,6 @@ def test_auxiliaty_plotting_functions():
     q_input = Input_qubo()
     q_input.qubo1()
     q_pars = Comp_parameters()
-    q_pars.dmax = 5
     q_pars.method = "sim"
     p = Process_parameters()
 
