@@ -30,7 +30,7 @@ def plotDWave_2trains_dmax2():
 
     fig = plt.figure(constrained_layout=True, figsize=(6, 4))
 
-    fig.suptitle(f"DWave results, small instances dmax={int(q_par.dmax)} and 2 trains", size = 16)
+    fig.suptitle(f"DWave results, small instances of 18 qubits")
 
     (subfig1, subfig2) = fig.subfigures(2,1)
 
@@ -40,21 +40,25 @@ def plotDWave_2trains_dmax2():
     our_qubo.qubo_real_2t(delays_list[0])
     _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
     _ax_objective(ax1, our_qubo, q_par, p)
+    ax.set_xlabel("Passing time MR-CS")
     our_title = plot_title(our_qubo, q_par)
-    subfig1.suptitle(our_title)
+    print(f"18 qubits top {our_title}")
+    ax.text(0.925, 1.1, 'a)', transform=ax.transAxes)
+    ax1.text(0.925, 1.1, 'b)', transform=ax1.transAxes)
 
     our_qubo.qubo_real_2t(delays_list[1])
     _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
     _ax_objective(ax3, our_qubo, q_par, p)
+    ax2.set_xlabel("Passing time MR-CS")
     our_title = plot_title(our_qubo, q_par)
-    subfig2.suptitle(our_title)
+    print(f"18 qubits botom {our_title}")
+    ax2.text(0.925, 1.1, 'c)', transform=ax2.transAxes)
+    ax3.text(0.925, 1.1, 'd)', transform=ax3.transAxes)
+
 
     ax2.set_xlim(left=10, right = 17)
     ax2.set_xticks([10,12,14,16])
-    ax.sharex(ax2)
-
-
-    
+    ax.sharex(ax2)    
     ax3.set_xlim(left=-0.2)
     ax1.sharex(ax3)
 
@@ -73,7 +77,7 @@ def plotDWave_6trains():
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
     fig = plt.figure(constrained_layout=True, figsize=(6, 4))
-    fig.suptitle("DWave results, intermediate 6 trains, Not disturbed", size = 16)
+    fig.suptitle("Shaping histograms by varous parameters of QUBO and computation, 6 trains")
 
     (subfig1, subfig2) = fig.subfigures(2,1)
     (ax, ax1) = subfig1.subplots(1, 2)
@@ -86,7 +90,7 @@ def plotDWave_6trains():
     our_qubo.qubo_real_6t(delays_list[0])
     _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
     our_title = plot_title(our_qubo, q_par)
-    ax.set_title(f"{our_title[14:len(our_title)]}, dmax={q_par.dmax}")
+    print(f"6 trains top left {our_title[14:len(our_title)]}, dmax={q_par.dmax}")
     ax.set_xlabel("Passing time MR-CS")
 
     q_par.dmax = 6
@@ -96,7 +100,7 @@ def plotDWave_6trains():
     our_qubo.qubo_real_6t(delays_list[0])
     _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
     our_title = plot_title(our_qubo, q_par)
-    ax1.set_title(f"{our_title[14:len(our_title)]},dm={q_par.dmax}")
+    print(f"6 trains top fight {our_title[14:len(our_title)]},dm={q_par.dmax}")
     ax1.set_xlabel("Passing time MR-CS")
 
 
@@ -107,7 +111,7 @@ def plotDWave_6trains():
     our_qubo.qubo_real_6t(delays_list[0])
     _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
     our_title = plot_title(our_qubo, q_par)
-    ax2.set_title(f"{our_title[14:len(our_title)]}, dmax={q_par.dmax}")
+    print(f" 6 trains bottom left {our_title[14:len(our_title)]}, dmax={q_par.dmax}")
     ax2.set_xlabel("Passing time MR-CS")
 
 
@@ -119,9 +123,8 @@ def plotDWave_6trains():
     our_qubo.qubo_real_6t(delays_list[0])
     _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
     our_title = plot_title(our_qubo, q_par)
-    ax3.set_title(f"{our_title[14:len(our_title)]},d={q_par.dmax}")
+    print(f"6 train bottom right {our_title[14:len(our_title)]},d={q_par.dmax}")
     ax3.set_xlabel("Passing time MR-CS")
-
 
     ax3.set_xlim(left=11, right = 21)
     ax3.set_xticks([12,14,16,18,20])
@@ -131,6 +134,12 @@ def plotDWave_6trains():
 
     ax.sharex(ax2)
     ax1.sharex(ax3)
+
+    ax.text(0.925, 0.9, 'a)', transform=ax.transAxes)
+    ax1.text(0.925, 0.9, 'b)', transform=ax1.transAxes)
+
+    ax2.text(0.925, 0.9, 'c)', transform=ax2.transAxes)
+    ax3.text(0.925, 0.9, 'd)', transform=ax3.transAxes)
 
     fig.savefig("article_plots/6trains_DWave.pdf")
     fig.clf()
@@ -150,7 +159,7 @@ def plotDWave_11trains_dmax6():
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
     fig = plt.figure(constrained_layout=True, figsize=(6, 4))
-    fig.suptitle("DWave results, 11 trains", size = 16)
+    fig.suptitle("DWave large instance 182 qubits, annealing time $10 \mu$s left, $1000 \mu$s right")
 
     (subfig1, subfig2) = fig.subfigures(2,1)
     (ax, ax1) = subfig1.subplots(1, 2)
@@ -159,26 +168,26 @@ def plotDWave_11trains_dmax6():
     q_par.annealing_time = 10
     our_qubo.qubo_real_11t(delays_list[0])
     _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
-    our_title = f"Not disturbed, ppair= {int(q_par.ppair)}, psum={int(q_par.psum)}, dmax={int(q_par.dmax)}"
-    ax.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time} $\mu$s")
+    our_title = plot_title(our_qubo, q_par)
+    print(f"11 trains top {our_title} annealing time 10 left, 1000 right")
+    ax.set_xlabel(f"Passing time MR-CS")
 
     q_par.annealing_time = 1000
     our_qubo.qubo_real_11t(delays_list[0])
     _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
-    subfig1.suptitle(our_title)
-    ax1.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time} $\mu$s")
+    ax1.set_xlabel(f"Passing time MR-CS")
 
     q_par.annealing_time = 10
     our_qubo.qubo_real_11t(delays_list[1])
     _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
-    ax2.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time} $\mu$s")
-    our_title = f"Disturbed, ppair= {int(q_par.ppair)}, psum={int(q_par.psum)}, dmax={int(q_par.dmax)}"
+    ax2.set_xlabel(f"Passing time MR-CS")
+    our_title = plot_title(our_qubo, q_par)
+    print(f"11 trains bottom {our_title} annealing time 10 left, 1000 right")
 
     q_par.annealing_time = 1000
     our_qubo.qubo_real_11t(delays_list[1])
     _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
-    ax3.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time} $\mu$s")
-    subfig2.suptitle(our_title)
+    ax3.set_xlabel(f"Passing time MR-CS")
 
 
     ax3.set_xlim(left=11, right = 21)
@@ -189,6 +198,11 @@ def plotDWave_11trains_dmax6():
 
     ax.sharex(ax2)
     ax1.sharex(ax3)
+    ax.text(0.925, 0.9, 'a)', transform=ax.transAxes)
+    ax1.text(0.925, 0.9, 'b)', transform=ax1.transAxes)
+
+    ax2.text(0.925, 0.9, 'c)', transform=ax2.transAxes)
+    ax3.text(0.925, 0.9, 'd)', transform=ax3.transAxes)
 
     fig.savefig("article_plots/11trains_dmax6_DWave.pdf")
     fig.clf()
@@ -287,7 +301,7 @@ def get_series(q_par, p, delays):
     no_qubo_terms = []
     feasibility_perc = []
 
-    for d in [6]:  # both dmax that determines the size
+    for d in [2,6]:
         q_par.dmax = d
 
         our_qubo = Input_qubo()
@@ -319,40 +333,113 @@ def get_series(q_par, p, delays):
     return no_qubits, no_qubo_terms, feasibility_perc
 
 
+def plot_realisation_fit(ax, x, y, rmax, color, marker, label):
+    
+    ax.plot(x, y, marker, color = color, label = label)
+    x_art = list(range(50,rmax, 50))
+
+    if rmax > 0:
+        if 0 in y:
+            x = x[0:-1]
+            y = y[0:-1]
+        a, b = np.polyfit(x, np.log(y), 1)
+        ax.plot(x_art, np.exp(a*np.array(x_art)+b), "--", color = color, label = f"{label} log linear fit")
+
+
+
     
 def feasibility_percentage():
     p = Process_parameters()
     q_par = Comp_parameters()
 
     q_par.method = "real"
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
     delays_list = [{}, {1:5, 2:2, 4:5}]
+    rmax = 10_000
 
+    q_par.annealing_time = 10
 
-    no_qubits_nd, qubo_terms_nd, feasibility_perc_nd = get_series(q_par, p, delays_list[0])
-    no_qubits_d, qubo_terms_d, feasibility_perc_d = get_series(q_par, p, delays_list[1])
+    no_qubits_nd, Qsize_nd, feas_perc_nd = get_series(q_par, p, delays_list[0])
+    no_qubits_d, Qsize_d, feas_perc_d = get_series(q_par, p, delays_list[1])
+
+    
+    fig = plt.figure(constrained_layout=True, figsize=(6, 4))
+    fig.suptitle("DWave output - Scaling of precentage of feasible solutions")
+    (subfig1, subfig2) = fig.subfigures(2,1)
+    (ax, ax1) = subfig1.subplots(1, 2)
+    (ax2, ax3) = subfig2.subplots(1, 2)
+
+    plot_realisation_fit(ax, Qsize_nd, feas_perc_nd, 2500, color="green", marker="x", label="2,4 Not disturbed")
+    plot_realisation_fit(ax, Qsize_d, feas_perc_d, 2500, color="red", marker="d", label="2,4 Disturbed")
+
+    plot_realisation_fit(ax1, Qsize_nd, feas_perc_nd, rmax, color="green", marker="x", label="2,4 Not disturbed")
+    plot_realisation_fit(ax1, Qsize_d, feas_perc_d, rmax, color="red", marker="d", label="2,4 Disturbed")
 
     q_par.ppair = 20.0
     q_par.psum = 40.0
 
+    no_qubits_nd, Qsize_nd, feas_perc_nd = get_series(q_par, p, delays_list[0])
+    no_qubits_d, Qsize_d, feas_perc_d = get_series(q_par, p, delays_list[1])
+
+    plot_realisation_fit(ax, Qsize_nd, feas_perc_nd, 2500, color="blue", marker="1", label="20,40 Not disturbed")
+    plot_realisation_fit(ax, Qsize_d, feas_perc_d, 2500, color="orange", marker="o", label="20,40 Disturbed")
+
+    plot_realisation_fit(ax1, Qsize_nd, feas_perc_nd, rmax, color="blue", marker="1", label="20,40 Not disturbed")
+    plot_realisation_fit(ax1, Qsize_d, feas_perc_d, rmax, color="orange", marker="o", label="20,40 Disturbed")
 
 
-    no_qubits_nd20, qubo_terms_nd20, feasibility_perc_nd20 = get_series(q_par, p, delays_list[0])
-    no_qubits_d20, qubo_terms_d20, feasibility_perc_d20 = get_series(q_par, p, delays_list[1])
-
-
-
-    fig, ax = plt.subplots(figsize=(4, 3))
-
-    ax.plot(no_qubits_nd, feasibility_perc_nd, "x", color = "red")
-    ax.plot(no_qubits_d, feasibility_perc_d, "x", color = "orange")
-
-
-    ax.plot(no_qubits_nd20, feasibility_perc_nd20, "o", color = "blue")
-    ax.plot(no_qubits_d20, feasibility_perc_d20, "o", color = "cyan")
+    ax.set_ylabel("perc. of feasible solutions")
+    ax.set_xlabel("n.o. non zero QUBO elements")
     ax.set_yscale('log')
-    plt.show()
+    ax.text(0.925, 0.9, 'a)', transform=ax.transAxes)
+
+
+    ax1.text(0.925, 0.9, 'b)', transform=ax1.transAxes)
+    ax1.set_ylabel("perc. of feasible solutions")
+    ax1.set_xlabel("n.o. non zero QUBO elements")
+    ax1.set_yscale('log')
+    
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+    q_par.annealing_time = 1000
+
+    no_qubits_nd, Qsize_nd, feas_perc_nd = get_series(q_par, p, delays_list[0])
+    no_qubits_d, Qsize_d, feas_perc_d = get_series(q_par, p, delays_list[1])
+
+
+    plot_realisation_fit(ax2, Qsize_nd, feas_perc_nd, 2500, color="green", marker="x", label="2,4 Not disturbed")
+    plot_realisation_fit(ax2, Qsize_d, feas_perc_d, 2500, color="red", marker="d", label="2,4 Disturbed")
+
+    plot_realisation_fit(ax3, Qsize_nd, feas_perc_nd, rmax, color="green", marker="x", label="2,4 Not disturbed")
+    plot_realisation_fit(ax3, Qsize_d, feas_perc_d, rmax, color="red", marker="d", label="2,4 Disturbed")
+
+
+    ax2.set_ylabel("perc. of feasible solutions")
+    ax2.set_xlabel("n.o. non zero QUBO elements")
+    ax2.set_yscale('log')
+    ax2.text(0.925, 0.9, 'c)', transform=ax2.transAxes)
+
+
+    q_par.ppair = 20.0
+    q_par.psum = 40.0
+
+    no_qubits_nd, Qsize_nd, feas_perc_nd = get_series(q_par, p, delays_list[0])
+    no_qubits_d, Qsize_d, feas_perc_d = get_series(q_par, p, delays_list[1])
+
+
+    plot_realisation_fit(ax2, Qsize_nd, feas_perc_nd, 2500, color="blue", marker="1", label="20,40 Not disturbed")
+    plot_realisation_fit(ax2, Qsize_d, feas_perc_d, 2500, color="orange", marker="o", label="20,40 Disturbed")
+
+    plot_realisation_fit(ax3, Qsize_nd, feas_perc_nd, rmax, color="blue", marker="1", label="20,40 Not disturbed")
+    plot_realisation_fit(ax3, Qsize_d, feas_perc_d, rmax, color="orange", marker="o", label="20,40 Disturbed")
+    ax3.text(0.925, 0.9, 'd)', transform=ax3.transAxes)
+
+
+    ax3.set_ylabel("perc. of feasible solutions")
+    ax3.set_xlabel("n.o. non zero QUBO elements")
+    ax3.set_yscale('log')
+
+
+    fig.savefig(f"article_plots/feasibility_percentage.pdf")
     plt.clf()
 
 
@@ -533,16 +620,16 @@ def plot_real_live_MLR_2():
 
 
 if __name__ == "__main__":
-    #plotDWave_2trains_dmax2()
-    #plotDWave_11trains_dmax6()
-    #plotDWave_6trains()
-    #plot_DWave_soft_dmax6(no_trains = 11)
-    #plot_DWave_soft_dmax6(no_trains = 10)
+    plotDWave_2trains_dmax2()
+    plotDWave_11trains_dmax6()
+    plotDWave_6trains()
+    plot_DWave_soft_dmax6(no_trains = 11)
+    plot_DWave_soft_dmax6(no_trains = 10)
 
-    #plot2trains_gates_simulations(2.0,4.0)
-    #plot2trains_gates_simulations(20.0,40.0)
+    plot2trains_gates_simulations(2.0,4.0)
+    plot2trains_gates_simulations(20.0,40.0)
 
-    #plot_real_live_MLR_4()
-    #plot_real_live_MLR_2()
+    plot_real_live_MLR_4()
+    plot_real_live_MLR_2()
 
     feasibility_percentage()
