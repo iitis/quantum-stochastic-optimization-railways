@@ -181,11 +181,13 @@ def test_solving_process():
 
     hist_obj = results["qubo objectives"]
     ground = results["lp objective"]
+    assert results["perc feasible"] > 0.95
+
 
     assert ground == 0.0
     assert np.min(hist_obj) == 0.0
     histogram_obj = [hist_obj.count(x) for x in set(hist_obj)]
-    assert 950 < np.sum(histogram_obj) < 1001  #feasibility percentage above 0.9
+    assert np.sum(histogram_obj) == 1000*results["perc feasible"]  #feasibility percentage above 0.9
     for i in range(5):
         assert histogram_obj[i] > 5
 
@@ -196,7 +198,7 @@ def test_solving_process():
     histogram_pass = [hist_pass.count(x) for x in xs]
     
 
-    assert 1900 < np.sum(histogram_pass) < 2001  # there ate 2 trains
+    assert np.sum(histogram_pass) == 2*1000*results["perc feasible"]  # there are 2 trains
     assert histogram_pass[0:12] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     test_list = histogram_pass[12:17]

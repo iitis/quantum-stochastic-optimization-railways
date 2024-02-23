@@ -14,7 +14,7 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 plt.rc('font', size=10)
 
-
+# these are plotting functions
 def plot_title(q_input, q_pars):
     if q_input.delays == {}:
         disturbed = "Not disturbed"
@@ -113,9 +113,7 @@ def make_plots(q_input, q_pars, p):
 def plot_hist(q_input, q_pars, p):
     """ plot histograms of trains passing time from results from QUBO """
 
-
     make_plots(q_input, q_pars, p)
-
     display_results(q_input, q_pars, p)
 
 
