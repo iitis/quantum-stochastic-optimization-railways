@@ -9,7 +9,7 @@ from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import file_QUBO_comp, file_hist, file_QUBO, file_LP_output
 from trains_timetable import Input_qubo
 
-from solve_qubo import Comp_parameters, Process_parameters
+from solve_qubo import Comp_parameters, Process_parameters, _ax_hist_passing_times, _ax_objective, plot_title
 
 
 
