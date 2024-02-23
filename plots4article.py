@@ -2,7 +2,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-from QTrains import _ax_hist_passing_times, _ax_objective, plot_title
+from QTrains import _ax_hist_passing_times, _ax_objective, plot_title, file_hist
 from trains_timetable import Input_qubo
 from solve_qubo import Comp_parameters, Process_parameters
 
@@ -17,7 +17,6 @@ plt.rc('font', size=10)
 def plotDWave_2trains_dmax2():
 
     p = Process_parameters()
-    p.analyze = True
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
 
@@ -66,7 +65,6 @@ def plotDWave_2trains_dmax2():
 def plotDWave_6trains():
 
     p = Process_parameters()
-    p.analyze = True
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
 
@@ -141,7 +139,6 @@ def plotDWave_6trains():
 def plotDWave_11trains_dmax6():
 
     p = Process_parameters()
-    p.analyze = True
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
 
@@ -202,7 +199,6 @@ def plotDWave_11trains_dmax6():
 def plot_DWave_soft_dmax6(no_trains = 11):
 
     p = Process_parameters()
-    p.analyze = True
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
 
@@ -268,6 +264,98 @@ def plot_DWave_soft_dmax6(no_trains = 11):
     fig.savefig(f"article_plots/{no_trains}trains_DWave_soft.pdf")
     fig.clf()
 
+
+#########################  Scaling ####################
+    
+def add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc):
+
+
+    file = file_hist(our_qubo, q_par, p)
+    
+    with open(file, 'rb') as fp:
+        res_dict = pickle.load(fp)
+    
+
+    no_qubits.append(res_dict["no qubits"])
+    no_qubo_terms.append(res_dict["no qubo terms"])
+    feasibility_perc.append(res_dict["perc feasible"])
+
+
+def get_series(q_par, p, delays):
+
+    no_qubits = []
+    no_qubo_terms = []
+    feasibility_perc = []
+
+    for d in [6]:  # both dmax that determines the size
+        q_par.dmax = d
+
+        our_qubo = Input_qubo()
+        our_qubo.qubo_real_1t(delays)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        our_qubo = Input_qubo()
+        our_qubo.qubo_real_2t(delays)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        our_qubo = Input_qubo()
+        our_qubo.qubo_real_4t(delays)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        our_qubo = Input_qubo()    
+        our_qubo.qubo_real_6t(delays)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        our_qubo = Input_qubo()
+        our_qubo.qubo_real_8t(delays)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        our_qubo = Input_qubo()
+        our_qubo.qubo_real_10t(delays)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        our_qubo = Input_qubo()
+        our_qubo.qubo_real_11t(delays)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        our_qubo = Input_qubo()
+        our_qubo.qubo_real_12t(delays)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+
+
+    return no_qubits, no_qubo_terms, feasibility_perc
+
+
+    
+def feasibility_percentage():
+    p = Process_parameters()
+    q_par = Comp_parameters()
+
+    q_par.method = "real"
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+    delays_list = [{}, {1:5, 2:2, 4:5}]
+
+
+    no_qubits_nd, qubo_terms_nd, feasibility_perc_nd = get_series(q_par, p, delays_list[0])
+    no_qubits_d, qubo_terms_d, feasibility_perc_d = get_series(q_par, p, delays_list[1])
+
+    q_par.ppair = 20.0
+    q_par.psum = 40.0
+
+
+
+    no_qubits_nd20, qubo_terms_nd20, feasibility_perc_nd20 = get_series(q_par, p, delays_list[0])
+    no_qubits_d20, qubo_terms_d20, feasibility_perc_d20 = get_series(q_par, p, delays_list[1])
+
+
+
+    fig, ax = plt.subplots(figsize=(4, 3))
+
+    ax.plot(no_qubits_nd, feasibility_perc_nd, "x", color = "red")
+    ax.plot(no_qubits_d, feasibility_perc_d, "x", color = "orange")
+
+
+    ax.plot(no_qubits_nd20, feasibility_perc_nd20, "o", color = "blue")
+    ax.plot(no_qubits_d20, feasibility_perc_d20, "o", color = "cyan")
+    ax.set_yscale('log')
+    plt.show()
+    plt.clf()
+
+
 ####################  GATES  ########################
 
 
@@ -287,10 +375,8 @@ def data_string_gates(q_par, delays):
 
 def plot2trains_gates_simulations(ppair, psum):
     p = Process_parameters()
-    p.analyze = True
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
-
 
 
     fig = plt.figure(constrained_layout=True, figsize=(6, 4))
@@ -447,14 +533,16 @@ def plot_real_live_MLR_2():
 
 
 if __name__ == "__main__":
-    plotDWave_2trains_dmax2()
-    plotDWave_11trains_dmax6()
-    plotDWave_6trains()
-    plot_DWave_soft_dmax6(no_trains = 11)
-    plot_DWave_soft_dmax6(no_trains = 10)
+    #plotDWave_2trains_dmax2()
+    #plotDWave_11trains_dmax6()
+    #plotDWave_6trains()
+    #plot_DWave_soft_dmax6(no_trains = 11)
+    #plot_DWave_soft_dmax6(no_trains = 10)
 
-    plot2trains_gates_simulations(2.0,4.0)
-    plot2trains_gates_simulations(20.0,40.0)
+    #plot2trains_gates_simulations(2.0,4.0)
+    #plot2trains_gates_simulations(20.0,40.0)
 
-    plot_real_live_MLR_4()
-    plot_real_live_MLR_2()
+    #plot_real_live_MLR_4()
+    #plot_real_live_MLR_2()
+
+    feasibility_percentage()
