@@ -51,7 +51,7 @@ def save_qubo_gates(dict_qubo, ground_sols, input_file):
     for ground_sol in ground_sols:
         assert E == our_qubo.energy(ground_sol)
     qubo4gates["ground_energy"] = E
-    
+
     new_file = input_file.replace("LR_timetable/", "gates/")
     with open(new_file, 'wb') as fp_w:
         pickle.dump(qubo4gates, fp_w)
@@ -145,26 +145,6 @@ class Cases:
             if self.case == 10:
                 self.comp_specifics_string = "summary.50."
 
-
-    def get_ground(self):
-        """ returns ground state solution given case number """
-        if self.case in [1, 5]:
-            ground_solution = [1,0,0,1,0,0]
-        if self.case in [-1, -5]:
-            ground_solution = [1,0,0,0,1,0]
-        if self.case in [2, 6]:
-            ground_solution = [1,0,0,0,0,1,0,0,0,0]
-        if self.case in [-2, -6]:
-            ground_solution = [1,0,0,0,0,0,1,0,0,0]
-        if self.case in [3, 7]:
-            ground_solution = [1,0,0,0,0,0,0,1,0,0,0,0,0,0]
-        if self.case in [-3, -7]:
-            ground_solution = [1,0,0,0,0,0,0,0,1,0,0,0,0,0]
-        if self.case in [4, 8]:
-            ground_solution = [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0]
-        if self.case in [9, 10]:
-            ground_solution = [1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0]
-        self.ground = ground_solution
 
 
     def update_problems_parameters(self, input4qubo, q_pars, p):
