@@ -157,6 +157,23 @@ def solve_qubo(q_input, q_pars, p):
 
 
 
+def get_solutions_from_dmode(samplesets, q_pars):
+    """ from dmode imput return a series of QUBO solutions as [sol1, sol2, ...] """
+    solutions = []
+    for sampleset in samplesets.values():
+        if q_pars.method == "sim":
+            for (sol, energy, occ) in sampleset.record:
+                for _ in range(occ):
+                    solutions.append(sol)
+        elif q_pars.method == "real":
+            for (sol, energy, occ, other) in sampleset.record:
+                for _ in range(occ):
+                    solutions.append(sol)
+    assert len(solutions) == q_pars.num_all_runs
+    return solutions
+
+                    
+
 
 def analyze_qubo(q_input, q_pars, p):
     """ analyze results of computation on QUBO and comparison with LP """
@@ -178,39 +195,9 @@ def analyze_qubo(q_input, q_pars, p):
 
     stations = q_input.objective_stations
 
-    hist = list([])
-    qubo_objectives = list([])
-    count = 0
-    no_feasible = 0
+    our_solutions = get_solutions_from_dmode(samplesets, q_pars)
 
-    for sampleset in samplesets.values():
-        if q_pars.method == "sim":
-            for (sol, energy, occ) in sampleset.record:
-                for _ in range(occ):
-
-                    count += 1
-                    no_feasible += update_hist(qubo_to_analyze, sol, stations, hist, qubo_objectives, softern_pass_t = p.softern_pass)
-        elif q_pars.method == "real":
-            for (sol, energy, occ, other) in sampleset.record:
-                for _ in range(occ):
-
-                    count += 1
-                    no_feasible += update_hist(qubo_to_analyze, sol, stations, hist, qubo_objectives, softern_pass_t = p.softern_pass)
-
-    assert count == q_pars.num_all_runs
-
-    perc_feasible = no_feasible/count
-
-    if show_var_vals:
-        for v in lp_sol["variables"]:
-            print(v, lp_sol["variables"][v].value, lp_sol["variables"][v].range )
-
-    results = {"perc feasible": perc_feasible, f"{stations[0]}_{stations[1]}": hist}
-    results["no qubits"] = qubo_to_analyze.noqubits
-    results["no qubo terms"] = len(qubo_to_analyze.qubo)
-    results["lp objective"] = lp_sol["objective"]
-    results["q ofset"] = qubo_to_analyze.sum_ofset
-    results["qubo objectives"] = qubo_objectives
+    results = analyze_outputs_gates(qubo_to_analyze, stations, our_solutions, lp_sol, softernpass = False)
 
 
     file =  file_hist(q_input, q_pars, p)
@@ -269,12 +256,14 @@ def analyze_outputs_gates(qubo, stations, our_solutions, lp_solution, softernpas
     count = 0
     no_feasible = 0
 
+    display = len(our_solutions) < 100
+
     for solution in our_solutions:
-        dsiplay_analysis_gates(qubo, solution, lp_solution)
+        if display:
+            dsiplay_analysis_gates(qubo, solution, lp_solution)
 
         count += 1
         no_feasible += update_hist(qubo, solution, stations, hist, qubo_objectives, softernpass)
-        print("feasible", bool(no_feasible))
 
     
     perc_feasible = no_feasible/count
@@ -333,12 +322,6 @@ def plot_title(q_input, q_pars):
 def _ax_hist_passing_times(ax, q_input, q_pars, p, add_text = True, replace_string = ("", "")):
     """ axes for the passing time plots """
     file = file_hist(q_input, q_pars, p, replace_string)
-
-
-
-    print("    XXXXXXXXXXXXXXXXXXXXXXXXXXXX   ")
-    print(file)
-    
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
@@ -367,14 +350,8 @@ def _ax_hist_passing_times(ax, q_input, q_pars, p, add_text = True, replace_stri
 def _ax_objective(ax, q_input, q_pars, p, replace_string = ("", "")):
     """ axes for the objective plot """
     file = file_hist(q_input, q_pars, p, replace_string)
-
-
-    print("    XXXXXXXXXXXXXXXXXXXXXXXXXXXX   ")
-    print(file)
-
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
-
 
     hist_obj = results["qubo objectives"]
     ground = results["lp objective"]

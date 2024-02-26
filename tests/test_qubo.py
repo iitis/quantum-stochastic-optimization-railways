@@ -89,7 +89,7 @@ def test_qubo_analyze():
 
 
     file =  "tests/pics/qubodiagram.pdf"
-    plot_train_diagrams(v, qubo_to_analyze.trains_paths, qubo_to_analyze.pass_time, qubo_to_analyze.stay, file)
+    plot_train_diagrams(v, qubo_to_analyze, file)
 
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 0,0)  # sum, headway, pass, circ
     assert qubo_to_analyze.objective_val(solution) == 1.0

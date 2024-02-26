@@ -2,7 +2,10 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
+from QTrains import plot_train_diagrams
 from QTrains import _ax_hist_passing_times, _ax_objective, plot_title, file_hist
+from QTrains import get_solutions_from_dmode
+from QTrains import file_QUBO_comp, file_QUBO, Analyze_qubo
 from trains_timetable import Input_qubo
 from solve_qubo import Comp_parameters, Process_parameters
 
@@ -679,9 +682,51 @@ def plot_real_live_MLR_2():
 
 
 
+def train_diagrams():
+
+    p = Process_parameters()
+    our_qubo = Input_qubo()
+    q_par = Comp_parameters()
+
+    q_par.method = "real"
+    q_par.dmax = 2
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+    q_par.annealing_time = 10
+
+    delays_list = [{}, {1:5, 2:2, 4:5}]
+
+    our_qubo.qubo_real_11t(delays_list[1])
+
+    
+
+    file = file_QUBO_comp(our_qubo, q_par, p)
+    print( file )
+    with open(file, 'rb') as fp:
+        samplesets = pickle.load(fp)
+
+    solutions = get_solutions_from_dmode(samplesets, q_par)
+
+    solution = solutions[0]
+
+    file = file_QUBO(our_qubo, q_par, p)
+    with open(file, 'rb') as fp:
+        dict_read = pickle.load(fp)
+
+    qubo_to_analyze = Analyze_qubo(dict_read)
+    v = qubo_to_analyze.qubo2int_vars(solution)
+
+    file =  "article_plots/train_diagram.pdf"
+
+    print(qubo_to_analyze.trains_paths)
+
+    plot_train_diagrams(v, qubo_to_analyze, file)
+
 
 
 if __name__ == "__main__":
+    train_diagrams()
+
     plotDWave_2trains_dmax2()
     plotDWave_11trains_dmax6()
     plotDWave_6trains()
