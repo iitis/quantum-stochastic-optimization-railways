@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 
 from QTrains import Analyze_qubo
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
-from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo
-from QTrains import display_results, make_plots
+from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
+from QTrains import display_prec_feasibility, make_plots_Dwave
 from QTrains import plot_title, _ax_hist_passing_times, _ax_objective
-from QTrains import analyze_outputs_gates, save_qubo_4gates_comp, plot_hist_gates
+from QTrains import analyze_QUBO_outputs, get_solutions_from_dmode
+from QTrains import save_qubo_4gates_comp, plot_hist_gates
+from QTrains import first_ground
 
 # input
 
@@ -175,6 +177,20 @@ def test_solving_QUBO():
     objective = 0
     assert np.min(energies) + qubo_to_analyze.sum_ofset == objective
 
+
+    sols = get_solutions_from_dmode(samplesets, q_pars)
+    assert len(sols) == 1000
+
+    file = file_LP_output(q_input, q_pars, p)
+    with open(file, 'rb') as fp:
+        lp_sol = pickle.load(fp)
+
+    sol = first_ground(sols, qubo_to_analyze, lp_sol)
+    assert qubo_to_analyze.objective_val(sol) == objective
+
+
+
+
 def test_qubo_analysis():
     q_input = Input_qubo()
     q_input.qubo1()
@@ -183,7 +199,7 @@ def test_qubo_analysis():
     p = Process_parameters()
 
 
-    analyze_qubo(q_input, q_pars, p)
+    analyze_qubo_Dwave(q_input, q_pars, p)
 
     file = file_hist(q_input, q_pars, p)
     with open(file, 'rb') as fp:
@@ -224,8 +240,8 @@ def test_plotting():
     q_pars.method = "sim"
     p = Process_parameters()
 
-    make_plots(q_input, q_pars, p)
-    display_results(q_input, q_pars, p)
+    make_plots_Dwave(q_input, q_pars, p)
+    display_prec_feasibility(q_input, q_pars, p)
 
 def test_auxiliaty_plotting_functions():
     q_input = Input_qubo()
@@ -265,7 +281,7 @@ def test_gates():
 
     all_solutions = Q.heuristics_degenerate(qubo_solution, "PS")
 
-    ret = analyze_outputs_gates(Q, q_input.objective_stations, all_solutions, lp_sol, p.softern_pass)
+    ret = analyze_QUBO_outputs(Q, q_input.objective_stations, all_solutions, lp_sol, p.softern_pass)
 
     assert ret == {'perc feasible': 1.0, 'MR_CS': [12, 12], 'no qubits': 30,
                    'no qubo terms': 306, 'lp objective': 0.0,

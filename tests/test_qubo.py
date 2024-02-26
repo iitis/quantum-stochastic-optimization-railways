@@ -4,6 +4,7 @@ import pickle
 from scipy.optimize import linprog
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
 from QTrains import add_update, find_ones, hist_passing_times, plot_train_diagrams, update_hist
+from QTrains import filter_feasible, is_feasible, first_ground
 
 
 
@@ -61,9 +62,13 @@ def test_qubo_analyze():
     qubo_dict = q.store_in_dict(rail_input)
     qubo_to_analyze = Analyze_qubo(qubo_dict)
 
+    solutions = []
 
     #           0,1,2,3,4,5,6,7,8,9,10,11
     solution = [1,0,0,1,0,0,1,0,0,0,0,1]
+    solutions.append(solution)
+    assert is_feasible(solution, qubo_to_analyze)
+
     v = qubo_to_analyze.qubo2int_vars(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2, ('B',3): 6}
     assert v['t_A_1'].value == 0
@@ -98,16 +103,19 @@ def test_qubo_analyze():
 
 
     solution = [1,0,0,1,0,0,1,0,0,0,0,0]
+    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2}
     assert qubo_to_analyze.count_broken_constrains(solution) == (1, 0, 0, 0)
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + qubo_to_analyze.psum
 
     solution = [1,0,0,1,0,0,0,0,0,0,0,0]
+    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2}
     assert qubo_to_analyze.count_broken_constrains(solution) == (2, 0, 0, 0)
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 2*qubo_to_analyze.psum
 
     solution = [1,0,0,1,0,0,1,0,0,1,1,1]
+    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2, ('B',3): 4, ('B',3): 5, ('B',3): 6}
     # with to much variables it is more complicated
     assert qubo_to_analyze.count_broken_constrains(solution) == (4, 0, 0, 0)
@@ -115,21 +123,29 @@ def test_qubo_analyze():
 
      #          0,1,2,3,4,5,6,7,8,9,10,11
     solution = [0,0,1,1,0,0,0,0,1,0,0,1]
+    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 2, ('A',3): 2, ('B',1): 4, ('B',3): 6}
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 1, 0, 0)
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 2*qubo_to_analyze.ppair
 
     solution = [0,0,1,1,0,0,0,0,1,0,0,1]
+    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A', 1): 2, ('A', 3): 2, ('B', 1): 4, ('B', 3): 6}
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 1, 0, 0)
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 2*qubo_to_analyze.ppair
 
     #     0,1,2,3,4,5,6,7,8,9,10,11
     solution = [0,1,0,0,1,0,1,0,0,1,0,0]
+    assert not is_feasible(solution, qubo_to_analyze)
+    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 1, ('A',3): 3, ('B',1): 2, ('B',3): 4}
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 2, 0)
     assert qubo_to_analyze.broken_MO_conditions(solution) == 0
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 4*qubo_to_analyze.ppair
+
+    assert filter_feasible(solutions, qubo_to_analyze) == [[1,0,0,1,0,0,1,0,0,0,0,1]]
+
+    assert filter_feasible(solutions, qubo_to_analyze, softern_pass_t = True) == [[1,0,0,1,0,0,1,0,0,0,0,1], [0,1,0,0,1,0,1,0,0,1,0,0]]
 
 
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}

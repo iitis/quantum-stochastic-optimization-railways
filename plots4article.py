@@ -2,10 +2,11 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-from QTrains import plot_train_diagrams
+from QTrains import plot_train_diagrams, hist_passing_times, filter_feasible
 from QTrains import _ax_hist_passing_times, _ax_objective, plot_title, file_hist
-from QTrains import get_solutions_from_dmode
-from QTrains import file_QUBO_comp, file_QUBO, Analyze_qubo
+from QTrains import get_solutions_from_dmode, first_ground
+from QTrains import file_QUBO_comp, file_QUBO, file_LP_output
+from QTrains import Analyze_qubo
 from trains_timetable import Input_qubo
 from solve_qubo import Comp_parameters, Process_parameters
 
@@ -680,7 +681,13 @@ def plot_real_live_MLR_2():
     fig.savefig("article_plots/real_data2.pdf")
     fig.clf()
 
-
+def high_excited(solutions, qubo_to_analyze, our_qubo):
+    for solution in solutions:
+        vq = qubo_to_analyze.qubo2int_vars(solution)
+        h = hist_passing_times(vq, our_qubo.objective_stations, qubo_to_analyze)
+        if (20 in h):
+            return solution, qubo_to_analyze.objective(solution)
+    return 0, 0
 
 def train_diagrams():
 
@@ -689,17 +696,14 @@ def train_diagrams():
     q_par = Comp_parameters()
 
     q_par.method = "real"
-    q_par.dmax = 2
+    q_par.dmax = 6
     q_par.ppair = 2.0
     q_par.psum = 4.0
     q_par.annealing_time = 10
 
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
-    our_qubo.qubo_real_11t(delays_list[1])
-
-    
-
+    our_qubo.qubo_real_11t(delays_list[1])    
     file = file_QUBO_comp(our_qubo, q_par, p)
     print( file )
     with open(file, 'rb') as fp:
@@ -707,36 +711,48 @@ def train_diagrams():
 
     solutions = get_solutions_from_dmode(samplesets, q_par)
 
-    solution = solutions[0]
-
     file = file_QUBO(our_qubo, q_par, p)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
+    file = file_LP_output(our_qubo, q_par, p)
+    with open(file, 'rb') as fp:
+        lp_sol = pickle.load(fp)
+
     qubo_to_analyze = Analyze_qubo(dict_read)
+
+    solution = first_ground(solutions, qubo_to_analyze, lp_sol)
     v = qubo_to_analyze.qubo2int_vars(solution)
 
-    file =  "article_plots/train_diagram.pdf"
-
-    print(qubo_to_analyze.trains_paths)
-
+    file =  "article_plots/Gtrain_diagram.pdf"
     plot_train_diagrams(v, qubo_to_analyze, file)
+
+
+    feas_sols = filter_feasible(solutions, qubo_to_analyze)
+
+    solution, energy = high_excited(solutions, qubo_to_analyze, our_qubo)
+    v = qubo_to_analyze.qubo2int_vars(solution)
+
+    file =  "article_plots/Etrain_diagram.pdf"
+    plot_train_diagrams(v, qubo_to_analyze, file)
+
+
 
 
 
 if __name__ == "__main__":
     train_diagrams()
 
-    plotDWave_2trains_dmax2()
-    plotDWave_11trains_dmax6()
-    plotDWave_6trains()
-    plot_DWave_soft_dmax6(no_trains = 11)
-    plot_DWave_soft_dmax6(no_trains = 10)
+    #plotDWave_2trains_dmax2()
+    #plotDWave_11trains_dmax6()
+    #plotDWave_6trains()
+    #plot_DWave_soft_dmax6(no_trains = 11)
+    #plot_DWave_soft_dmax6(no_trains = 10)
 
-    plot2trains_gates_simulations(2.0,4.0)
+    #plot2trains_gates_simulations(2.0,4.0)
     #plot2trains_gates_simulations(20.0,40.0)
 
-    plot_real_live_MLR_4()
-    plot_real_live_MLR_2()
+    #plot_real_live_MLR_4()
+    #plot_real_live_MLR_2()
 
     feasibility_percentage()

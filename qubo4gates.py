@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from QTrains import Analyze_qubo
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import file_QUBO_comp, file_hist, file_QUBO, file_LP_output
-from QTrains import analyze_outputs_gates, plot_hist_gates
+from QTrains import analyze_QUBO_outputs, plot_hist_gates
 from trains_timetable import Input_qubo
 
 from solve_qubo import Comp_parameters, Process_parameters
@@ -119,7 +119,7 @@ if __name__ == "__main__":
             all_solutions = Q.heuristics_degenerate(qubo_solution, "PS")
 
             solutions = all_solutions
-            results = analyze_outputs_gates(Q, input4qubo.objective_stations, all_solutions, lp_sol, p.softern_pass)
+            results = analyze_QUBO_outputs(Q, input4qubo.objective_stations, all_solutions, lp_sol, p.softern_pass)
 
             #save_qubo_4gates_comp(dict_read, ground_state, file_q)
 
@@ -132,7 +132,7 @@ if __name__ == "__main__":
             print([sol["energy"] for sol in solutions_input])
 
             Q = Analyze_qubo(dict_read)
-            results = analyze_outputs_gates(Q, input4qubo.objective_stations, solutions, lp_sol, p.softern_pass)
+            results = analyze_QUBO_outputs(Q, input4qubo.objective_stations, solutions, lp_sol, p.softern_pass)
 
             with open(file_h, 'wb') as fp:
                 pickle.dump(results, fp)

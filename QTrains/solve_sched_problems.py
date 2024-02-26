@@ -1,5 +1,3 @@
-import numpy as np
-import matplotlib.pyplot as plt
 import pickle
 from scipy.optimize import linprog
 import neal
@@ -14,7 +12,7 @@ from .LP_problem import (Variables, LinearPrograming)
 from .make_qubo import (QuboVars, Analyze_qubo, update_hist)
 
 
-
+####### make files names and directories, where each step of the solving scheme is saved
 def file_LP_output(q_input, q_pars, p):
     """ returns string, the file name and dir to store LP results """
     file = q_input.file
@@ -26,7 +24,6 @@ def file_LP_output(q_input, q_pars, p):
     file = file.replace("QUBOs", "solutions")
     return file
 
-# make files names and directories, where each step of the solving scheme is saved
 def file_QUBO(q_input, q_pars, p):
     """ returns string, the file name and dir to store QUBO and its features """
     if p.delta == 0:
@@ -57,7 +54,7 @@ def file_hist(q_input, q_pars, p, replace_pair = ("", "")):
         file = file.replace("qubo", "qubo_softern")
     return file
 
-#### solvers and data analysis
+#### ILP solver
 def solve_on_LP(q_input, q_pars, p):
     """ solve the problem using LP, and save results """
     stay = q_input.stay
@@ -175,7 +172,7 @@ def get_solutions_from_dmode(samplesets, q_pars):
                     
 
 
-def analyze_qubo(q_input, q_pars, p):
+def analyze_qubo_Dwave(q_input, q_pars, p):
     """ analyze results of computation on QUBO and comparison with LP """
     show_var_vals = False
 
@@ -197,7 +194,7 @@ def analyze_qubo(q_input, q_pars, p):
 
     our_solutions = get_solutions_from_dmode(samplesets, q_pars)
 
-    results = analyze_outputs_gates(qubo_to_analyze, stations, our_solutions, lp_sol, softernpass = False)
+    results = analyze_QUBO_outputs(qubo_to_analyze, stations, our_solutions, lp_sol, softernpass = False)
 
 
     file =  file_hist(q_input, q_pars, p)
@@ -205,7 +202,38 @@ def analyze_qubo(q_input, q_pars, p):
         pickle.dump(results, fp)
 
 
-######## gates
+
+def analyze_QUBO_outputs(qubo, stations, our_solutions, lp_solution, softernpass = False):
+    """  returns histogram of passing times between selected stations and objective 
+         outputs of gate computer
+    """
+    hist = list([])
+    qubo_objectives = list([])
+
+    count = 0
+    no_feasible = 0
+
+    display = len(our_solutions) < 100
+
+    for solution in our_solutions:
+        if display:
+            dsiplay_solution_analysis(qubo, solution, lp_solution)
+
+        count += 1
+        no_feasible += update_hist(qubo, solution, stations, hist, qubo_objectives, softernpass)
+
+    
+    perc_feasible = no_feasible/count
+
+    results = {"perc feasible": perc_feasible, f"{stations[0]}_{stations[1]}": hist}
+    results["no qubits"] = qubo.noqubits
+    results["no qubo terms"] = len(qubo.qubo)
+    results["lp objective"] = lp_solution["objective"]
+    results["q ofset"] = qubo.sum_ofset
+    results["qubo objectives"] = qubo_objectives
+    return results
+
+######## gates  #######
         
 
 def save_qubo_4gates_comp(dict_qubo, ground_sols, input_file):
@@ -224,8 +252,10 @@ def save_qubo_4gates_comp(dict_qubo, ground_sols, input_file):
         pickle.dump(qubo4gates, fp_w)
 
 
+##### results presentation
+
         
-def dsiplay_analysis_gates(q_input, our_solution, lp_solution, timetable = False):
+def dsiplay_solution_analysis(q_input, our_solution, lp_solution, timetable = False):
     "prints features of the solution fram gate computer"
     print( "..........  QUBO ........   " )
     print("qubo size=", len( q_input.qubo ), " number of Q-bits=", len( our_solution ))
@@ -246,48 +276,13 @@ def dsiplay_analysis_gates(q_input, our_solution, lp_solution, timetable = False
         print("  ..............................  ")
 
 
-def analyze_outputs_gates(qubo, stations, our_solutions, lp_solution, softernpass = False):
-    """  returns histogram of passing times between selected stations and objective 
-         outputs of gate computer
-    """
-    hist = list([])
-    qubo_objectives = list([])
-
-    count = 0
-    no_feasible = 0
-
-    display = len(our_solutions) < 100
-
-    for solution in our_solutions:
-        if display:
-            dsiplay_analysis_gates(qubo, solution, lp_solution)
-
-        count += 1
-        no_feasible += update_hist(qubo, solution, stations, hist, qubo_objectives, softernpass)
-
-    
-    perc_feasible = no_feasible/count
-
-    results = {"perc feasible": perc_feasible, f"{stations[0]}_{stations[1]}": hist}
-    results["no qubits"] = qubo.noqubits
-    results["no qubo terms"] = len(qubo.qubo)
-    results["lp objective"] = lp_solution["objective"]
-    results["q ofset"] = qubo.sum_ofset
-    results["qubo objectives"] = qubo_objectives
-    return results
-
-
-
-##### results presentation 
-        
-def display_results(q_input, q_pars, p):
+def display_prec_feasibility(q_input, q_pars, p):
     """ print results of computation """
 
-
     file = file_hist(q_input, q_pars, p)
-    
     with open(file, 'rb') as fp:
         res_dict = pickle.load(fp)
+
     
     print("xxxxxxxxx    RESULTS     xxxxxx ", q_input.file,  "xxxxx")
     print("delays", q_input.delays )
@@ -303,127 +298,3 @@ def display_results(q_input, q_pars, p):
     print("no qubits", res_dict["no qubits"])
     print("no qubo terms", res_dict["no qubo terms"])
     print("percentage of feasible", res_dict["perc feasible"])
-
-
-##### plots
-
-def plot_title(q_input, q_pars):
-    if q_input.delays == {}:
-        disturbed = "Not disturbed"
-    else:
-        disturbed = "Disturbed"
-    if q_pars.method == "real":
-        tit = f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
-    else:
-        tit = f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
-    return tit
-
-
-def _ax_hist_passing_times(ax, q_input, q_pars, p, add_text = True, replace_string = ("", "")):
-    """ axes for the passing time plots """
-    file = file_hist(q_input, q_pars, p, replace_string)
-    with open(file, 'rb') as fp:
-        results = pickle.load(fp)
-
-    hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
-
-    xs = list( range(np.max(hist_pass) + 1) )
-    ys = [hist_pass.count(x) for x in xs]
-    ax.bar(xs,ys)
-
-    ax.set_xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
-    ax.set_ylabel("counts")
-    if add_text:
-        k = np.max(ys)/12
-        ax.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}", fontsize=10)
-
-    if "softern" in file:
-        ax.set_xlim(left=0, right = 30)
-        ax.set_xticks(range(0, 30, 2))
-    else:
-        ax.set_xlim(left=0)
-        xx = [i for i in xs if i % 2 == 0]
-        ax.set_xticks(xx)
-
-
-
-def _ax_objective(ax, q_input, q_pars, p, replace_string = ("", "")):
-    """ axes for the objective plot """
-    file = file_hist(q_input, q_pars, p, replace_string)
-    with open(file, 'rb') as fp:
-        results = pickle.load(fp)
-
-    hist_obj = results["qubo objectives"]
-    ground = results["lp objective"]
-
-    xs = set(hist_obj)
-    ys = [hist_obj.count(x) for x in set(hist_obj)]
-    
-    ax.bar(list(xs),ys, width = 0.3, color = "gray", label = "QUBO")
-    ax.axvline(x = ground, lw = 2, color = 'red', linestyle = 'dashed', label = 'ground state')
-
-    ax.legend()
-    ax.set_xlabel("Objective")
-    ax.set_ylabel("counts")
-
-    
-
-def make_plots(q_input, q_pars, p):
-    """ ferform plotting on DWave results """
-
-    fig, ax = plt.subplots(figsize=(4, 3))
-
-    _ax_hist_passing_times(ax, q_input, q_pars, p)
-    our_title = plot_title(q_input, q_pars)
-
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-
-    plt.title(our_title)
-
-    file = file_hist(q_input, q_pars, p)
-    file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
-    plt.savefig(file_pass)
-    plt.clf()
-
-
-    fig, ax = plt.subplots(figsize=(4, 3))
-
-    _ax_objective(ax, q_input, q_pars, p)
-    our_title= f"{plot_title(q_input, q_pars)}, dmax={int(q_pars.dmax)}"
-
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-    
-    plt.title(our_title)
-
-    file = file_hist(q_input, q_pars, p)
-    file_obj = file.replace(".json", "obj.pdf")
-    plt.savefig(file_obj)
-    plt.clf()
-
-
-def plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pair):
-    """ plots histrogram from gate computers output """
-
-    fig, ax = plt.subplots(figsize=(4, 3))
-    _ax_hist_passing_times(ax, input4qubo, q_pars, p, replace_string = replace_pair)
-    our_title = plot_title(input4qubo, q_pars)
-
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-
-    plt.title(our_title)
-
-    plt.savefig(file_pass)
-    plt.clf()
-
-
-    fig, ax = plt.subplots(figsize=(4, 3))
-
-    _ax_objective(ax, input4qubo, q_pars, p, replace_string = replace_pair)
-    our_title= f"{plot_title(input4qubo, q_pars)}, dmax={int(q_pars.dmax)}"
-
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-    
-    plt.title(our_title)
-
-    plt.savefig(file_obj)
-    plt.clf()

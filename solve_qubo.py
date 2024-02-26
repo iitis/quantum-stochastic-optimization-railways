@@ -7,8 +7,8 @@ import numpy as np
 
 from trains_timetable import Input_qubo
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
-from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo
-from QTrains import display_results, make_plots
+from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
+from QTrains import display_prec_feasibility, make_plots_Dwave
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
@@ -21,8 +21,8 @@ plt.rc('font', size=10)
 def plot_hist(q_input, q_pars, p):
     """ plot histograms of trains passing time from results from QUBO """
 
-    make_plots(q_input, q_pars, p)
-    display_results(q_input, q_pars, p)
+    make_plots_Dwave(q_input, q_pars, p)
+    display_prec_feasibility(q_input, q_pars, p)
 
 
 
@@ -46,7 +46,7 @@ def process(q_input, q_pars, p):
         try:
             file = file_hist(q_input, q_pars, p)
             if not os.path.isfile(file):
-                analyze_qubo(q_input, q_pars, p)
+                analyze_qubo_Dwave(q_input, q_pars, p)
 
             plot_hist(q_input, q_pars, p)
         except:

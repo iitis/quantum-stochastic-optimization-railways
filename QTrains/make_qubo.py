@@ -350,6 +350,9 @@ class Analyze_qubo():
                 objective += self.objective[(i,i)]
         return objective
 
+
+# histograms of solutions
+
 def hist_passing_times(sol, stations, qubo):
     """
     compute passing time beteen followng stations substract stay time 
@@ -382,25 +385,47 @@ def update_hist(qubo, sol_q, stations, hist, qubo_objective, softern_pass_t = Fa
     and qubo Analyze_qubo object
     IMPORTANT: station sequence in order of odd numer train passing sequence
 
-    if softern_pass_t - passing tiem constrain is not considered
+    if softern_pass_t - passing time constrain is not considered
     """
-    if not softern_pass_t:
-        fulfilled_constr = qubo.count_broken_constrains(sol_q) == (0,0,0,0)
-        c_pas = 0
-    else:
-        c_sum, c_headway, c_pas, c_circ = qubo.count_broken_constrains(sol_q)
-        fulfilled_constr = c_sum == 0 and c_headway == 0 and c_circ == 0
-    if fulfilled_constr:
-        if qubo.broken_MO_conditions(sol_q) == 0:
-            q_objective = qubo.objective_val(sol_q)
-            # check whether objective equals to energy plus ofset
-            assert q_objective + 2*c_pas*qubo.ppair == pytest.approx( qubo.energy(sol_q) + qubo.sum_ofset )
+    if is_feasible(sol_q, qubo, softern_pass_t):
+        q_objective = qubo.objective_val(sol_q)
 
+        vq = qubo.qubo2int_vars(sol_q)
+        h = hist_passing_times(vq, stations, qubo)
+        hist.extend( h )
+        qubo_objective.append( q_objective )
 
-            vq = qubo.qubo2int_vars(sol_q)
-            h = hist_passing_times(vq, stations, qubo)
-            hist.extend( h )
-            qubo_objective.append( q_objective )
-
-            return 1
+        return 1
     return 0
+
+
+def is_feasible(solution, qubo, softern_pass_t = False):
+    """ checks if solution is feasible
+    
+    if softern_pass_t - passing time constrain is not considered
+    """
+    if softern_pass_t:
+        c_sum, c_headway, c_pas, c_circ = qubo.count_broken_constrains(solution)
+        return c_sum == 0 and c_headway == 0 and c_circ == 0 and qubo.broken_MO_conditions(solution) == 0
+    else:
+        return qubo.count_broken_constrains(solution) == (0,0,0,0) and qubo.broken_MO_conditions(solution) == 0
+
+
+def filter_feasible(solutions, qubo, softern_pass_t = False):
+    """ returns best solution from the sample """
+    new_solutions = []
+    for solution in solutions:
+        if is_feasible(solution, qubo, softern_pass_t):
+            new_solutions.append(solution)
+    return new_solutions
+
+
+
+def first_ground(solutions, qubo, lp_sol, softern_pass_t = False):
+    """ returns first ground state from the series os solutions """
+    for solution in solutions:
+        if is_feasible(solution, qubo, softern_pass_t):
+            obj = qubo.objective_val(solution)
+            if obj == lp_sol["objective"]:
+                return solution
+    return []
