@@ -52,6 +52,7 @@ def plotDWave_2trains_dmax2():
     ax2.set_xlabel("Passing time MR-CS")
     our_title = plot_title(our_qubo, q_par)
     print(f"18 qubits botom {our_title}")
+    print("..............................")
     ax2.text(0.925, 1.1, 'c)', transform=ax2.transAxes)
     ax3.text(0.925, 1.1, 'd)', transform=ax3.transAxes)
 
@@ -124,6 +125,7 @@ def plotDWave_6trains():
     _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     print(f"6 train bottom right {our_title[14:len(our_title)]},d={q_par.dmax}")
+    print("...............................")
     ax3.set_xlabel("Passing time MR-CS")
 
     ax3.set_xlim(left=11, right = 21)
@@ -183,6 +185,7 @@ def plotDWave_11trains_dmax6():
     ax2.set_xlabel(f"Passing time MR-CS")
     our_title = plot_title(our_qubo, q_par)
     print(f"11 trains bottom {our_title} annealing time 10 left, 1000 right")
+    print(".............................")
 
     q_par.annealing_time = 1000
     our_qubo.qubo_real_11t(delays_list[1])
@@ -226,7 +229,14 @@ def plot_DWave_soft_dmax6(no_trains = 11):
     delays = delays_list[1]
 
     fig = plt.figure(constrained_layout=True, figsize=(6, 4))
-    fig.suptitle("DWave output without filtering lower minimal passing times", size = 16)
+
+    if no_trains == 10:
+        no_qbits = 168
+    elif no_trains == 11:
+        no_qbits = 182
+    elif no_trains == 12:
+        no_qbits = 196
+    fig.suptitle(f"DWave without Eq(5) check, {no_qbits} qbits, at= $10 \mu$s left, $1000 \mu$s right")
 
     (subfig1, subfig2) = fig.subfigures(2,1)
     (ax, ax1) = subfig1.subplots(1, 2)
@@ -240,12 +250,17 @@ def plot_DWave_soft_dmax6(no_trains = 11):
     elif no_trains == 12:
         our_qubo.qubo_real_12t(delays)
     _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
-    our_title = f"{no_trains} trains, Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
-    ax.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+    ax.set_xlabel(f"Passing time MR-CS")
     q_par.annealing_time = 1000
     _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
-    subfig1.suptitle(our_title)
-    ax1.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+    ax1.set_xlabel(f"Passing time MR-CS")
+
+    our_title = f"{no_trains} trains, Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
+    print("Soft without passing time constrain check")
+    print(f"upper {our_title}, annealing time 10 left, 1000 right")
+
+    ax.text(0.925, 0.9, 'a)', transform=ax.transAxes)
+    ax1.text(0.925, 0.9, 'b)', transform=ax1.transAxes)
 
 
     q_par.ppair = 20.0
@@ -258,12 +273,17 @@ def plot_DWave_soft_dmax6(no_trains = 11):
     elif no_trains == 12:
         our_qubo.qubo_real_12t(delays)
     _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
-    our_title = f"{no_trains} trains, Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
-    ax2.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+    ax2.set_xlabel(f"Passing time MR-CS")
     q_par.annealing_time = 1000
     _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
-    subfig2.suptitle(our_title)
-    ax3.set_xlabel(f"Passing time MR-CS, at={q_par.annealing_time}$\mu$s")
+    ax3.set_xlabel(f"Passing time MR-CS")
+
+    our_title = f"{no_trains} trains, Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
+    print(f"lower {our_title}, annealing time 10 left, 1000 right")
+    print("...................")
+
+    ax2.text(0.925, 0.9, 'c)', transform=ax2.transAxes)
+    ax3.text(0.925, 0.9, 'd)', transform=ax3.transAxes)
 
 
     ax3.set_xlim(left=7, right = 23)
@@ -478,7 +498,7 @@ def plot2trains_gates_simulations(ppair, psum):
     q_par.psum = psum
     q_par.annealing_time = 10
 
-    fig.suptitle(f"{q_par.method} small instances dmax={int(q_par.dmax)} and 2 trains", size = 16)
+    fig.suptitle(f"{q_par.method} small instances of 18 qubits", size = 16)
 
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
@@ -490,7 +510,8 @@ def plot2trains_gates_simulations(ppair, psum):
     _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False, replace_string = replace_pair)
     _ax_objective(ax1, our_qubo, q_par, p, replace_string = replace_pair)
     our_title = plot_title(our_qubo, q_par)
-    subfig1.suptitle(our_title)
+    print(f"Upper panel {our_title}")
+    ax.set_xlabel("Passing time MR-CS")
 
 
     delays = delays_list[1]
@@ -499,10 +520,17 @@ def plot2trains_gates_simulations(ppair, psum):
     replace_pair = ("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics_string}")
     _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False, replace_string = replace_pair)
     _ax_objective(ax3, our_qubo, q_par, p, replace_string = replace_pair)
+    ax.set_xlabel("Passing time MR-CS")
+
+    ax.text(0.925, 1.1, 'a)', transform=ax.transAxes)
+    ax1.text(0.925, 1.1, 'b)', transform=ax1.transAxes)
+    ax2.text(0.925, 1.1, 'a)', transform=ax2.transAxes)
+    ax3.text(0.925, 1.1, 'b)', transform=ax3.transAxes)
 
 
     our_title = plot_title(our_qubo, q_par)
-    subfig2.suptitle(our_title)
+    print(f"Lower panel {our_title}")
+    print("..........................")
 
     ax2.set_xlim(left=10, right = 17)
     ax2.set_xticks([10,12,14,16])
@@ -538,18 +566,13 @@ def _ax_hist_real_data(ax, file):
         results = pickle.load(fp)
 
     h = results["hist"]
-    days = results["days"]
-    month = results["month"]
-    year = results["year"]
-    direction = results["direction"]
-    period = results["period"]
 
     r1 = np.ceil(max(h))
     bins = np.arange(- 0.5, r1 + 1.5, 1.)
 
     ax.hist( h, bins = bins, color = "gray",  ec="darkblue")
-    ax.set_title(f"{period} {days}  {month}  {year}")
-    ax.set_xlabel(f"measured passing time CS -- MR {direction}")
+
+    ax.set_xlabel(f"measured passing time CS -- MR")
     ax.set_xlim(left=6, right = 24)
     ax.set_xticks(range(6, 24, 2))
     ax.set_ylabel("counts")
@@ -564,13 +587,19 @@ def plot_real_live_MLR_4():
     (ax, ax1) = subfig1.subplots(1, 2)
     (ax2, ax3) = subfig2.subplots(1, 2)
 
+    print("real MLR")
+
     part_of_day = "morning "
     direction = "north"
+
+    print(f"up left {part_of_day} {direction}")
 
     file = real_data_dirs(part_of_day, direction)
     _ax_hist_real_data(ax, file)
 
     direction = "south"
+
+    print(f"up right {part_of_day} {direction}")
 
     file = real_data_dirs(part_of_day, direction)
     _ax_hist_real_data(ax1, file)
@@ -582,10 +611,21 @@ def plot_real_live_MLR_4():
     file = real_data_dirs(part_of_day, direction)
     _ax_hist_real_data(ax2, file)
 
+    print(f"down left {part_of_day} {direction}")
+
     direction = "south"
+
+    print(f"down righr {part_of_day} {direction}")
 
     file = real_data_dirs(part_of_day, direction)
     _ax_hist_real_data(ax3, file)
+
+    print("...................")
+
+    ax.text(0.925, 0.9, 'a)', transform=ax.transAxes)
+    ax1.text(0.925, 0.9, 'b)', transform=ax1.transAxes)
+    ax2.text(0.925, 0.9, 'c)', transform=ax2.transAxes)
+    ax3.text(0.925, 0.9, 'd)', transform=ax3.transAxes)
 
     fig.savefig("article_plots/real_data4.pdf")
     fig.clf()
@@ -596,20 +636,42 @@ def plot_real_live_MLR_2():
 
 
     fig = plt.figure(constrained_layout=True, figsize=(6, 2.2))
-    fig.suptitle("Real data from MLR, pick hours", size = 16)
+    fig.suptitle("Real data measured from MLR left northbound, right southbound")
     (ax, ax1) = fig.subplots(1,2)
+
+    print("real MLR")
 
 
     part_of_day = "morning afternoon"
     direction = "north"
 
+
     file = real_data_dirs(part_of_day, direction)
+
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+
+    days = results["days"]
+    month = results["month"]
+    year = results["year"]
+    period = results["period"]
+    print(f"{period} {days}  {month}  {year}")
+
+
+    print(f"left {direction}")
+
     _ax_hist_real_data(ax, file)
 
     direction = "south"
+    print(f"right {direction}")
+
+    print("..................")
 
     file = real_data_dirs(part_of_day, direction)
     _ax_hist_real_data(ax1, file)
+
+    ax.text(0.925, 0.9, 'a)', transform=ax.transAxes)
+    ax1.text(0.925, 0.9, 'b)', transform=ax1.transAxes)
 
 
     fig.savefig("article_plots/real_data2.pdf")
@@ -627,7 +689,7 @@ if __name__ == "__main__":
     plot_DWave_soft_dmax6(no_trains = 10)
 
     plot2trains_gates_simulations(2.0,4.0)
-    plot2trains_gates_simulations(20.0,40.0)
+    #plot2trains_gates_simulations(20.0,40.0)
 
     plot_real_live_MLR_4()
     plot_real_live_MLR_2()
