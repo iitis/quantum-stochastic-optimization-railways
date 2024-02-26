@@ -7,6 +7,7 @@ from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo
 from QTrains import display_results, make_plots
 from QTrains import plot_title, _ax_hist_passing_times, _ax_objective
+from QTrains import analyze_outputs_gates, save_qubo_4gates_comp, plot_hist_gates
 
 # input
 
@@ -240,4 +241,48 @@ def test_auxiliaty_plotting_functions():
     _ax_objective(ax, q_input, q_pars, p)
     _ax_hist_passing_times(ax, q_input, q_pars, p)
     plt.clf()
+
+
+
+def test_gates():
+    q_input = Input_qubo()
+    q_input.qubo1()
+    q_pars = Comp_parameters()
+    q_pars.method = "IonQsim"
+    p = Process_parameters()
+
+    file = file_LP_output(q_input, q_pars, p)
+    with open(file, 'rb') as fp:
+        lp_sol = pickle.load(fp)
+
+    file = file_QUBO(q_input, q_pars, p)
+    with open(file, 'rb') as fp:
+        dict_read = pickle.load(fp)
+
+    Q = Analyze_qubo(dict_read)
+
+    qubo_solution = Q.int_vars2qubo(lp_sol["variables"])
+
+    all_solutions = Q.heuristics_degenerate(qubo_solution, "PS")
+
+    ret = analyze_outputs_gates(Q, q_input.objective_stations, all_solutions, lp_sol, p.softern_pass)
+
+    assert ret == {'perc feasible': 1.0, 'MR_CS': [12, 12], 'no qubits': 30,
+                   'no qubo terms': 306, 'lp objective': 0.0,
+                   'q ofset': 20.0, 'qubo objectives': [0.0]}
+    
+
+    save_qubo_4gates_comp(dict_read, all_solutions, "QUBOs/qubo1_ground.json")
+
+    test_f = "QUBOs/qubo1_ground.json"
+    with open(test_f, 'rb') as fp:
+        dict_read = pickle.load(fp)
+
+    assert dict_read["ground_solutions"] == all_solutions
+
+    assert dict_read["ground_energy"] == Q.energy(qubo_solution)
+
+    replace_pair = ("qubo_1_5_2.0_4.0.json", "qubo_1_5_2.0_4.0_sim_1000_0.001_500.json")
+    
+    plot_hist_gates(q_pars, q_input, p, file_pass= "histograms/test_pass.pdf", file_obj="histograms/test_obj.pdf", replace_pair = replace_pair)
 

@@ -1,14 +1,12 @@
 """ prepare and analyze small qubos for gate computiong """
 import pickle
-import copy
 import json
 import matplotlib.pyplot as plt
-import itertools
 
-from QTrains import Analyze_qubo, update_hist
+from QTrains import Analyze_qubo
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import file_QUBO_comp, file_hist, file_QUBO, file_LP_output
-from QTrains import _ax_hist_passing_times, _ax_objective, plot_title
+from QTrains import analyze_outputs_gates, plot_hist_gates
 from trains_timetable import Input_qubo
 
 from solve_qubo import Comp_parameters, Process_parameters
@@ -18,105 +16,6 @@ from solve_qubo import Comp_parameters, Process_parameters
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 plt.rc('font', size=10)
-
-
-def dsiplay_analysis_gates(q_input, our_solution, lp_solution, timetable = False):
-    "prints features of the solution fram gate computer"
-    print( "..........  QUBO ........   " )
-    #print("qubo size=", len( q_input.qubo ), " number of Q-bits=", len( our_solution ))
-    print("energy=", q_input.energy( our_solution ))
-    print("energy + ofset=", q_input.energy( our_solution ) + q_input.sum_ofset)
-    print("QUBO objective=", q_input.objective_val( our_solution ), "  ILP objective=", lp_solution["objective"] )
-
-    print("broken (sum, headway, pass, circ)", q_input.count_broken_constrains( our_solution ))
-    print("broken MO", q_input.broken_MO_conditions( our_solution ))
-
-    if timetable:
-        print(" ........ vars values  ........ ")
-        print(" key, qubo, LP ")
-
-        vq = q_input.qubo2int_vars( our_solution )
-        for k, v in vq.items():
-            print(k, v.value, lp_solution["variables"][k].value)
-        print("  ..............................  ")
-
-
-def save_qubo_gates(dict_qubo, ground_sols, input_file):
-    "creates and seves file with ground oslution and small qubo for gate computing"
-    our_qubo = Analyze_qubo(dict_qubo)
-    qubo4gates = {}
-    qubo4gates["qubo"] = dict_qubo["qubo"]
-    qubo4gates["ground_solutions"] = ground_sols
-    E = our_qubo.energy(ground_sols[0])
-    for ground_sol in ground_sols:
-        assert E == our_qubo.energy(ground_sol)
-    qubo4gates["ground_energy"] = E
-
-    new_file = input_file.replace("LR_timetable/", "gates/")
-    with open(new_file, 'wb') as fp_w:
-        pickle.dump(qubo4gates, fp_w)
-
-
-
-
-def analyze_outputs_gates(qubo, q_input, our_solutions, lp_solution, p):
-    """  returns histogram of passing times between selected stations and objective 
-         outputs of gate computer
-    """
-    hist = list([])
-    qubo_objectives = list([])
-
-    count = 0
-    no_feasible = 0
-    stations = q_input.objective_stations
-
-    for solution in our_solutions:
-        dsiplay_analysis_gates(qubo, solution, lp_solution)
-
-        count += 1
-        no_feasible += update_hist(qubo, solution, stations, hist, qubo_objectives, p.softern_pass)
-        print("feasible", bool(no_feasible))
-        print(hist)
-        print(qubo_objectives)
-    
-    perc_feasible = no_feasible/count
-
-    results = {"perc feasible": perc_feasible, f"{stations[0]}_{stations[1]}": hist}
-    results["no qubits"] = qubo.noqubits
-    results["no qubo terms"] = len(qubo.qubo)
-    results["lp objective"] = lp_sol["objective"]
-    results["q ofset"] = qubo.sum_ofset
-    results["qubo objectives"] = qubo_objectives
-    return results
-
-
-
-def plot_gate_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pair):
-    """ plots histrogram from gate computers output """
-
-    fig, ax = plt.subplots(figsize=(4, 3))
-    _ax_hist_passing_times(ax, input4qubo, q_pars, p, replace_string = replace_pair)
-    our_title = plot_title(input4qubo, q_pars)
-
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-
-    plt.title(our_title)
-
-    plt.savefig(file_pass)
-    plt.clf()
-
-
-    fig, ax = plt.subplots(figsize=(4, 3))
-
-    _ax_objective(ax, input4qubo, q_pars, p, replace_string = replace_pair)
-    our_title= f"{plot_title(input4qubo, q_pars)}, dmax={int(q_pars.dmax)}"
-
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-    
-    plt.title(our_title)
-
-    plt.savefig(file_obj)
-    plt.clf()
 
 
     
@@ -220,9 +119,9 @@ if __name__ == "__main__":
             all_solutions = Q.heuristics_degenerate(qubo_solution, "PS")
 
             solutions = all_solutions
-            results = analyze_outputs_gates(Q, input4qubo, all_solutions, lp_sol, p)
+            results = analyze_outputs_gates(Q, input4qubo.objective_stations, all_solutions, lp_sol, p.softern_pass)
 
-            #save_qubo_gates(dict_read, ground_state, file_q)
+            #save_qubo_4gates_comp(dict_read, ground_state, file_q)
 
         else:
 
@@ -233,7 +132,7 @@ if __name__ == "__main__":
             print([sol["energy"] for sol in solutions_input])
 
             Q = Analyze_qubo(dict_read)
-            results = analyze_outputs_gates(Q, input4qubo, solutions, lp_sol, p)
+            results = analyze_outputs_gates(Q, input4qubo.objective_stations, solutions, lp_sol, p.softern_pass)
 
             with open(file_h, 'wb') as fp:
                 pickle.dump(results, fp)
@@ -241,4 +140,4 @@ if __name__ == "__main__":
             file_pass = f"{file_h}time_hists.pdf"
             file_obj = f"{file_h}obj.pdf"
             
-            plot_gate_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pair)
+            plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pair)
