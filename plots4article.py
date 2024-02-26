@@ -730,7 +730,7 @@ def train_diagrams():
 
     feas_sols = filter_feasible(solutions, qubo_to_analyze)
 
-    solution, energy = high_excited(solutions, qubo_to_analyze, our_qubo)
+    solution, energy = high_excited(feas_sols, qubo_to_analyze, our_qubo)
     v = qubo_to_analyze.qubo2int_vars(solution)
 
     file =  "article_plots/Etrain_diagram.pdf"
