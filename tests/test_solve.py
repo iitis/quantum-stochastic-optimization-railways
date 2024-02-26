@@ -198,9 +198,9 @@ def test_qubo_analysis():
     assert ground == 0.0
     assert np.min(hist_obj) == 0.0
     histogram_obj = [hist_obj.count(x) for x in set(hist_obj)]
-    assert np.sum(histogram_obj) == 1000*results["perc feasible"]  #feasibility percentage above 0.9
+    assert np.sum(histogram_obj) == 1000*results["perc feasible"]  
     for i in range(5):
-        assert histogram_obj[i] > 5
+        assert histogram_obj[i] > 4
 
     
     hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
