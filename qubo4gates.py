@@ -1,8 +1,9 @@
 """ prepare and analyze small qubos for gate computiong """
 import pickle
-import os
+import copy
 import json
 import matplotlib.pyplot as plt
+import itertools
 
 from QTrains import Analyze_qubo, update_hist
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
@@ -22,7 +23,7 @@ plt.rc('font', size=10)
 def dsiplay_analysis_gates(q_input, our_solution, lp_solution, timetable = False):
     "prints features of the solution fram gate computer"
     print( "..........  QUBO ........   " )
-    print("qubo size=", len( q_input.qubo ), " number of Q-bits=", len( our_solution ))
+    #print("qubo size=", len( q_input.qubo ), " number of Q-bits=", len( our_solution ))
     print("energy=", q_input.energy( our_solution ))
     print("energy + ofset=", q_input.energy( our_solution ) + q_input.sum_ofset)
     print("QUBO objective=", q_input.objective_val( our_solution ), "  ILP objective=", lp_solution["objective"] )
@@ -40,13 +41,17 @@ def dsiplay_analysis_gates(q_input, our_solution, lp_solution, timetable = False
         print("  ..............................  ")
 
 
-def save_qubo_gates(dict_qubo, qround_sol, input_file):
+def save_qubo_gates(dict_qubo, ground_sols, input_file):
     "creates and seves file with ground oslution and small qubo for gate computing"
     our_qubo = Analyze_qubo(dict_qubo)
     qubo4gates = {}
     qubo4gates["qubo"] = dict_qubo["qubo"]
-    qubo4gates["ground_solution"] = qround_sol
-    qubo4gates["ground_energy"] = our_qubo.energy(qround_sol)
+    qubo4gates["ground_solutions"] = ground_sols
+    E = our_qubo.energy(ground_sols[0])
+    for ground_sol in ground_sols:
+        assert E == our_qubo.energy(ground_sol)
+    qubo4gates["ground_energy"] = E
+    
     new_file = input_file.replace("LR_timetable/", "gates/")
     with open(new_file, 'wb') as fp_w:
         pickle.dump(qubo4gates, fp_w)
@@ -194,7 +199,7 @@ class Cases:
 
 if __name__ == "__main__":
 
-    save_qubo = False
+    save_qubo = True
     small_sample_results = False
     
     input4qubo = Input_qubo()
@@ -203,6 +208,7 @@ if __name__ == "__main__":
     p = Process_parameters()
 
     for case_no in [4,8,9,10]:
+    #for case_no in [1,5,2,6]:
         
         case = Cases(case_no)
 
@@ -226,11 +232,17 @@ if __name__ == "__main__":
 
         if save_qubo:
 
-            ground_state = case.get_ground()
-            save_qubo_gates(dict_read, ground_state, file_q)
-            solutions = [ground_state]
             Q = Analyze_qubo(dict_read)
-            results = analyze_outputs_gates(Q, input4qubo, solutions, lp_sol, p)
+
+
+            qubo_solution = Q.int_vars2qubo(lp_sol["variables"])
+
+            all_solutions = Q.heuristics_degenerate(qubo_solution, "PS")
+
+            solutions = all_solutions
+            results = analyze_outputs_gates(Q, input4qubo, all_solutions, lp_sol, p)
+
+            #save_qubo_gates(dict_read, ground_state, file_q)
 
         else:
 

@@ -1,5 +1,6 @@
 "encoding problem as QUBO"
 import copy
+import itertools
 import numpy as np
 import pytest
 from .parameters import pairs_same_direction, station_pairs
@@ -243,7 +244,7 @@ class Analyze_qubo():
         return sjt
 
     def qubo2int_vars(self, var_list):
-        """ change qubo values to int var values """
+        """ change qubo var values into int var values """
         assert len(var_list) == len(self.qbit_inds)
         variables = {}
         count = 0
@@ -254,6 +255,43 @@ class Analyze_qubo():
             our_var.value = t
             variables[f"t_{s}_{j}"] = our_var
         return variables
+    
+    def int_vars2qubo(self, int_vars):
+        """ change int var values into qubo var values"""
+        qubo_sol = [0 for _ in range(self.noqubits)]
+        for q_index, (s,j,t) in self.qbit_inds.items():
+            if t == int_vars[f"t_{s}_{j}"].value:
+                qubo_sol[q_index] = 1
+        return qubo_sol
+    
+
+    def heuristics_degenerate(self, solution, station):
+            """ heuristic search for degenerate state od solution,
+              assuming that we do not count objective at station 
+            """
+            key2swap = {}
+            for key, value in self.qbit_inds.items():
+                (s,j,t) = value
+                if station == s:
+                    if j in key2swap.keys():
+                        key2swap[j].append(key)
+                    else:
+                        key2swap[j] = [key]
+
+            deg_solutions = []    
+            E = self.energy(solution)
+            for per_list in key2swap.values():
+                inds = list(itertools.permutations(per_list))
+                for ind in inds:
+                    sol = copy.deepcopy(solution)
+                    sol[ind[0]] = 1
+                    for k in range(1,len(ind)):
+                        sol[ind[k]] = 0
+                    if E == self.energy(sol):
+                        if sol not in deg_solutions:
+                            deg_solutions.append(sol)
+
+            return deg_solutions
 
 
     def count_broken_constrains(self, var_list):

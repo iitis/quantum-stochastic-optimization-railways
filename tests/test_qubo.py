@@ -42,13 +42,11 @@ def test_qubo_analyze():
                                (10, 10): -2, (10, 9): 2, (10, 11): 2, (11, 11): -2, (11, 9): 2, (11, 10): 2}
 
 
-    print(q.headway_constrain)
     assert q.headway_constrain == {(2, 3): 2.0, (3, 2): 2.0, (8, 9): 2.0, (9, 8): 2.0}
 
     #  2: ['A', 1, 2], 3: ['A', 3, 2]
     #  8: ['B', 1, 4], 9: ['B', 3, 4]
 
-    print(rail_input.tvar_range)
 
     assert q.passing_time_constrain == {(1, 6): 2, (6, 1): 2, (2, 6): 2, (6, 2): 2, (2, 7): 2, (7, 2): 2,
                                         (4, 9): 2, (9, 4): 2, (5, 9): 2, (9, 5): 2, (5, 10): 2, (10, 5): 2}
@@ -72,6 +70,23 @@ def test_qubo_analyze():
     assert v['t_A_3'].value == 2
     assert v['t_B_1'].value == 2
     assert v['t_B_3'].value == 6
+
+    assert qubo_to_analyze.int_vars2qubo(v) == solution
+
+    # we have objective_stations = ["B"]
+    assert qubo_to_analyze.heuristics_degenerate(solution, "A") == [[1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
+                                                                    [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+                                                                    [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]
+    s1, s2, s3 = qubo_to_analyze.heuristics_degenerate(solution, "A")
+
+    assert qubo_to_analyze.energy(s1) == qubo_to_analyze.energy(s2) == qubo_to_analyze.energy(s3) 
+
+    assert qubo_to_analyze.binary_vars2sjt(s1) == {('A', 1): 0, ('A', 3): 2, ('B', 1): 2, ('B', 3): 6}
+    assert qubo_to_analyze.binary_vars2sjt(s2) == {('A', 1): 0, ('A', 3): 3, ('B', 1): 2, ('B', 3): 6}
+    assert qubo_to_analyze.binary_vars2sjt(s3) == {('A', 1): 0, ('A', 3): 4, ('B', 1): 2, ('B', 3): 6}
+
+    assert qubo_to_analyze.heuristics_degenerate(solution, "B") == [[1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]]
+
 
     file =  "tests/pics/qubodiagram.pdf"
     plot_train_diagrams(v, qubo_to_analyze.trains_paths, qubo_to_analyze.pass_time, qubo_to_analyze.stay, file)
