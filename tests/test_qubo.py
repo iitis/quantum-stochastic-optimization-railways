@@ -4,7 +4,7 @@ import pickle
 from scipy.optimize import linprog
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
 from QTrains import add_update, find_ones, hist_passing_times, plot_train_diagrams, update_hist
-from QTrains import filter_feasible, is_feasible, first_ground
+from QTrains import filter_feasible, is_feasible, first_with_given_objective, high_excited_state, best_feasible_state, worst_feasible_state
 
 
 
@@ -144,8 +144,18 @@ def test_qubo_analyze():
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 4*qubo_to_analyze.ppair
 
     assert filter_feasible(solutions, qubo_to_analyze) == [[1,0,0,1,0,0,1,0,0,0,0,1]]
-
     assert filter_feasible(solutions, qubo_to_analyze, softern_pass_t = True) == [[1,0,0,1,0,0,1,0,0,0,0,1], [0,1,0,0,1,0,1,0,0,1,0,0]]
+
+    ###  filtering test series of feasible states
+
+    solutions = [[1,0,1,0,0,0,1,0,0,0,0,1], [1,0,0,1,0,0,1,0,0,1,0,0], [1,0,0,1,0,0,1,0,0,0,1,0], [1,0,0,1,0,0,1,0,0,0,0,1]]
+
+    assert filter_feasible(solutions, qubo_to_analyze)  == [[1,0,0,1,0,0,1,0,0,1,0,0], [1,0,0,1,0,0,1,0,0,0,1,0], [1,0,0,1,0,0,1,0,0,0,0,1]]
+    assert high_excited_state(solutions, qubo_to_analyze, ["A", "B"], 3) == ([1,0,0,1,0,0,1,0,0,0,0,1], 1)
+    assert first_with_given_objective(solutions, qubo_to_analyze, 1) == [1,0,0,1,0,0,1,0,0,0,0,1]
+    assert best_feasible_state(solutions, qubo_to_analyze) == ([1,0,0,1,0,0,1,0,0,1,0,0], 0)
+    assert worst_feasible_state(solutions, qubo_to_analyze) == ([1,0,0,1,0,0,1,0,0,0,0,1], 1)
+    
 
 
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}

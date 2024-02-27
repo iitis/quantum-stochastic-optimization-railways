@@ -399,6 +399,8 @@ def update_hist(qubo, sol_q, stations, hist, qubo_objective, softern_pass_t = Fa
     return 0
 
 
+#######   functions foltering series of solutions #######
+
 def is_feasible(solution, qubo, softern_pass_t = False):
     """ checks if solution is feasible
     
@@ -421,11 +423,50 @@ def filter_feasible(solutions, qubo, softern_pass_t = False):
 
 
 
-def first_ground(solutions, qubo, lp_sol, softern_pass_t = False):
-    """ returns first ground state from the series os solutions """
+def first_with_given_objective(solutions, qubo, given_objective, softern_pass_t = False):
+    """ returns first with given objective (e.g. from ground) from the series os solutions """
     for solution in solutions:
         if is_feasible(solution, qubo, softern_pass_t):
             obj = qubo.objective_val(solution)
-            if obj == lp_sol["objective"]:
+            if obj == given_objective:
                 return solution
     return []
+
+def high_excited_state(solutions, qubo, stations, increased_pt):
+    """ returns the highly excited tat with at least 1 increased_pt between two stations  """
+    for solution in solutions:
+        if is_feasible(solution, qubo):
+            vq = qubo.qubo2int_vars(solution)
+            h = hist_passing_times(vq, stations, qubo)
+            if (increased_pt in h):
+                return solution, qubo.objective_val(solution)
+    return 0, 0
+
+def best_feasible_state(solutions, qubo):
+    """ returns feasible solution with lowest objective """
+    current_best_objective = np.inf
+    current_best_state = []
+    for solution in solutions:
+        if is_feasible(solution, qubo):
+            objective = qubo.objective_val(solution)
+            if objective < current_best_objective:
+                current_best_objective = objective
+                current_best_state = solution
+    return current_best_state, current_best_objective
+
+
+def worst_feasible_state(solutions, qubo):
+    """ returns feasible solution with highest objective """
+    current_worst_objective = -np.inf
+    current_worst_state = []
+    for solution in solutions:
+        if is_feasible(solution, qubo):
+            objective = qubo.objective_val(solution)
+            if objective > current_worst_objective:
+                current_worst_objective = objective
+                current_worst_state = solution
+    return current_worst_state, current_worst_objective
+
+
+
+

@@ -4,8 +4,9 @@ import numpy as np
 
 from QTrains import plot_train_diagrams, hist_passing_times, filter_feasible
 from QTrains import _ax_hist_passing_times, _ax_objective, plot_title, file_hist
-from QTrains import get_solutions_from_dmode, first_ground
+from QTrains import get_solutions_from_dmode, first_with_given_objective, best_feasible_state, worst_feasible_state
 from QTrains import file_QUBO_comp, file_QUBO, file_LP_output
+from QTrains import high_excited
 from QTrains import Analyze_qubo
 from trains_timetable import Input_qubo
 from solve_qubo import Comp_parameters, Process_parameters
@@ -681,13 +682,7 @@ def plot_real_live_MLR_2():
     fig.savefig("article_plots/real_data2.pdf")
     fig.clf()
 
-def high_excited(solutions, qubo_to_analyze, our_qubo):
-    for solution in solutions:
-        vq = qubo_to_analyze.qubo2int_vars(solution)
-        h = hist_passing_times(vq, our_qubo.objective_stations, qubo_to_analyze)
-        if (20 in h):
-            return solution, qubo_to_analyze.objective(solution)
-    return 0, 0
+
 
 def train_diagrams():
 
@@ -721,11 +716,11 @@ def train_diagrams():
 
     qubo_to_analyze = Analyze_qubo(dict_read)
 
-    solution = first_ground(solutions, qubo_to_analyze, lp_sol)
-    v = qubo_to_analyze.qubo2int_vars(solution)
+    #solution = first_with_given_objective(solutions, qubo_to_analyze, lp_sol["objective"])
+    #v = qubo_to_analyze.qubo2int_vars(solution)
 
-    file =  "article_plots/Gtrain_diagram.pdf"
-    plot_train_diagrams(v, qubo_to_analyze, file)
+    #file =  "article_plots/Gtrain_diagram.pdf"
+    #plot_train_diagrams(v, qubo_to_analyze, file)
 
 
     feas_sols = filter_feasible(solutions, qubo_to_analyze)

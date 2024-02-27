@@ -9,7 +9,7 @@ from QTrains import display_prec_feasibility, make_plots_Dwave
 from QTrains import plot_title, _ax_hist_passing_times, _ax_objective
 from QTrains import analyze_QUBO_outputs, get_solutions_from_dmode
 from QTrains import save_qubo_4gates_comp, plot_hist_gates
-from QTrains import first_ground
+from QTrains import first_with_given_objective
 
 # input
 
@@ -185,7 +185,7 @@ def test_solving_QUBO():
     with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
-    sol = first_ground(sols, qubo_to_analyze, lp_sol)
+    sol = first_with_given_objective(sols, qubo_to_analyze, lp_sol["objective"])
     assert qubo_to_analyze.objective_val(sol) == objective
 
 
