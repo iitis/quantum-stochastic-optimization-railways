@@ -19,8 +19,9 @@ def plot_title(q_input, q_pars):
     return tit
 
 
-def _ax_hist_passing_times(ax, q_input, q_pars, p, add_text = True, replace_string = ("", "")):
-    """ axes for the passing time plots """
+
+def passing_time_histigrams(q_input, q_pars, p, replace_string = ("", "")):
+
     file = file_hist(q_input, q_pars, p, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
@@ -29,21 +30,32 @@ def _ax_hist_passing_times(ax, q_input, q_pars, p, add_text = True, replace_stri
 
     xs = list( range(np.max(hist_pass) + 1) )
     ys = [hist_pass.count(x) for x in xs]
+
+    hist = {"x":xs, "y":ys, "stations":q_input.objective_stations, "no_trains":q_input.notrains, "dmax":q_pars.dmax,
+            "ppair":q_pars.ppair, "psum":q_pars.psum, "softern":p.softern_pass, "method": q_pars.method}
+
+    return hist
+
+
+def _ax_hist_passing_times(ax, hist, add_text = True):
+    """ axes for the passing time plots """
+    
+    xs = hist["x"]
+    ys = hist["y"]
     ax.bar(xs,ys)
 
-    ax.set_xlabel(f"Passing times between {q_input.objective_stations[0]} and {q_input.objective_stations[1]} - both ways")
+    stations = hist["stations"]
+    ax.set_xlabel(f"Passing times {stations}")
     ax.set_ylabel("counts")
     if add_text:
         k = np.max(ys)/12
-        ax.text(1,k, f"{q_input.notrains} trains, dmax={int(q_pars.dmax)}", fontsize=10)
+        no_trains = hist["no_trains"]
+        dmax = int(hist["dmax"])
+        ax.text(1,k, f"{no_trains} trains, dmax={dmax}", fontsize=10)
 
-    if "softern" in file:
-        ax.set_xlim(left=0, right = 30)
-        ax.set_xticks(range(0, 30, 2))
-    else:
-        ax.set_xlim(left=0)
-        xx = [i for i in xs if i % 2 == 0]
-        ax.set_xticks(xx)
+    ax.set_xlim(left=0)
+    xx = [i for i in xs if i % 2 == 0]
+    ax.set_xticks(xx)
 
 
 
@@ -72,8 +84,9 @@ def make_plots_Dwave(q_input, q_pars, p):
     """ plotting of DWave results """
 
     fig, ax = plt.subplots(figsize=(4, 3))
-
-    _ax_hist_passing_times(ax, q_input, q_pars, p)
+    
+    hist = passing_time_histigrams(q_input, q_pars, p)
+    _ax_hist_passing_times(ax, hist)
     our_title = plot_title(q_input, q_pars)
 
     fig.subplots_adjust(bottom=0.2, left = 0.15)
@@ -105,7 +118,8 @@ def plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pair):
     """ plots histrogram from gate computers output """
 
     fig, ax = plt.subplots(figsize=(4, 3))
-    _ax_hist_passing_times(ax, input4qubo, q_pars, p, replace_string = replace_pair)
+    hist = passing_time_histigrams(input4qubo, q_pars, p, replace_string = replace_pair)
+    _ax_hist_passing_times(ax, hist)
     our_title = plot_title(input4qubo, q_pars)
 
     fig.subplots_adjust(bottom=0.2, left = 0.15)

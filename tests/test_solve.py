@@ -6,7 +6,7 @@ from QTrains import Analyze_qubo
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
 from QTrains import display_prec_feasibility, make_plots_Dwave
-from QTrains import plot_title, _ax_hist_passing_times, _ax_objective
+from QTrains import plot_title, _ax_hist_passing_times, _ax_objective, passing_time_histigrams
 from QTrains import analyze_QUBO_outputs, get_solutions_from_dmode
 from QTrains import save_qubo_4gates_comp, plot_hist_gates
 from QTrains import first_with_given_objective
@@ -255,7 +255,8 @@ def test_auxiliaty_plotting_functions():
 
     fig, ax = plt.subplots(figsize=(4, 3))
     _ax_objective(ax, q_input, q_pars, p)
-    _ax_hist_passing_times(ax, q_input, q_pars, p)
+    hist = passing_time_histigrams(q_input, q_pars, p)
+    _ax_hist_passing_times(ax, hist)
     plt.clf()
 
 
