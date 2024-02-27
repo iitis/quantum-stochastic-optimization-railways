@@ -3,7 +3,7 @@
 import pickle
 from scipy.optimize import linprog
 from QTrains import QuboVars, Parameters, Railway_input, Analyze_qubo, Variables, LinearPrograming
-from QTrains import add_update, find_ones, hist_passing_times, plot_train_diagrams, update_hist
+from QTrains import add_update, find_ones, hist_passing_times, plot_train_diagrams, update_hist, train_path_data
 from QTrains import filter_feasible, is_feasible, first_with_given_objective, high_excited_state, best_feasible_state, worst_feasible_state
 
 
@@ -94,7 +94,8 @@ def test_qubo_analyze():
 
 
     file =  "tests/pics/qubodiagram.pdf"
-    plot_train_diagrams(v, qubo_to_analyze, file)
+    input_dict = train_path_data(v, qubo_to_analyze)
+    plot_train_diagrams(input_dict, file)
 
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 0,0)  # sum, headway, pass, circ
     assert qubo_to_analyze.objective_val(solution) == 1.0

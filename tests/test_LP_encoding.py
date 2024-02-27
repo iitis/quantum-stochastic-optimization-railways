@@ -2,7 +2,7 @@
 import pytest
 from scipy.optimize import linprog
 from QTrains import Variables, LinearPrograming, Parameters, Railway_input
-from QTrains import plot_train_diagrams
+from QTrains import plot_train_diagrams, train_path_data
 
 def test_variables_class():
     """ test class Variables """
@@ -211,4 +211,5 @@ def test_train_diagrams():
     v.linprog2vars(opt)
 
     file = "tests/pics/LPdiagram.pdf"
-    plot_train_diagrams(v.variables, p, file)
+    input_dict = train_path_data(v.variables, p)
+    plot_train_diagrams(input_dict, file)

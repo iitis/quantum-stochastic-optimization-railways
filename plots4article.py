@@ -2,11 +2,10 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-from QTrains import plot_train_diagrams, hist_passing_times, filter_feasible
-from QTrains import _ax_hist_passing_times, _ax_objective, plot_title, file_hist
+from QTrains import plot_train_diagrams, hist_passing_times, filter_feasible, high_excited_state
+from QTrains import _ax_hist_passing_times, _ax_objective, plot_title, file_hist, objective_histograms, passing_time_histigrams, train_path_data
 from QTrains import get_solutions_from_dmode, first_with_given_objective, best_feasible_state, worst_feasible_state
 from QTrains import file_QUBO_comp, file_QUBO, file_LP_output
-from QTrains import high_excited
 from QTrains import Analyze_qubo
 from trains_timetable import Input_qubo
 from solve_qubo import Comp_parameters, Process_parameters
@@ -43,8 +42,12 @@ def plotDWave_2trains_dmax2():
     (ax2, ax3) = subfig2.subplots(1, 2 ,width_ratios=[1.2, 2])
 
     our_qubo.qubo_real_2t(delays_list[0])
-    _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
-    _ax_objective(ax1, our_qubo, q_par, p)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax, hist, add_text = False)
+    hist = objective_histograms(our_qubo, q_par, p)
+    _ax_objective(ax1, hist)
+
     ax.set_xlabel("Passing time MR-CS")
     our_title = plot_title(our_qubo, q_par)
     print(f"18 qubits top {our_title}")
@@ -52,8 +55,12 @@ def plotDWave_2trains_dmax2():
     ax1.text(0.925, 1.1, 'b)', transform=ax1.transAxes)
 
     our_qubo.qubo_real_2t(delays_list[1])
-    _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
-    _ax_objective(ax3, our_qubo, q_par, p)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax2, hist, add_text = False)
+    hist = objective_histograms(our_qubo, q_par, p)
+    _ax_objective(ax3, hist)
+
     ax2.set_xlabel("Passing time MR-CS")
     our_title = plot_title(our_qubo, q_par)
     print(f"18 qubits botom {our_title}")
@@ -94,7 +101,10 @@ def plotDWave_6trains():
     q_par.psum = 4.0
     q_par.annealing_time = 10
     our_qubo.qubo_real_6t(delays_list[0])
-    _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax, hist, add_text = False)
+
     our_title = plot_title(our_qubo, q_par)
     print(f"6 trains top left {our_title[14:len(our_title)]}, dmax={q_par.dmax}")
     ax.set_xlabel("Passing time MR-CS")
@@ -104,7 +114,10 @@ def plotDWave_6trains():
     q_par.psum = 4.0
     q_par.annealing_time = 10
     our_qubo.qubo_real_6t(delays_list[0])
-    _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax1, hist, add_text = False)
+
     our_title = plot_title(our_qubo, q_par)
     print(f"6 trains top fight {our_title[14:len(our_title)]},dm={q_par.dmax}")
     ax1.set_xlabel("Passing time MR-CS")
@@ -115,11 +128,12 @@ def plotDWave_6trains():
     q_par.psum = 40.0
     q_par.annealing_time = 10
     our_qubo.qubo_real_6t(delays_list[0])
-    _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax2, hist, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     print(f" 6 trains bottom left {our_title[14:len(our_title)]}, dmax={q_par.dmax}")
     ax2.set_xlabel("Passing time MR-CS")
-
 
 
     q_par.dmax = 6
@@ -127,7 +141,9 @@ def plotDWave_6trains():
     q_par.psum = 4.0
     q_par.annealing_time = 1000
     our_qubo.qubo_real_6t(delays_list[0])
-    _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax3, hist, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     print(f"6 train bottom right {our_title[14:len(our_title)]},d={q_par.dmax}")
     print("...............................")
@@ -174,19 +190,25 @@ def plotDWave_11trains_dmax6():
 
     q_par.annealing_time = 10
     our_qubo.qubo_real_11t(delays_list[0])
-    _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax, hist, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     print(f"11 trains top {our_title} annealing time 10 left, 1000 right")
     ax.set_xlabel(f"Passing time MR-CS")
 
     q_par.annealing_time = 1000
     our_qubo.qubo_real_11t(delays_list[0])
-    _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax1, hist, add_text = False)
     ax1.set_xlabel(f"Passing time MR-CS")
 
     q_par.annealing_time = 10
     our_qubo.qubo_real_11t(delays_list[1])
-    _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax2, hist, add_text = False)
     ax2.set_xlabel(f"Passing time MR-CS")
     our_title = plot_title(our_qubo, q_par)
     print(f"11 trains bottom {our_title} annealing time 10 left, 1000 right")
@@ -194,7 +216,9 @@ def plotDWave_11trains_dmax6():
 
     q_par.annealing_time = 1000
     our_qubo.qubo_real_11t(delays_list[1])
-    _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax3, hist, add_text = False)
     ax3.set_xlabel(f"Passing time MR-CS")
 
 
@@ -254,10 +278,14 @@ def plot_DWave_soft_dmax6(no_trains = 11):
         our_qubo.qubo_real_11t(delays)
     elif no_trains == 12:
         our_qubo.qubo_real_12t(delays)
-    _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax, hist, add_text = False)
     ax.set_xlabel(f"Passing time MR-CS")
     q_par.annealing_time = 1000
-    _ax_hist_passing_times(ax1, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax1, hist, add_text = False)
     ax1.set_xlabel(f"Passing time MR-CS")
 
     our_title = f"{no_trains} trains, Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
@@ -277,10 +305,14 @@ def plot_DWave_soft_dmax6(no_trains = 11):
         our_qubo.qubo_real_11t(delays)
     elif no_trains == 12:
         our_qubo.qubo_real_12t(delays)
-    _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax2, hist, add_text = False)
     ax2.set_xlabel(f"Passing time MR-CS")
     q_par.annealing_time = 1000
-    _ax_hist_passing_times(ax3, our_qubo, q_par, p, add_text = False)
+
+    hist = passing_time_histigrams(our_qubo, q_par, p)
+    _ax_hist_passing_times(ax3, hist, add_text = False)
     ax3.set_xlabel(f"Passing time MR-CS")
 
     our_title = f"{no_trains} trains, Disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
@@ -511,9 +543,12 @@ def plot2trains_gates_simulations(ppair, psum):
     our_qubo.qubo_real_2t(delays)
     comp_specifics_string = data_string_gates(q_par, delays)
     replace_pair = ("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics_string}")
+    
+    hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = replace_pair)
+    _ax_hist_passing_times(ax, hist, add_text = False)
+    hist = objective_histograms(our_qubo, q_par, p, replace_string = replace_pair)
+    _ax_objective(ax1, hist)
 
-    _ax_hist_passing_times(ax, our_qubo, q_par, p, add_text = False, replace_string = replace_pair)
-    _ax_objective(ax1, our_qubo, q_par, p, replace_string = replace_pair)
     our_title = plot_title(our_qubo, q_par)
     print(f"Upper panel {our_title}")
     ax.set_xlabel("Passing time MR-CS")
@@ -523,14 +558,18 @@ def plot2trains_gates_simulations(ppair, psum):
     our_qubo.qubo_real_2t(delays)
     comp_specifics_string = data_string_gates(q_par, delays)
     replace_pair = ("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics_string}")
-    _ax_hist_passing_times(ax2, our_qubo, q_par, p, add_text = False, replace_string = replace_pair)
-    _ax_objective(ax3, our_qubo, q_par, p, replace_string = replace_pair)
-    ax.set_xlabel("Passing time MR-CS")
+
+    hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = replace_pair)
+    _ax_hist_passing_times(ax2, hist, add_text = False)
+    hist = objective_histograms(our_qubo, q_par, p, replace_string = replace_pair)
+    _ax_objective(ax3, hist)
+
+    ax2.set_xlabel("Passing time MR-CS")
 
     ax.text(0.925, 1.1, 'a)', transform=ax.transAxes)
     ax1.text(0.925, 1.1, 'b)', transform=ax1.transAxes)
-    ax2.text(0.925, 1.1, 'a)', transform=ax2.transAxes)
-    ax3.text(0.925, 1.1, 'b)', transform=ax3.transAxes)
+    ax2.text(0.925, 1.1, 'c)', transform=ax2.transAxes)
+    ax3.text(0.925, 1.1, 'd)', transform=ax3.transAxes)
 
 
     our_title = plot_title(our_qubo, q_par)
@@ -565,8 +604,8 @@ def real_data_dirs(part_of_day, direction):
     file = f"histograms/real_data/Realdata_{part_of_day}_{days}012024{direction}.json"
     return file
 
-def _ax_hist_real_data(ax, file):
 
+def MLR_data(file):
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
@@ -574,6 +613,13 @@ def _ax_hist_real_data(ax, file):
 
     r1 = np.ceil(max(h))
     bins = np.arange(- 0.5, r1 + 1.5, 1.)
+
+    return{"hist":h, "bins":bins}
+
+def _ax_hist_real_data(ax, hist):
+
+    h = hist["hist"]
+    bins = hist["bins"]
 
     ax.hist( h, bins = bins, color = "gray",  ec="darkblue")
 
@@ -600,21 +646,24 @@ def plot_real_live_MLR_4():
     print(f"up left {part_of_day} {direction}")
 
     file = real_data_dirs(part_of_day, direction)
-    _ax_hist_real_data(ax, file)
+    hist = MLR_data(file)
+    _ax_hist_real_data(ax, hist)
 
     direction = "south"
 
     print(f"up right {part_of_day} {direction}")
 
     file = real_data_dirs(part_of_day, direction)
-    _ax_hist_real_data(ax1, file)
+    hist = MLR_data(file)
+    _ax_hist_real_data(ax1, hist)
 
 
     part_of_day = "afternoon"
     direction = "north"
 
     file = real_data_dirs(part_of_day, direction)
-    _ax_hist_real_data(ax2, file)
+    hist = MLR_data(file)
+    _ax_hist_real_data(ax2, hist)
 
     print(f"down left {part_of_day} {direction}")
 
@@ -623,7 +672,8 @@ def plot_real_live_MLR_4():
     print(f"down righr {part_of_day} {direction}")
 
     file = real_data_dirs(part_of_day, direction)
-    _ax_hist_real_data(ax3, file)
+    hist = MLR_data(file)
+    _ax_hist_real_data(ax3, hist)
 
     print("...................")
 
@@ -665,7 +715,9 @@ def plot_real_live_MLR_2():
 
     print(f"left {direction}")
 
-    _ax_hist_real_data(ax, file)
+    hist = MLR_data(file)
+    print(hist)
+    _ax_hist_real_data(ax, hist)
 
     direction = "south"
     print(f"right {direction}")
@@ -673,7 +725,9 @@ def plot_real_live_MLR_2():
     print("..................")
 
     file = real_data_dirs(part_of_day, direction)
-    _ax_hist_real_data(ax1, file)
+    hist = MLR_data(file)
+    print(hist)
+    _ax_hist_real_data(ax1, hist)
 
     ax.text(0.925, 0.9, 'a)', transform=ax.transAxes)
     ax1.text(0.925, 0.9, 'b)', transform=ax1.transAxes)
@@ -700,7 +754,6 @@ def train_diagrams():
 
     our_qubo.qubo_real_11t(delays_list[1])    
     file = file_QUBO_comp(our_qubo, q_par, p)
-    print( file )
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
 
@@ -715,28 +768,44 @@ def train_diagrams():
         lp_sol = pickle.load(fp)
 
     qubo_to_analyze = Analyze_qubo(dict_read)
+    exclude_st = "PS"
+    
+    v = lp_sol["variables"]
+    file =  "article_plots/ILPtrain_diagram.pdf"
+    input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st)
+    plot_train_diagrams(input_dict, file)
 
-    #solution = first_with_given_objective(solutions, qubo_to_analyze, lp_sol["objective"])
-    #v = qubo_to_analyze.qubo2int_vars(solution)
 
-    #file =  "article_plots/Gtrain_diagram.pdf"
-    #plot_train_diagrams(v, qubo_to_analyze, file)
+    
+    solution, energy = best_feasible_state(solutions, qubo_to_analyze)
+    v = qubo_to_analyze.qubo2int_vars(solution)
+
+    file =  "article_plots/Btrain_diagram.pdf"
+    input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st)
+    plot_train_diagrams(input_dict, file)
 
 
-    feas_sols = filter_feasible(solutions, qubo_to_analyze)
+    solution, energy = worst_feasible_state(solutions, qubo_to_analyze)
+    v = qubo_to_analyze.qubo2int_vars(solution)
 
-    solution, energy = high_excited(feas_sols, qubo_to_analyze, our_qubo)
+    file =  "article_plots/Wtrain_diagram.pdf"
+    input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st)
+    plot_train_diagrams(input_dict, file)
+
+
+    solution, energy = high_excited_state(solutions, qubo_to_analyze, our_qubo.objective_stations, 20)
     v = qubo_to_analyze.qubo2int_vars(solution)
 
     file =  "article_plots/Etrain_diagram.pdf"
-    plot_train_diagrams(v, qubo_to_analyze, file)
+    input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st)
+    plot_train_diagrams(input_dict, file)
 
 
 
 
 
 if __name__ == "__main__":
-    train_diagrams()
+    #train_diagrams()
 
     #plotDWave_2trains_dmax2()
     #plotDWave_11trains_dmax6()
@@ -747,7 +816,7 @@ if __name__ == "__main__":
     #plot2trains_gates_simulations(2.0,4.0)
     #plot2trains_gates_simulations(20.0,40.0)
 
-    #plot_real_live_MLR_4()
-    #plot_real_live_MLR_2()
+    plot_real_live_MLR_4()
+    plot_real_live_MLR_2()
 
-    feasibility_percentage()
+    #feasibility_percentage()

@@ -1,27 +1,13 @@
 import matplotlib.pyplot as plt
 import pickle
 import numpy as np
+import copy
 
 from .solve_sched_problems import file_hist
 
 
-##### plots
-
-def plot_title(q_input, q_pars):
-    if q_input.delays == {}:
-        disturbed = "Not disturbed"
-    else:
-        disturbed = "Disturbed"
-    if q_pars.method == "real":
-        tit = f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
-    else:
-        tit = f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
-    return tit
-
-
-
 def passing_time_histigrams(q_input, q_pars, p, replace_string = ("", "")):
-
+    """ returs dict histogram of passing times between staitons in q_input (objectvive stations) """
     file = file_hist(q_input, q_pars, p, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
@@ -32,9 +18,43 @@ def passing_time_histigrams(q_input, q_pars, p, replace_string = ("", "")):
     ys = [hist_pass.count(x) for x in xs]
 
     hist = {"x":xs, "y":ys, "stations":q_input.objective_stations, "no_trains":q_input.notrains, "dmax":q_pars.dmax,
-            "ppair":q_pars.ppair, "psum":q_pars.psum, "softern":p.softern_pass, "method": q_pars.method}
+             "softern":p.softern_pass}
 
     return hist
+
+
+def objective_histograms(q_input, q_pars, p, replace_string = ("", "")):
+    """ returns dict histogram of objectives"""
+    file = file_hist(q_input, q_pars, p, replace_string)
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+
+    hist_obj = results["qubo objectives"]
+    ground = results["lp objective"]
+
+    xs = list(set(hist_obj))
+    xs = np.sort(xs)
+    ys = [hist_obj.count(x) for x in xs]
+
+    hist = {"x":list(xs), "y":ys, "ground_state":ground}
+
+    return hist
+
+
+##### plots
+
+def plot_title(q_input, q_pars):
+    """ title for plot of passing times """
+    if q_input.delays == {}:
+        disturbed = "Not disturbed"
+    else:
+        disturbed = "Disturbed"
+    if q_pars.method == "real":
+        tit = f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
+    else:
+        tit = f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
+    return tit
+
 
 
 def _ax_hist_passing_times(ax, hist, add_text = True):
@@ -58,18 +78,12 @@ def _ax_hist_passing_times(ax, hist, add_text = True):
     ax.set_xticks(xx)
 
 
-
-def _ax_objective(ax, q_input, q_pars, p, replace_string = ("", "")):
+def _ax_objective(ax, hist):
     """ axes for the objective plot """
-    file = file_hist(q_input, q_pars, p, replace_string)
-    with open(file, 'rb') as fp:
-        results = pickle.load(fp)
 
-    hist_obj = results["qubo objectives"]
-    ground = results["lp objective"]
-
-    xs = set(hist_obj)
-    ys = [hist_obj.count(x) for x in set(hist_obj)]
+    xs = hist["x"]
+    ys = hist["y"]
+    ground = hist["ground_state"]
     
     ax.bar(list(xs),ys, width = 0.3, color = "gray", label = "QUBO")
     ax.axvline(x = ground, lw = 2, color = 'red', linestyle = 'dashed', label = 'ground state')
@@ -78,7 +92,6 @@ def _ax_objective(ax, q_input, q_pars, p, replace_string = ("", "")):
     ax.set_xlabel("Objective")
     ax.set_ylabel("counts")
 
-    
 
 def make_plots_Dwave(q_input, q_pars, p):
     """ plotting of DWave results """
@@ -101,7 +114,8 @@ def make_plots_Dwave(q_input, q_pars, p):
 
     fig, ax = plt.subplots(figsize=(4, 3))
 
-    _ax_objective(ax, q_input, q_pars, p)
+    hist = objective_histograms(q_input, q_pars, p)
+    _ax_objective(ax, hist)
     our_title= f"{plot_title(q_input, q_pars)}, dmax={int(q_pars.dmax)}"
 
     fig.subplots_adjust(bottom=0.2, left = 0.15)
@@ -132,7 +146,8 @@ def plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pair):
 
     fig, ax = plt.subplots(figsize=(4, 3))
 
-    _ax_objective(ax, input4qubo, q_pars, p, replace_string = replace_pair)
+    hist = objective_histograms(input4qubo, q_pars, p, replace_string = replace_pair)
+    _ax_objective(ax, hist)
     our_title= f"{plot_title(input4qubo, q_pars)}, dmax={int(q_pars.dmax)}"
 
     fig.subplots_adjust(bottom=0.2, left = 0.15)
@@ -143,25 +158,30 @@ def plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pair):
     plt.clf()
 
 
-# make plots
+# train diagrams
+    
 
-def plot_train_diagrams(v, p, file):
-    "plotter of train diagrams"
+def train_path_data(v, p, exclude_st = ""):
+    paths = p.trains_paths
+    tp = list(paths.values())[0]
+    tp = copy.deepcopy(tp)
+    print(tp)
+    if exclude_st != "":
+        tp.remove(exclude_st)
 
-    tp = list(p.trains_paths.values())[0]
-    x = {tp[0]: 0}
+    stations_loc = {tp[0]: 0}
     time = 0
     for i in range(len(tp) - 1):
         s = tp[i]
         s1 = tp[i+1]
         time += p.pass_time[f"{s}_{s1}"]
-        x[tp[i+1]] = time
+        stations_loc[tp[i+1]] = time
     time += time
 
-    xs = {j:[] for j in p.trains_paths}
-    ys = {j:[] for j in p.trains_paths}
+    xs = {j:[] for j in paths}
+    ys = {j:[] for j in paths}
 
-    for i, j in enumerate( p.trains_paths ):
+    for i, j in enumerate( paths ):
         for s in tp:
             for variable in v.values():
                 if variable.str_id == f"t_{s}_{j}":
@@ -171,17 +191,30 @@ def plot_train_diagrams(v, p, file):
                     else:
                         ys[j].append(variable.value - p.stay)
 
-                    xs[j].append(x[s])
-                    xs[j].append(x[s])
+                    xs[j].append(stations_loc[s])
+                    xs[j].append(stations_loc[s])
+                    
+
+    return {"x": xs, "y":ys, "stations_loc": stations_loc}
+    
+
+
+def plot_train_diagrams(input_dict, file):
+    "plotter of train diagrams"
+
+    xs = input_dict["x"]
+    ys = input_dict["y"]
+    stations_loc = input_dict["stations_loc"]
+
 
     colors = {0: "black", 1: "red", 2: "green", 3: "blue", 4: "orange", 5: "brown", 6: "cyan"}
 
-    for i, j in enumerate( ys ):
+    for j in ys.keys():
         plt.plot(ys[j], xs[j], "o-", label=f"train {j} ", linewidth=0.85, markersize=2)
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.45), ncol = 3)
 
-    our_marks = [f"{key}" for key in x ]
-    locs = list(x.values())
+    our_marks = [f"{key}" for key in stations_loc]
+    locs = list(stations_loc.values())
     plt.yticks(locs, our_marks)
     plt.xlabel("time")
     plt.ylabel("stations")
