@@ -478,7 +478,9 @@ def plot_realisation_fit(ax, d, color, marker, label):
 
 
 def csv_file_scaling(q_par, delay):
-    if delay == []:
+    print(delay)
+    if delay == {}:
+        print("no")
         disturbed = "no"
     else:
         disturbed = "disturbed"
@@ -889,6 +891,17 @@ def plot_real_live_MLR_2():
     fig.clf()
 
 
+def csv_write_train_diagram(file, train_d):
+    space = train_d["space"]
+    time = train_d["time"]
+    for j, route in space.items():
+        with open(f"{file}{j}.csv", 'w', newline='') as csvfile:
+            fieldnames = ["loc", "t"]
+            ts = time[j]
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            for i,loc in enumerate(route):
+                writer.writerow({'loc': loc, 't': ts[i]})
+
 
 def train_diagrams():
 
@@ -920,12 +933,24 @@ def train_diagrams():
         lp_sol = pickle.load(fp)
 
     qubo_to_analyze = Analyze_qubo(dict_read)
-    exclude_st = "PS"
+    exclude_st = ""
     
     v = lp_sol["variables"]
+
+    file =  "article_plots/Conflicted_train_diagram.pdf"
+    input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st, initial_tt=True)
+    plot_train_diagrams(input_dict, file)
+    file =  "article_plots/train_diagrams/conflicted/train"
+    csv_write_train_diagram(file, input_dict)
+    
+
+
     file =  "article_plots/ILPtrain_diagram.pdf"
     input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st)
     plot_train_diagrams(input_dict, file)
+    file =  "article_plots/train_diagrams/ILP/train"
+    csv_write_train_diagram(file, input_dict)
+    
 
 
     
@@ -935,29 +960,33 @@ def train_diagrams():
     file =  "article_plots/Btrain_diagram.pdf"
     input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st)
     plot_train_diagrams(input_dict, file)
+    file =  "article_plots/train_diagrams/QUBObest/train"
+    csv_write_train_diagram(file, input_dict)
 
 
-    solution, energy = worst_feasible_state(solutions, qubo_to_analyze)
-    v = qubo_to_analyze.qubo2int_vars(solution)
 
-    file =  "article_plots/Wtrain_diagram.pdf"
-    input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st)
-    plot_train_diagrams(input_dict, file)
-
-
-    solution, energy = high_excited_state(solutions, qubo_to_analyze, our_qubo.objective_stations, 20)
+    solution, energy = high_excited_state(solutions, qubo_to_analyze, our_qubo.objective_stations, increased_pt=20)
     v = qubo_to_analyze.qubo2int_vars(solution)
 
     file =  "article_plots/Etrain_diagram.pdf"
     input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st)
     plot_train_diagrams(input_dict, file)
+    file =  "article_plots/train_diagrams/QUBOexcited20/train"
+    csv_write_train_diagram(file, input_dict)
+
+    #solution, energy = worst_feasible_state(solutions, qubo_to_analyze)
+    #v = qubo_to_analyze.qubo2int_vars(solution)
+
+    #file =  "article_plots/Wtrain_diagram.pdf"
+    #input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st)
+    #plot_train_diagrams(input_dict, file)
 
 
 
 
 
 if __name__ == "__main__":
-    #train_diagrams()
+    train_diagrams()
 
     #plotDWave_2trains_dmax2()
     #plotDWave_11trains_dmax6()
@@ -969,4 +998,4 @@ if __name__ == "__main__":
     #plot_real_live_MLR_4()
     #plot_real_live_MLR_2()
 
-    feasibility_percentage()
+    #feasibility_percentage()

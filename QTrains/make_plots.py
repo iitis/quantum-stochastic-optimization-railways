@@ -161,11 +161,11 @@ def plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pair):
 # train diagrams
     
 
-def train_path_data(v, p, exclude_st = ""):
+def train_path_data(v, p, exclude_st = "", initial_tt = False):
     paths = p.trains_paths
     tp = list(paths.values())[0]
     tp = copy.deepcopy(tp)
-    print(tp)
+
     if exclude_st != "":
         tp.remove(exclude_st)
 
@@ -185,25 +185,29 @@ def train_path_data(v, p, exclude_st = ""):
         for s in tp:
             for variable in v.values():
                 if variable.str_id == f"t_{s}_{j}":
-                    ys[j].append(variable.value)
-                    if j % 2 == 1:
-                        ys[j].append(variable.value+ p.stay)
+                    if initial_tt:
+                        time = variable.range[0]
                     else:
-                        ys[j].append(variable.value - p.stay)
+                        time = variable.value
+                    ys[j].append(time)
+                    if j % 2 == 1:
+                        ys[j].append(time + p.stay)
+                    else:
+                        ys[j].append(time - p.stay)
 
                     xs[j].append(stations_loc[s])
                     xs[j].append(stations_loc[s])
                     
 
-    return {"x": xs, "y":ys, "stations_loc": stations_loc}
+    return {"space": xs, "time":ys, "stations_loc": stations_loc}
     
 
 
 def plot_train_diagrams(input_dict, file):
     "plotter of train diagrams"
 
-    xs = input_dict["x"]
-    ys = input_dict["y"]
+    xs = input_dict["space"]
+    ys = input_dict["time"]
     stations_loc = input_dict["stations_loc"]
 
 
