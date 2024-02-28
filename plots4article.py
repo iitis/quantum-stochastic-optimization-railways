@@ -1,6 +1,7 @@
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
+import csv
 
 from QTrains import plot_train_diagrams, hist_passing_times, filter_feasible, high_excited_state
 from QTrains import _ax_hist_passing_times, _ax_objective, plot_title, file_hist, objective_histograms, passing_time_histigrams, train_path_data
@@ -14,6 +15,25 @@ from solve_qubo import Comp_parameters, Process_parameters
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 plt.rc('font', size=10)
+
+
+def csv_write_hist(file_name, hist):
+    with open(file_name, 'w', newline='') as csvfile:
+        fieldnames = ['value', 'count']
+        value = hist["value"]
+        count = hist["count"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for i,v in enumerate(value):
+            writer.writerow({'value': v, 'count': count[i]})
+
+
+
+def file4csv(our_qubo, q_par, p):
+    write_file = file_hist(our_qubo, q_par, p)
+    write_file = write_file.replace("histograms/LR_timetable/", "article_plots/")
+    write_file = write_file.replace("histograms_soft/LR_timetable/", "article_plots/")
+    write_file = write_file.replace(".json", ".csv")
+    return write_file
 
 
 ############# DWave #########
@@ -44,8 +64,13 @@ def plotDWave_2trains_dmax2():
     our_qubo.qubo_real_2t(delays_list[0])
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax, hist, add_text = False)
     hist = objective_histograms(our_qubo, q_par, p)
+    write_file = write_file.replace("qubo", "objective")
+    csv_write_hist(write_file, hist)
     _ax_objective(ax1, hist)
 
     ax.set_xlabel("Passing time MR-CS")
@@ -57,8 +82,13 @@ def plotDWave_2trains_dmax2():
     our_qubo.qubo_real_2t(delays_list[1])
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax2, hist, add_text = False)
     hist = objective_histograms(our_qubo, q_par, p)
+    hist = objective_histograms(our_qubo, q_par, p)
+    write_file = write_file.replace("qubo", "objective")
+    csv_write_hist(write_file, hist)
     _ax_objective(ax3, hist)
 
     ax2.set_xlabel("Passing time MR-CS")
@@ -103,6 +133,8 @@ def plotDWave_6trains():
     our_qubo.qubo_real_6t(delays_list[0])
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax, hist, add_text = False)
 
     our_title = plot_title(our_qubo, q_par)
@@ -116,6 +148,8 @@ def plotDWave_6trains():
     our_qubo.qubo_real_6t(delays_list[0])
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax1, hist, add_text = False)
 
     our_title = plot_title(our_qubo, q_par)
@@ -130,6 +164,8 @@ def plotDWave_6trains():
     our_qubo.qubo_real_6t(delays_list[0])
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax2, hist, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     print(f" 6 trains bottom left {our_title[14:len(our_title)]}, dmax={q_par.dmax}")
@@ -143,6 +179,8 @@ def plotDWave_6trains():
     our_qubo.qubo_real_6t(delays_list[0])
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax3, hist, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     print(f"6 train bottom right {our_title[14:len(our_title)]},d={q_par.dmax}")
@@ -192,6 +230,8 @@ def plotDWave_11trains_dmax6():
     our_qubo.qubo_real_11t(delays_list[0])
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax, hist, add_text = False)
     our_title = plot_title(our_qubo, q_par)
     print(f"11 trains top {our_title} annealing time 10 left, 1000 right")
@@ -201,6 +241,8 @@ def plotDWave_11trains_dmax6():
     our_qubo.qubo_real_11t(delays_list[0])
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax1, hist, add_text = False)
     ax1.set_xlabel(f"Passing time MR-CS")
 
@@ -208,6 +250,8 @@ def plotDWave_11trains_dmax6():
     our_qubo.qubo_real_11t(delays_list[1])
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax2, hist, add_text = False)
     ax2.set_xlabel(f"Passing time MR-CS")
     our_title = plot_title(our_qubo, q_par)
@@ -218,6 +262,8 @@ def plotDWave_11trains_dmax6():
     our_qubo.qubo_real_11t(delays_list[1])
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax3, hist, add_text = False)
     ax3.set_xlabel(f"Passing time MR-CS")
 
@@ -280,11 +326,16 @@ def plot_DWave_soft_dmax6(no_trains = 11):
         our_qubo.qubo_real_12t(delays)
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax, hist, add_text = False)
     ax.set_xlabel(f"Passing time MR-CS")
     q_par.annealing_time = 1000
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax1, hist, add_text = False)
     ax1.set_xlabel(f"Passing time MR-CS")
 
@@ -307,11 +358,15 @@ def plot_DWave_soft_dmax6(no_trains = 11):
         our_qubo.qubo_real_12t(delays)
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax2, hist, add_text = False)
     ax2.set_xlabel(f"Passing time MR-CS")
     q_par.annealing_time = 1000
 
     hist = passing_time_histigrams(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax3, hist, add_text = False)
     ax3.set_xlabel(f"Passing time MR-CS")
 
@@ -352,7 +407,22 @@ def add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc):
     feasibility_perc.append(res_dict["perc feasible"])
 
 
-def get_series(q_par, p, delays):
+def log_linear_fit(x, y, rmax):
+    
+    x_lin = list(range(50,rmax, 50))
+
+    if rmax > 0:
+        if 0 in y:
+            x = x[0:-1]
+            y = y[0:-1]
+        a, b = np.polyfit(x, np.log(y), 1)
+
+    y_lin = np.exp(a*np.array(x_lin)+b)
+
+    return x_lin, y_lin
+
+
+def get_series(q_par, p, delays, rmax):
 
     no_qubits = []
     no_qubo_terms = []
@@ -387,22 +457,52 @@ def get_series(q_par, p, delays):
         add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
 
 
-    return no_qubits, no_qubo_terms, feasibility_perc
+    x_lin, y_lin = log_linear_fit(no_qubo_terms, feasibility_perc, rmax)
+
+    d = {"no_qubits":no_qubits, "no_qubo_terms":no_qubo_terms, "feasibility_perc":feasibility_perc, "x_lin":x_lin, "y_lin":y_lin}
+
+    return d
 
 
-def plot_realisation_fit(ax, x, y, rmax, color, marker, label):
+
+def plot_realisation_fit(ax, d, color, marker, label):
+
+    x = d["no_qubo_terms"] 
+    y = d["feasibility_perc"]
+    x_lin=d["x_lin"]
+    y_lin=d["y_lin"]
     
     ax.plot(x, y, marker, color = color, label = label)
-    x_art = list(range(50,rmax, 50))
-
-    if rmax > 0:
-        if 0 in y:
-            x = x[0:-1]
-            y = y[0:-1]
-        a, b = np.polyfit(x, np.log(y), 1)
-        ax.plot(x_art, np.exp(a*np.array(x_art)+b), "--", color = color, label = f"{label} log linear fit")
+   
+    ax.plot(x_lin, y_lin, "--", color = color, label = f"{label} log linear fit")
 
 
+def csv_file_scaling(q_par, delay):
+    if delay == []:
+        disturbed = "no"
+    else:
+        disturbed = "disturbed"
+    file = f"article_plots/scaling/qubo{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
+    file_fit = f"article_plots/scaling/fit{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
+
+    return file, file_fit
+
+
+def csv_write_scaling(file, file_fit, d):
+    with open(file, 'w', newline='') as csvfile:
+        fieldnames = ["size", "perc"]
+        size = d["no_qubo_terms"]
+        perc = d["feasibility_perc"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for i,v in enumerate(size):
+            writer.writerow({'size': v, 'perc': perc[i]})
+    with open(file_fit, 'w', newline='') as csvfile:
+        fieldnames = ["x_lin", "y_lin"]
+        size = d["x_lin"]
+        perc = d["y_lin"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for i,v in enumerate(size):
+            writer.writerow({'x_lin': v, 'y_lin': perc[i]})
 
     
 def feasibility_percentage():
@@ -411,12 +511,9 @@ def feasibility_percentage():
 
     q_par.method = "real"
     delays_list = [{}, {1:5, 2:2, 4:5}]
-    rmax = 10_000
+    rmax = 150_000
 
     q_par.annealing_time = 10
-
-    no_qubits_nd, Qsize_nd, feas_perc_nd = get_series(q_par, p, delays_list[0])
-    no_qubits_d, Qsize_d, feas_perc_d = get_series(q_par, p, delays_list[1])
 
     
     fig = plt.figure(constrained_layout=True, figsize=(6, 4))
@@ -425,23 +522,45 @@ def feasibility_percentage():
     (ax, ax1) = subfig1.subplots(1, 2)
     (ax2, ax3) = subfig2.subplots(1, 2)
 
-    plot_realisation_fit(ax, Qsize_nd, feas_perc_nd, 2500, color="green", marker="x", label="2,4 Not disturbed")
-    plot_realisation_fit(ax, Qsize_d, feas_perc_d, 2500, color="red", marker="d", label="2,4 Disturbed")
 
-    plot_realisation_fit(ax1, Qsize_nd, feas_perc_nd, rmax, color="green", marker="x", label="2,4 Not disturbed")
-    plot_realisation_fit(ax1, Qsize_d, feas_perc_d, rmax, color="red", marker="d", label="2,4 Disturbed")
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+    d = get_series(q_par, p, delays_list[0], 2500)
+    plot_realisation_fit(ax, d, color="green", marker="x", label="2,4 Not disturbed")
+    d = get_series(q_par, p, delays_list[1], 2500)
+    plot_realisation_fit(ax, d, color="red", marker="d", label="2,4 Disturbed")
+
+    delay = delays_list[0]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, d)
+    plot_realisation_fit(ax1, d, color="green", marker="x", label="2,4 Not disturbed")
+
+    delay = delays_list[1]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, d)
+    plot_realisation_fit(ax1, d, color="red", marker="d", label="2,4 Disturbed")
 
     q_par.ppair = 20.0
     q_par.psum = 40.0
 
-    no_qubits_nd, Qsize_nd, feas_perc_nd = get_series(q_par, p, delays_list[0])
-    no_qubits_d, Qsize_d, feas_perc_d = get_series(q_par, p, delays_list[1])
+    d = get_series(q_par, p, delays_list[0], 2500)
+    plot_realisation_fit(ax, d, color="blue", marker="1", label="20,40 Not disturbed")
+    d = get_series(q_par, p, delays_list[1], 2500)
+    plot_realisation_fit(ax, d, color="orange", marker="o", label="20,40 Disturbed")
 
-    plot_realisation_fit(ax, Qsize_nd, feas_perc_nd, 2500, color="blue", marker="1", label="20,40 Not disturbed")
-    plot_realisation_fit(ax, Qsize_d, feas_perc_d, 2500, color="orange", marker="o", label="20,40 Disturbed")
+    delay = delays_list[0]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, d)
+    plot_realisation_fit(ax1, d, color="blue", marker="1", label="20,40 Not disturbed")
 
-    plot_realisation_fit(ax1, Qsize_nd, feas_perc_nd, rmax, color="blue", marker="1", label="20,40 Not disturbed")
-    plot_realisation_fit(ax1, Qsize_d, feas_perc_d, rmax, color="orange", marker="o", label="20,40 Disturbed")
+    delay = delays_list[1]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, d)
+    plot_realisation_fit(ax1, d, color="orange", marker="o", label="20,40 Disturbed")
 
 
     ax.set_ylabel("perc. of feasible solutions")
@@ -455,39 +574,53 @@ def feasibility_percentage():
     ax1.set_xlabel("n.o. non zero QUBO elements")
     ax1.set_yscale('log')
     
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
     q_par.annealing_time = 1000
 
-    no_qubits_nd, Qsize_nd, feas_perc_nd = get_series(q_par, p, delays_list[0])
-    no_qubits_d, Qsize_d, feas_perc_d = get_series(q_par, p, delays_list[1])
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+    d = get_series(q_par, p, delays_list[0], 2500)
+    plot_realisation_fit(ax2, d, color="green", marker="x", label="2,4 Not disturbed")
+    d = get_series(q_par, p, delays_list[1], 2500)
+    plot_realisation_fit(ax2, d, color="red", marker="d", label="2,4 Disturbed")
 
+    delay = delays_list[0]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, d)
+    plot_realisation_fit(ax3, d, color="green", marker="x", label="2,4 Not disturbed")
 
-    plot_realisation_fit(ax2, Qsize_nd, feas_perc_nd, 2500, color="green", marker="x", label="2,4 Not disturbed")
-    plot_realisation_fit(ax2, Qsize_d, feas_perc_d, 2500, color="red", marker="d", label="2,4 Disturbed")
-
-    plot_realisation_fit(ax3, Qsize_nd, feas_perc_nd, rmax, color="green", marker="x", label="2,4 Not disturbed")
-    plot_realisation_fit(ax3, Qsize_d, feas_perc_d, rmax, color="red", marker="d", label="2,4 Disturbed")
-
-
-    ax2.set_ylabel("perc. of feasible solutions")
-    ax2.set_xlabel("n.o. non zero QUBO elements")
-    ax2.set_yscale('log')
-    ax2.text(0.925, 0.9, 'c)', transform=ax2.transAxes)
-
+    delay = delays_list[1]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, d)
+    plot_realisation_fit(ax3, d, color="red", marker="d", label="2,4 Disturbed")
 
     q_par.ppair = 20.0
     q_par.psum = 40.0
 
-    no_qubits_nd, Qsize_nd, feas_perc_nd = get_series(q_par, p, delays_list[0])
-    no_qubits_d, Qsize_d, feas_perc_d = get_series(q_par, p, delays_list[1])
+    d = get_series(q_par, p, delays_list[0], 2500)
+    plot_realisation_fit(ax2, d, color="blue", marker="1", label="20,40 Not disturbed")
+    d = get_series(q_par, p, delays_list[1], 2500)
+    plot_realisation_fit(ax2, d, color="orange", marker="o", label="20,40 Disturbed")
 
+    delay = delays_list[0]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, d)
+    plot_realisation_fit(ax3, d, color="blue", marker="1", label="20,40 Not disturbed")
 
-    plot_realisation_fit(ax2, Qsize_nd, feas_perc_nd, 2500, color="blue", marker="1", label="20,40 Not disturbed")
-    plot_realisation_fit(ax2, Qsize_d, feas_perc_d, 2500, color="orange", marker="o", label="20,40 Disturbed")
-
-    plot_realisation_fit(ax3, Qsize_nd, feas_perc_nd, rmax, color="blue", marker="1", label="20,40 Not disturbed")
-    plot_realisation_fit(ax3, Qsize_d, feas_perc_d, rmax, color="orange", marker="o", label="20,40 Disturbed")
+    delay = delays_list[1]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, d)
+    plot_realisation_fit(ax3, d, color="orange", marker="o", label="20,40 Disturbed")
+    
+    
+    
+    ax2.set_ylabel("perc. of feasible solutions")
+    ax2.set_xlabel("n.o. non zero QUBO elements")
+    ax2.set_yscale('log')
+    ax2.text(0.925, 0.9, 'c)', transform=ax2.transAxes) 
     ax3.text(0.925, 0.9, 'd)', transform=ax3.transAxes)
 
 
@@ -545,8 +678,14 @@ def plot2trains_gates_simulations(ppair, psum):
     replace_pair = ("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics_string}")
     
     hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = replace_pair)
+
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax, hist, add_text = False)
+
     hist = objective_histograms(our_qubo, q_par, p, replace_string = replace_pair)
+    write_file = write_file.replace("qubo", "objective")
+    csv_write_hist(write_file, hist)
     _ax_objective(ax1, hist)
 
     our_title = plot_title(our_qubo, q_par)
@@ -560,8 +699,13 @@ def plot2trains_gates_simulations(ppair, psum):
     replace_pair = ("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics_string}")
 
     hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = replace_pair)
+    write_file = file4csv(our_qubo, q_par, p)
+    csv_write_hist(write_file, hist)
     _ax_hist_passing_times(ax2, hist, add_text = False)
+
     hist = objective_histograms(our_qubo, q_par, p, replace_string = replace_pair)
+    write_file = write_file.replace("qubo", "objective")
+    csv_write_hist(write_file, hist)
     _ax_objective(ax3, hist)
 
     ax2.set_xlabel("Passing time MR-CS")
@@ -614,19 +758,25 @@ def MLR_data(file):
     r1 = np.ceil(max(h))
     bins = np.arange(- 0.5, r1 + 1.5, 1.)
 
-    return{"hist":h, "bins":bins}
+    our_h, our_b = np.histogram(h, bins = bins)
+
+
+    b_middle = [(our_b[i] + our_b[i+1])/2 for i in range(len(our_b) - 1)]
+
+    return{"count":our_h, "value":b_middle}
 
 def _ax_hist_real_data(ax, hist):
 
-    h = hist["hist"]
-    bins = hist["bins"]
 
-    ax.hist( h, bins = bins, color = "gray",  ec="darkblue")
+    xs = hist["value"]
+    ys = hist["count"]
+    ax.bar(xs,ys, color = "gray",  ec="darkblue")
 
     ax.set_xlabel(f"measured passing time CS -- MR")
     ax.set_xlim(left=6, right = 24)
     ax.set_xticks(range(6, 24, 2))
     ax.set_ylabel("counts")
+
 
 
 def plot_real_live_MLR_4():
@@ -716,7 +866,8 @@ def plot_real_live_MLR_2():
     print(f"left {direction}")
 
     hist = MLR_data(file)
-    print(hist)
+    write_file = f"article_plots/MLR_real/{direction}_histogram.csv"
+    csv_write_hist(write_file, hist)
     _ax_hist_real_data(ax, hist)
 
     direction = "south"
@@ -726,7 +877,8 @@ def plot_real_live_MLR_2():
 
     file = real_data_dirs(part_of_day, direction)
     hist = MLR_data(file)
-    print(hist)
+    write_file = f"article_plots/MLR_real/{direction}_histogram.csv"
+    csv_write_hist(write_file, hist)
     _ax_hist_real_data(ax1, hist)
 
     ax.text(0.925, 0.9, 'a)', transform=ax.transAxes)
@@ -811,12 +963,10 @@ if __name__ == "__main__":
     #plotDWave_11trains_dmax6()
     #plotDWave_6trains()
     #plot_DWave_soft_dmax6(no_trains = 11)
-    #plot_DWave_soft_dmax6(no_trains = 10)
 
     #plot2trains_gates_simulations(2.0,4.0)
-    #plot2trains_gates_simulations(20.0,40.0)
 
-    plot_real_live_MLR_4()
-    plot_real_live_MLR_2()
+    #plot_real_live_MLR_4()
+    #plot_real_live_MLR_2()
 
-    #feasibility_percentage()
+    feasibility_percentage()

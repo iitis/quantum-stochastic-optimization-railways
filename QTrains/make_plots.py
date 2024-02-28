@@ -17,7 +17,7 @@ def passing_time_histigrams(q_input, q_pars, p, replace_string = ("", "")):
     xs = list( range(np.max(hist_pass) + 1) )
     ys = [hist_pass.count(x) for x in xs]
 
-    hist = {"x":xs, "y":ys, "stations":q_input.objective_stations, "no_trains":q_input.notrains, "dmax":q_pars.dmax,
+    hist = {"value":xs, "count":ys, "stations":q_input.objective_stations, "no_trains":q_input.notrains, "dmax":q_pars.dmax,
              "softern":p.softern_pass}
 
     return hist
@@ -36,7 +36,7 @@ def objective_histograms(q_input, q_pars, p, replace_string = ("", "")):
     xs = np.sort(xs)
     ys = [hist_obj.count(x) for x in xs]
 
-    hist = {"x":list(xs), "y":ys, "ground_state":ground}
+    hist = {"value":list(xs), "count":ys, "ground_state":ground}
 
     return hist
 
@@ -60,8 +60,8 @@ def plot_title(q_input, q_pars):
 def _ax_hist_passing_times(ax, hist, add_text = True):
     """ axes for the passing time plots """
     
-    xs = hist["x"]
-    ys = hist["y"]
+    xs = hist["value"]
+    ys = hist["count"]
     ax.bar(xs,ys)
 
     stations = hist["stations"]
@@ -81,8 +81,8 @@ def _ax_hist_passing_times(ax, hist, add_text = True):
 def _ax_objective(ax, hist):
     """ axes for the objective plot """
 
-    xs = hist["x"]
-    ys = hist["y"]
+    xs = hist["value"]
+    ys = hist["count"]
     ground = hist["ground_state"]
     
     ax.bar(list(xs),ys, width = 0.3, color = "gray", label = "QUBO")
