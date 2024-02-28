@@ -953,7 +953,7 @@ def train_diagrams():
     
 
 
-    
+
     solution, energy = best_feasible_state(solutions, qubo_to_analyze)
     v = qubo_to_analyze.qubo2int_vars(solution)
 
