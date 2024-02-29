@@ -2,7 +2,7 @@
 import copy
 import itertools
 import numpy as np
-import pytest
+from functools import reduce
 from .parameters import pairs_same_direction, station_pairs
 from .LP_problem import Variable
 
@@ -266,9 +266,16 @@ class Analyze_qubo():
     
 
     def heuristics_degenerate(self, solution, station):
-            """ heuristic search for degenerate state od solution,
+            """ 
+            heuristic search for degenerate state od solution,
               assuming that we do not count objective at station 
             """
+
+            # station around which the search can be done not in any of train's paths
+            st_in_path = [station in st_list for st_list in self.trains_paths.values() ]
+            if not reduce(lambda x,y: x or y, st_in_path):
+                return [solution]
+            
             key2swap = {}
             for key, value in self.qbit_inds.items():
                 (s,j,t) = value

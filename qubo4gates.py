@@ -50,6 +50,7 @@ def save_QUBO(input4qubo, q_pars, p):
     Q = Analyze_qubo(dict_read)
     qubo_solution = Q.int_vars2qubo(lp_sol["variables"])
     ground_solutions = Q.heuristics_degenerate(qubo_solution, "PS")
+    print( ground_solutions )
     save_qubo_4gates_comp(dict_read, ground_solutions, file_q)
     _ = analyze_QUBO_outputs(Q, input4qubo.objective_stations, ground_solutions, lp_sol, p.softern_pass)
     
@@ -99,16 +100,15 @@ if __name__ == "__main__":
     # these are tunable
     small_sample = False
     save_qubo = True
-    no_trains = 1
+    no_trains = 2
+
 
     if no_trains == 1:
-        delays = ({})
-        all_dmax = (2,4,6)
+        delays = [{}]
+        all_dmax = [2,4,6]
     else:
-        delays = (({}, {1:5, 2:2, 4:5}))
-        all_dmax = (2)
-
-
+        delays = [{}, {1:5, 2:2, 4:5}]
+        all_dmax = [2]
 
     for delay in delays:
         for (q_pars.ppair, q_pars.psum) in [(2.0, 4.0), (20.0, 40.0)]:

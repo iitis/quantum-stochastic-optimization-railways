@@ -91,6 +91,7 @@ def test_qubo_analyze():
     assert qubo_to_analyze.binary_vars2sjt(s3) == {('A', 1): 0, ('A', 3): 4, ('B', 1): 2, ('B', 3): 6}
 
     assert qubo_to_analyze.heuristics_degenerate(solution, "B") == [[1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]]
+    assert qubo_to_analyze.heuristics_degenerate(solution, "C") == [[1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]]
 
 
     file =  "tests/pics/qubodiagram.pdf"
