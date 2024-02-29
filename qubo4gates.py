@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     # these are tunable
     small_sample = False
-    save_qubo = True
+    save_qubo = False
     no_trains = 2
 
 
