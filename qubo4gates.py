@@ -92,26 +92,36 @@ if __name__ == "__main__":
     input4qubo = Input_qubo()
     q_pars = Comp_parameters()
     q_pars.method = "IonQsim"
-    q_pars.dmax = 2
+    
     p = Process_parameters()
     p.softern_pass = False
 
     # these are tunable
     small_sample = False
-    save_qubo = False
-    no_trains = 2
+    save_qubo = True
+    no_trains = 1
 
-    for delays in ({}, {1:5, 2:2, 4:5}):
+    if no_trains == 1:
+        delays = ({})
+        all_dmax = (2,4,6)
+    else:
+        delays = (({}, {1:5, 2:2, 4:5}))
+        all_dmax = (2)
+
+
+
+    for delay in delays:
         for (q_pars.ppair, q_pars.psum) in [(2.0, 4.0), (20.0, 40.0)]:
+            for q_pars.dmax in all_dmax:
 
-            if no_trains == 1:
-                input4qubo.qubo_real_1t(delays)
-            else:
-                input4qubo.qubo_real_2t(delays)
+                if no_trains == 1:
+                    input4qubo.qubo_real_1t(delay)
+                else:
+                    input4qubo.qubo_real_2t(delay)
 
-            if save_qubo:
-                save_QUBO(input4qubo, q_pars, p)
-            else:
-                analyze_and_plot_hists(small_sample, input4qubo, q_pars, p)
+                if save_qubo:
+                    save_QUBO(input4qubo, q_pars, p)
+                else:
+                    analyze_and_plot_hists(small_sample, input4qubo, q_pars, p)
 
             
