@@ -247,7 +247,7 @@ def plot_DWave_soft_dmax6(no_trains = 11):
 
 #########################  Scaling ####################
     
-def add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc):
+def add_elemet(our_qubo, q_par, p, no_qubits, no_physical_qbits, no_qubo_terms, feasibility_perc):
 
     file = file_hist(our_qubo, q_par, p)
     with open(file, 'rb') as fp:
@@ -257,10 +257,24 @@ def add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc):
     no_qubo_terms.append(res_dict["no qubo terms"])
     feasibility_perc.append(res_dict["perc feasible"])
 
+    with open("solutions/embedding.json", 'rb') as fp:
+        embeddinq_dict = pickle.load(fp)
+
+    if our_qubo.delays == {}:
+        disturbed = "notdisturbed"
+    else:
+        disturbed = "disturbed"
+
+    phys_qbits = embeddinq_dict[f"{our_qubo.notrains}_{q_par.dmax}_{disturbed}"]
+
+    assert phys_qbits['no_logical'] == res_dict["no qubits"]
+
+    no_physical_qbits.append(phys_qbits['no_physical'])
+
 
 def log_linear_fit(x, y, rmax):
     
-    x_lin = list(range(50,rmax, 50))
+    x_lin = list(range(0,rmax, 50))
     if rmax > 0:
         if 0 in y:
             x = x[0:-1]
@@ -275,6 +289,7 @@ def log_linear_fit(x, y, rmax):
 def get_series(q_par, p, delays, rmax):
 
     no_qubits = []
+    no_physical_qubits = []
     no_qubo_terms = []
     feasibility_perc = []
 
@@ -282,34 +297,233 @@ def get_series(q_par, p, delays, rmax):
         q_par.dmax = d
         our_qubo = Input_qubo()
         our_qubo.qubo_real_1t(delays)
-        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
         our_qubo = Input_qubo()
         our_qubo.qubo_real_2t(delays)
-        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
         our_qubo = Input_qubo()
         our_qubo.qubo_real_4t(delays)
-        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
         our_qubo = Input_qubo()    
         our_qubo.qubo_real_6t(delays)
-        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
         our_qubo = Input_qubo()
         our_qubo.qubo_real_8t(delays)
-        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
         our_qubo = Input_qubo()
         our_qubo.qubo_real_10t(delays)
-        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
         our_qubo = Input_qubo()
         our_qubo.qubo_real_11t(delays)
-        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
         our_qubo = Input_qubo()
         our_qubo.qubo_real_12t(delays)
-        add_elemet(our_qubo, q_par, p, no_qubits, no_qubo_terms, feasibility_perc)
+        add_elemet(our_qubo, q_par, p, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
 
-    x_lin, y_lin = log_linear_fit(no_qubo_terms, feasibility_perc, rmax)
+    x_lin, y_lin = log_linear_fit(no_physical_qubits, feasibility_perc, rmax)
 
-    d = {"no_qubits":no_qubits, "no_qubo_terms":no_qubo_terms, "feasibility_perc":feasibility_perc, "x_lin":x_lin, "y_lin":y_lin}
+    d = {"no_qubits":no_qubits, "no_physical":no_physical_qubits, "no_qubo_terms":no_qubo_terms, "feasibility_perc":feasibility_perc, "x_lin":x_lin, "y_lin":y_lin}
 
     return d
+
+
+def csv_file_scaling(q_par, delay):
+    if delay == {}:
+        disturbed = "no"
+    else:
+        disturbed = "disturbed"
+    file = f"article_plots/scaling/qubo{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
+    file_fit_small = f"article_plots/scaling/fitsmall{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
+    file_fit = f"article_plots/scaling/fit{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
+
+    return file, file_fit_small, file_fit
+
+
+
+def csv_write_scaling(file, file_fit_small, file_fit, d):
+    with open(file, 'w', newline='') as csvfile:
+        fieldnames = ["size", "perc"]
+        size = d["no_physical"]
+        perc = d["feasibility_perc"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for i,v in enumerate(size):
+            writer.writerow({'size': v, 'perc': perc[i]})
+    with open(file_fit_small, 'w', newline='') as csvfile:
+        fieldnames = ["x_lin", "y_lin"]
+        size = d["x_lin"][0:11]
+        perc = d["y_lin"][0:11]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for i,v in enumerate(size):
+            writer.writerow({'x_lin': v, 'y_lin': perc[i]})
+    with open(file_fit, 'w', newline='') as csvfile:
+        fieldnames = ["x_lin", "y_lin"]
+        size = d["x_lin"]
+        perc = d["y_lin"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for i,v in enumerate(size):
+            writer.writerow({'x_lin': v, 'y_lin': perc[i]})
+
+    
+def feasibility_percentage():
+    p = Process_parameters()
+    q_par = Comp_parameters()
+    q_par.method = "real"
+    delays_list = [{}, {1:5, 2:2, 4:5}]
+    rmax = 150_000
+
+    print("feasibility percentage")
+
+    q_par.annealing_time = 10
+
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+
+    delay = delays_list[0]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit_small, file_fit, d)
+
+    delay = delays_list[1]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit_small, file_fit, d)
+
+    q_par.ppair = 20.0
+    q_par.psum = 40.0
+
+    delay = delays_list[0]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit_small, file_fit, d)
+
+    delay = delays_list[1]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit_small, file_fit, d)
+
+    q_par.annealing_time = 1000
+
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+
+    delay = delays_list[0]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit_small, file_fit, d)
+
+    delay = delays_list[1]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit_small, file_fit, d)
+
+    q_par.ppair = 20.0
+    q_par.psum = 40.0
+
+    delay = delays_list[0]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit_small, file_fit, d)
+
+    delay = delays_list[1]
+    d = get_series(q_par, p, delay, rmax)
+    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit_small, file_fit, d)
+
+    print("..........................................")
+    
+
+
+
+def csv_write_embedding(embeddinq_dict, q_par, delay):
+    if delay == {}:
+        disturbed = "notdisturbed"
+    else:
+        disturbed = "disturbed"
+
+    file_name = f"article_plots/noqbits/embedding{q_par.dmax}_{disturbed}.csv"
+
+    with open(file_name, 'w', newline='') as csvfile:
+        fieldnames = ['no_logical', 'no_physical']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        logical = []
+        physical = []
+        for trains in [1,2,4,6,8,10,11,12]:
+            l = embeddinq_dict[f"{trains}_{q_par.dmax}_{disturbed}"]["no_logical"]
+            ph = embeddinq_dict[f"{trains}_{q_par.dmax}_{disturbed}"]["no_physical"]
+
+            writer.writerow({'no_logical': l, 'no_physical': ph})
+
+            logical.append(l)
+            physical.append(ph)
+
+    order = 1 
+    x_fit, y_fit = fit(logical, physical, 15000, order = order)
+
+    file_name = f"article_plots/noqbits/smallfit_order{order}_{q_par.dmax}_{disturbed}.csv"
+    with open(file_name, 'w', newline='') as csvfile:
+        fieldnames = ['no_logical', 'no_physical']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for i, lqbits in enumerate(x_fit[0:9]):
+            writer.writerow({'no_logical': lqbits, 'no_physical': y_fit[i]})
+
+    
+    file_name = f"article_plots/noqbits/fit_order{order}_{q_par.dmax}_{disturbed}.csv"
+    with open(file_name, 'w', newline='') as csvfile:
+        fieldnames = ['no_logical', 'no_physical']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for i, lqbits in enumerate(x_fit):
+            writer.writerow({'no_logical': lqbits, 'no_physical': y_fit[i]})
+
+
+
+
+
+def fit(x, y, rmax, order = 1):
+    
+    x_lin = np.array(list(range(0,rmax, 50)))
+    if order == 1:
+        a, b = np.polyfit(x, y, 1)
+        y_lin = np.array(a*x_lin+b)
+    if order == 2:
+        a, b,c = np.polyfit(x, y, 2)
+        y_lin = np.array(a*x_lin**2+b*x_lin+c)
+
+
+    return x_lin, y_lin
+
+def embedding():
+
+    p = Process_parameters()
+    our_qubo = Input_qubo()
+    q_par = Comp_parameters()
+    q_par.method = "real"
+    q_par.ppair = 2.0
+    q_par.psum = 4.0
+    p.softern_pass = True
+
+    delays_list = [{}, {1:5, 2:2, 4:5}]
+
+    with open("solutions/embedding.json", 'rb') as fp:
+        embeddinq_dict = pickle.load(fp)
+    
+
+    q_par.dmax = 2
+    delay = delays_list[0]
+    csv_write_embedding(embeddinq_dict, q_par, delay)
+
+    q_par.dmax = 6
+    delay = delays_list[0]
+    csv_write_embedding(embeddinq_dict, q_par, delay)
+
+    q_par.dmax = 2
+    delay = delays_list[1]
+    csv_write_embedding(embeddinq_dict, q_par, delay)
+
+    q_par.dmax = 6
+    delay = delays_list[1]
+    csv_write_embedding(embeddinq_dict, q_par, delay)
+    
+
 
 
 
@@ -381,6 +595,63 @@ def plot2trains_gates_simulations(ppair, psum):
     our_title = plot_title(our_qubo, q_par)
     print(f"Lower panel, eft passing time, right objective, {our_title}")
     print("..........................")
+
+
+
+def csv_file_scaling(q_par, delay):
+    if delay == {}:
+        disturbed = "no"
+    else:
+        disturbed = "disturbed"
+    file = f"article_plots/gates_scaling/qubo_{q_par.method}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
+
+    return file
+
+def csv_write_gates_scaling(file, d):
+    with open(file, 'w', newline='') as csvfile:
+        fieldnames = ['size', "perc"]
+        size = d['no qubits']
+        perc = d["perc_feasible"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        for i,v in enumerate(size):
+            writer.writerow({'size': v, 'perc': perc[i]})
+
+
+def gates_scaling(delays, ppair, psum):
+    p = Process_parameters()
+    our_qubo = Input_qubo()
+    q_par = Comp_parameters()
+
+    print("IonQ simulation, 2 trains 18 qbits")
+
+
+    q_par.method = "IonQsim"
+    q_par.dmax = 2
+    q_par.ppair = ppair
+    q_par.psum = psum
+
+    our_qubo.qubo_real_2t(delays)
+    comp_specifics_string = data_string_gates(q_par, delays)
+    replace_pair = ("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics_string}")
+
+    file = file_hist(our_qubo, q_par, p, replace_pair = replace_pair)
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+
+    d = {"no qubits": [results['no qubits']], "perc_feasible": [results['perc feasible']]}
+    file = csv_file_scaling(q_par, delays)
+    csv_write_gates_scaling(file, d)
+
+
+def gates_scaling_seq():
+
+    delays_list = [{}, {1:5, 2:2, 4:5}]
+
+    gates_scaling(delays_list[0], 2.0, 4.0)
+    gates_scaling(delays_list[1], 2.0, 4.0)
+
+    gates_scaling(delays_list[0], 20.0, 40.0)
+    gates_scaling(delays_list[1], 20.0, 40.0)
 
 
 
@@ -456,104 +727,8 @@ def plot_real_live_MLR_2():
     print("..................")
 
 
-#####################   Analysis ###########################
+#####################   Train diagrams ###########################
 
-
-def csv_file_scaling(q_par, delay):
-    if delay == {}:
-        disturbed = "no"
-    else:
-        disturbed = "disturbed"
-    file = f"article_plots/scaling/qubo{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
-    file_fit = f"article_plots/scaling/fit{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
-
-    return file, file_fit
-
-
-def csv_write_scaling(file, file_fit, d):
-    with open(file, 'w', newline='') as csvfile:
-        fieldnames = ["size", "perc"]
-        size = d["no_qubo_terms"]
-        perc = d["feasibility_perc"]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        for i,v in enumerate(size):
-            writer.writerow({'size': v, 'perc': perc[i]})
-    with open(file_fit, 'w', newline='') as csvfile:
-        fieldnames = ["x_lin", "y_lin"]
-        size = d["x_lin"]
-        perc = d["y_lin"]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        for i,v in enumerate(size):
-            writer.writerow({'x_lin': v, 'y_lin': perc[i]})
-
-    
-def feasibility_percentage():
-    p = Process_parameters()
-    q_par = Comp_parameters()
-    q_par.method = "real"
-    delays_list = [{}, {1:5, 2:2, 4:5}]
-    rmax = 150_000
-
-    print("feasibility percentage")
-
-    q_par.annealing_time = 10
-
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-
-    delay = delays_list[0]
-    d = get_series(q_par, p, delay, rmax)
-    file, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit, d)
-
-    delay = delays_list[1]
-    d = get_series(q_par, p, delay, rmax)
-    file, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit, d)
-
-    q_par.ppair = 20.0
-    q_par.psum = 40.0
-
-    delay = delays_list[0]
-    d = get_series(q_par, p, delay, rmax)
-    file, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit, d)
-
-    delay = delays_list[1]
-    d = get_series(q_par, p, delay, rmax)
-    file, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit, d)
-
-    q_par.annealing_time = 1000
-
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-
-    delay = delays_list[0]
-    d = get_series(q_par, p, delay, rmax)
-    file, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit, d)
-
-    delay = delays_list[1]
-    d = get_series(q_par, p, delay, rmax)
-    file, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit, d)
-
-    q_par.ppair = 20.0
-    q_par.psum = 40.0
-
-    delay = delays_list[0]
-    d = get_series(q_par, p, delay, rmax)
-    file, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit, d)
-
-    delay = delays_list[1]
-    d = get_series(q_par, p, delay, rmax)
-    file, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit, d)
-
-    print("..........................................")
-    
 
 def csv_write_train_diagram(file, train_d):
     space = train_d["space"]
@@ -565,6 +740,8 @@ def csv_write_train_diagram(file, train_d):
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             for i,loc in enumerate(route):
                 writer.writerow({'loc': loc, 't': ts[i]})
+
+
 
 
 def train_diagrams():
@@ -638,14 +815,20 @@ def train_diagrams():
 
 
 if __name__ == "__main__":
-    plotDWave_2trains_dmax2()
-    plotDWave_6trains()
-    plotDWave_11trains_dmax6()
-    plot_DWave_soft_dmax6(no_trains = 11)
+    #plotDWave_2trains_dmax2()
+    #plotDWave_6trains()
+    #plotDWave_11trains_dmax6()
+    #plot_DWave_soft_dmax6(no_trains = 11)
 
     plot2trains_gates_simulations(2.0,4.0)
-    plot_real_live_MLR_2()
 
-    feasibility_percentage()
+    gates_scaling_seq()
 
-    train_diagrams()
+
+    #plot_real_live_MLR_2()
+
+    #embedding()
+
+    #feasibility_percentage()
+
+    #train_diagrams()

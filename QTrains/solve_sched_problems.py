@@ -129,7 +129,7 @@ def approx_no_physical_qbits(q_input, q_pars, p):
 
     solver = DWaveSampler(solver=q_pars.solver)
 
-    __, target_edgelist, target_adjacency = solver.structure
+    __, target_edgelist, _ = solver.structure
 
     emb = find_embedding(Q, target_edgelist, verbose=1)
 

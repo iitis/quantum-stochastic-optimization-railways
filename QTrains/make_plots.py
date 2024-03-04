@@ -11,7 +11,6 @@ def passing_time_histigrams(q_input, q_pars, p, replace_string = ("", "")):
     file = file_hist(q_input, q_pars, p, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
-
     hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
 
     xs = list( range(np.max(hist_pass) + 1) )

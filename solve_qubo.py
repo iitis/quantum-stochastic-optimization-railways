@@ -8,7 +8,7 @@ import numpy as np
 from trains_timetable import Input_qubo
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
-from QTrains import display_prec_feasibility, make_plots_Dwave
+from QTrains import display_prec_feasibility, make_plots_Dwave, approx_no_physical_qbits
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
@@ -55,6 +55,55 @@ def process(q_input, q_pars, p):
             print( f"not working for {file}" )
 
 
+def get_no_physical_qbits(ret_dict, q_input, q_pars, p, trains):
+    """ counts no physical q-bits update dict """
+    no_logical, no_physical = approx_no_physical_qbits(q_input, q_pars, p)
+
+    if q_input.delays != {}:
+        ret_dict[f"{trains}_{q_pars.dmax}_disturbed"] = {"no_logical": no_logical, "no_physical": no_physical} 
+    else:
+        ret_dict[f"{trains}_{q_pars.dmax}_notdisturbed"] = {"no_logical": no_logical, "no_physical": no_physical} 
+
+
+def count_no_qbits(qubo, parameters, p):
+    """ counts no physical q-bits after embedding for 1 - 12 trains """
+    delays_list = [{}, {1:5, 2:2, 4:5}]
+
+    ret_dict = {}
+
+
+    
+    for d in [2,6]:
+        parameters.dmax = d 
+
+        for delays in delays_list:
+
+            qubo.qubo_real_1t(delays)
+            get_no_physical_qbits(ret_dict, qubo, parameters, p, 1)
+
+            qubo.qubo_real_2t(delays)
+            get_no_physical_qbits(ret_dict, qubo, parameters, p, 2)
+
+            qubo.qubo_real_4t(delays)
+            get_no_physical_qbits(ret_dict, qubo, parameters, p, 4)
+
+            qubo.qubo_real_6t(delays)
+            get_no_physical_qbits(ret_dict, qubo, parameters, p, 6)
+
+            qubo.qubo_real_8t(delays)
+            get_no_physical_qbits(ret_dict, qubo, parameters, p, 8)
+
+            qubo.qubo_real_10t(delays)
+            get_no_physical_qbits(ret_dict, qubo, parameters, p, 10)
+
+            qubo.qubo_real_11t(delays)
+            get_no_physical_qbits(ret_dict, qubo, parameters, p, 11)
+
+            qubo.qubo_real_12t(delays)
+            get_no_physical_qbits(ret_dict, qubo, parameters, p, 12)
+
+    return ret_dict
+
 
 
 class Comp_parameters():
@@ -68,7 +117,7 @@ class Comp_parameters():
 
         self.ppair = 2.0
         self.psum = 4.0
-        self.dmax = 10
+        self.dmax = 6
 
         self.method = "sim"
         # for simulated annelaing
@@ -129,6 +178,7 @@ if __name__ == "__main__":
     p.compute = False   # make computations / optimisation
     p.analyze = True    # Analyze results
     sim = False  # simulation of DWave
+    count = True # estimates n.o. physical q-bits
     p.softern_pass = softer_passing_time_constr
 
     our_qubo = Input_qubo()
@@ -147,8 +197,19 @@ if __name__ == "__main__":
             q_par.ppair = 20.0
             q_par.psum = 40.0
             series_of_computation(our_qubo, q_par, p)
+    
+    elif count:
+        q_par.solver = "Advantage_system4.1"
+        no_qbits = count_no_qbits(our_qubo, q_par, p)
+
+        with open("solutions/embedding.json", 'wb') as fp:
+            pickle.dump(no_qbits, fp)
+
+        
+    
     else:
         q_par.method = "real"
+        q_par.solver = "Advantage_system6.3"
         for d_max in [2,6]:
             q_par.dmax = d_max
             for at in [10, 1000]:
