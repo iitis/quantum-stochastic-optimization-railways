@@ -3,7 +3,7 @@ import numpy as np
 import csv
 
 from QTrains import high_excited_state
-from QTrains import plot_title, file_hist, objective_histograms, passing_time_histigrams, train_path_data
+from QTrains import plot_title, file_hist, objective_histograms, energies_histograms, passing_time_histigrams, train_path_data
 from QTrains import get_solutions_from_dmode, best_feasible_state
 from QTrains import file_QUBO_comp, file_QUBO, file_LP_output
 from QTrains import Analyze_qubo
@@ -13,14 +13,14 @@ from solve_qubo import Comp_parameters, Process_parameters
 
 
 
-def csv_write_hist(file_name, hist):
+def csv_write_hist(file_name, hist, key1 = "value", key2 = "count"):
     with open(file_name, 'w', newline='') as csvfile:
-        fieldnames = ['value', 'count']
-        value = hist["value"]
-        count = hist["count"]
+        fieldnames = [key1, key2]
+        value = hist[key1]
+        count = hist[key2]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         for i,v in enumerate(value):
-            writer.writerow({'value': v, 'count': count[i]})
+            writer.writerow({key1: v, key2: count[i]})
 
 
 
@@ -33,6 +33,8 @@ def file4csv(our_qubo, q_par, p):
 
 
 ############# DWave #########
+
+
 
 def plotDWave_2trains_dmax2():
 
@@ -74,6 +76,25 @@ def plotDWave_2trains_dmax2():
     our_title = plot_title(our_qubo, q_par)
     print(f"2 trains, 18 qubits passing time / objective, botom {our_title}")
     print("..............................")
+
+
+    energies = energies_histograms(our_qubo, q_par, p)
+    write_file = write_file.replace("objective", "energies/energies_feasible")
+    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
+    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
+    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
+
+    q_par.ppair = 20.0
+    q_par.psum = 40.0
+
+    write_file = file4csv(our_qubo, q_par, p)
+    energies = energies_histograms(our_qubo, q_par, p)
+    write_file = write_file.replace("qubo", "energies/energies_feasible")
+    print(write_file)
+    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
+    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
+    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
+
 
 
 def plotDWave_6trains():
@@ -591,6 +612,12 @@ def plot2trains_gates_simulations(ppair, psum):
     write_file = write_file.replace("qubo", "objective")
     csv_write_hist(write_file, hist)
 
+    energies = energies_histograms(our_qubo, q_par, p, replace_string = replace_pair)
+    write_file = write_file.replace("objective", "energies/energies_feasible")
+    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
+    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
+    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
+
 
     our_title = plot_title(our_qubo, q_par)
     print(f"Lower panel, eft passing time, right objective, {our_title}")
@@ -815,12 +842,13 @@ def train_diagrams():
 
 
 if __name__ == "__main__":
-    #plotDWave_2trains_dmax2()
+    plotDWave_2trains_dmax2()
     #plotDWave_6trains()
     #plotDWave_11trains_dmax6()
     #plot_DWave_soft_dmax6(no_trains = 11)
 
     plot2trains_gates_simulations(2.0,4.0)
+    plot2trains_gates_simulations(20.0,40.0)
 
     gates_scaling_seq()
 

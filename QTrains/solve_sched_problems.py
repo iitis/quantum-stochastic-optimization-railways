@@ -12,7 +12,7 @@ from minorminer import find_embedding
 
 from .parameters import (Parameters, Railway_input)
 from .LP_problem import (Variables, LinearPrograming)
-from .make_qubo import (QuboVars, Analyze_qubo, update_hist)
+from .make_qubo import (QuboVars, Analyze_qubo, update_hist, is_feasible)
 
 
 ####### make files names and directories, where each step of the solving scheme is saved
@@ -120,6 +120,7 @@ def prepare_qubo(q_input, q_pars, p):
 
 
 def approx_no_physical_qbits(q_input, q_pars, p):
+    """ returns number of logical qbits and approximates number of physical qubits using embeder """
     file = file_QUBO(q_input, q_pars, p)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
@@ -139,9 +140,6 @@ def approx_no_physical_qbits(q_input, q_pars, p):
     no_physical =  len( set(physical_qbits_list) ) 
 
     return no_logical, no_physical
-
-
-
 
 
 
@@ -239,6 +237,9 @@ def analyze_QUBO_outputs(qubo, stations, our_solutions, lp_solution, softernpass
     hist = list([])
     qubo_objectives = list([])
 
+    energy_feasible = list([])
+    energy_notfeasible = list([])
+
     count = 0
     no_feasible = 0
 
@@ -249,9 +250,16 @@ def analyze_QUBO_outputs(qubo, stations, our_solutions, lp_solution, softernpass
             dsiplay_solution_analysis(qubo, solution, lp_solution)
 
         count += 1
-        no_feasible += update_hist(qubo, solution, stations, hist, qubo_objectives, softernpass)
 
-    
+        if is_feasible(solution, qubo, softernpass):
+            no_feasible += 1
+            qubo_objectives.append(qubo.objective_val(solution))
+            energy_feasible.append(qubo.energy(solution))
+            
+            update_hist(qubo, solution, stations, hist, softernpass)
+        else:
+            energy_notfeasible.append(qubo.energy(solution))
+
     perc_feasible = no_feasible/count
 
     results = {"perc feasible": perc_feasible, f"{stations[0]}_{stations[1]}": hist}
@@ -260,6 +268,8 @@ def analyze_QUBO_outputs(qubo, stations, our_solutions, lp_solution, softernpass
     results["lp objective"] = lp_solution["objective"]
     results["q ofset"] = qubo.sum_ofset
     results["qubo objectives"] = qubo_objectives
+    results["energies feasible"] = energy_feasible
+    results["energies notfeasible"] = energy_notfeasible
     return results
 
 ######## gates  #######

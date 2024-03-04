@@ -322,29 +322,24 @@ def test_qubo_vs_LP():
     assert hist == [1.0, 3.0]
 
     hist_list = list([])
-    qubo_objective = list([1.0])
-    feasible = update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, qubo_objective)
+    update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list)
 
     assert hist_list == [1.0, 3.0]
-    assert qubo_objective == [1.0, 1.0]
-    assert bool(feasible)
+    assert bool(is_feasible(solution, qubo_to_analyze))
 
     hist_list = list([])
-    qubo_objective = list([])
-    feasible = update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, qubo_objective, softern_pass_t = True)
+    update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, softern_pass_t = True)
 
     assert hist_list == [1.0, 3.0]
-    assert qubo_objective == [1.0]
-    assert bool(feasible)
+    assert bool(is_feasible(solution, qubo_to_analyze, softern_pass_t = True))
 
     solution = [0,1,0,1,0,0,1,0,0,0,0,1]
     hist_list = list([])
-    qubo_objective = list([])
-    feasible = update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, qubo_objective, softern_pass_t = True)
+    update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, softern_pass_t = True)
 
     assert hist_list == [0.0, 3.0]
-    assert qubo_objective == [1.0]
-    assert bool(feasible)
+    assert qubo_to_analyze.objective_val(solution) == 1.0
+    assert bool(is_feasible(solution, qubo_to_analyze, softern_pass_t = True))
 
 
     # LP
@@ -393,11 +388,11 @@ def test_qubo_vs_LP():
     assert vq['t_B_1'].value == 3
     assert vq['t_B_3'].value == 5
 
-    feasible = update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list, qubo_objective)
+    update_hist(qubo_to_analyze, solution, ["A", "B"], hist_list)
 
     assert hist_list == [2.0, 2.0]
-    assert qubo_objective == [1.0]
-    assert bool(feasible)
+    assert qubo_to_analyze.objective_val(solution) == 1.0
+    assert bool(is_feasible(solution, qubo_to_analyze))
 
 
 

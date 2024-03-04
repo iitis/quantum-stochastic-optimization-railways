@@ -6,7 +6,7 @@ from QTrains import Analyze_qubo
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
 from QTrains import display_prec_feasibility, make_plots_Dwave
-from QTrains import plot_title, _ax_hist_passing_times, _ax_objective, passing_time_histigrams, objective_histograms
+from QTrains import plot_title, _ax_hist_passing_times, _ax_objective, passing_time_histigrams, objective_histograms, energies_histograms
 from QTrains import analyze_QUBO_outputs, get_solutions_from_dmode, approx_no_physical_qbits
 from QTrains import save_qubo_4gates_comp, plot_hist_gates
 from QTrains import first_with_given_objective
@@ -241,6 +241,19 @@ def test_qubo_analysis():
     test_list.sort(reverse=True)
     assert histogram_pass[12:17]==test_list  # decreasing histogram
 
+
+    hist_e = energies_histograms(q_input, q_pars, p)
+    hist_o = objective_histograms(q_input, q_pars, p)
+    hist_p = passing_time_histigrams(q_input, q_pars, p)
+
+    assert hist_e["ground_state"] == -20
+    assert np.min(hist_e["feasible_value"]) == -20
+    assert sum(hist_e["feasible_count"]) + sum(hist_e["notfeasible_count"]) == 1000
+    assert hist_o["ground_state"] == 0
+    assert sum(hist_e["feasible_count"]) == sum(hist_o["count"])
+    assert sum(hist_p["count"]) == 2*sum(hist_o["count"])
+
+
 def test_plotting():
     q_input = Input_qubo()
     q_input.qubo1()
@@ -261,11 +274,15 @@ def test_auxiliaty_plotting_functions():
     plot_tit = plot_title(q_input, q_pars)
     assert plot_tit == "Not disturbed, sim, ppair=2, psum=4"
 
-    fig, ax = plt.subplots(figsize=(4, 3))
-    hist = objective_histograms(q_input, q_pars, p)
-    _ax_objective(ax, hist)
-    hist = passing_time_histigrams(q_input, q_pars, p)
-    _ax_hist_passing_times(ax, hist)
+    hist_o = objective_histograms(q_input, q_pars, p)
+    hist_p = passing_time_histigrams(q_input, q_pars, p)
+
+
+    _, ax = plt.subplots(figsize=(4, 3))
+    
+    _ax_objective(ax, hist_o)
+    
+    _ax_hist_passing_times(ax, hist_p)
     plt.clf()
 
 
@@ -295,7 +312,8 @@ def test_gates():
 
     assert ret == {'perc feasible': 1.0, 'MR_CS': [12, 12], 'no qubits': 30,
                    'no qubo terms': 306, 'lp objective': 0.0,
-                   'q ofset': 20.0, 'qubo objectives': [0.0]}
+                   'q ofset': 20.0, 'qubo objectives': [0.0],
+                   'energies feasible': [-Q.sum_ofset], 'energies notfeasible': []}
     
 
     save_qubo_4gates_comp(dict_read, all_solutions, "QUBOs/qubo1_ground.json")
@@ -311,4 +329,9 @@ def test_gates():
     replace_pair = ("qubo_1_5_2.0_4.0.json", "qubo_1_5_2.0_4.0_sim_1000_0.001_500.json")
     
     plot_hist_gates(q_pars, q_input, p, file_pass= "histograms/test_pass.pdf", file_obj="histograms/test_obj.pdf", replace_pair = replace_pair)
+
+
+    hist_e = energies_histograms(q_input, q_pars, p, replace_pair)
+    assert hist_e['ground_state'] == -20.0
+
 

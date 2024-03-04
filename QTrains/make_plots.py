@@ -40,6 +40,29 @@ def objective_histograms(q_input, q_pars, p, replace_string = ("", "")):
     return hist
 
 
+def energies_histograms(q_input, q_pars, p, replace_string = ("", "")):
+    """ returns dict histogram of energies, feasible and not feasible"""
+    file = file_hist(q_input, q_pars, p, replace_string)
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+
+    hist_feas = results["energies feasible"]
+    hist_notfeas = results["energies notfeasible"]
+    ground = results["lp objective"] - results["q ofset"]
+
+    xs_f = list(set(hist_feas))
+    xs_f = np.sort(xs_f)
+    ys_f = [hist_feas.count(x) for x in xs_f]
+
+    xs_nf = list(set(hist_notfeas))
+    xs_nf = np.sort(xs_nf)
+    ys_nf = [hist_notfeas.count(x) for x in xs_nf]
+
+    hist = {"feasible_value":list(xs_f), "feasible_count":ys_f, "notfeasible_value":list(xs_nf), "notfeasible_count":ys_nf, "ground_state":ground}
+
+    return hist
+
+
 ##### plots
 
 def plot_title(q_input, q_pars):

@@ -384,9 +384,9 @@ def hist_passing_times(sol, stations, qubo):
     return list(time_differences)
 
 
-def update_hist(qubo, sol_q, stations, hist, qubo_objective, softern_pass_t = False):
+def update_hist(qubo, sol_q, stations, hist, softern_pass_t = False):
     """ 
-    update histogram of differences computed by hist_passing_times given solution of:
+    update histogram of passing times between stations:
     - qubo - sol_q
     - ILP - sol_ilp
     and qubo Analyze_qubo object
@@ -395,15 +395,13 @@ def update_hist(qubo, sol_q, stations, hist, qubo_objective, softern_pass_t = Fa
     if softern_pass_t - passing time constrain is not considered
     """
     if is_feasible(sol_q, qubo, softern_pass_t):
-        q_objective = qubo.objective_val(sol_q)
-
+        
         vq = qubo.qubo2int_vars(sol_q)
         h = hist_passing_times(vq, stations, qubo)
         hist.extend( h )
-        qubo_objective.append( q_objective )
 
-        return 1
-    return 0
+
+
 
 
 #######   functions foltering series of solutions #######

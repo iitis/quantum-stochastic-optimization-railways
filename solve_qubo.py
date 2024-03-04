@@ -178,7 +178,7 @@ if __name__ == "__main__":
     p.compute = False   # make computations / optimisation
     p.analyze = True    # Analyze results
     sim = False  # simulation of DWave
-    count = True # estimates n.o. physical q-bits
+    count = False # estimates n.o. physical q-bits
     p.softern_pass = softer_passing_time_constr
 
     our_qubo = Input_qubo()
@@ -205,7 +205,6 @@ if __name__ == "__main__":
         with open("solutions/embedding.json", 'wb') as fp:
             pickle.dump(no_qbits, fp)
 
-        
     
     else:
         q_par.method = "real"
