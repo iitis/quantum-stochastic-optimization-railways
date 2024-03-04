@@ -7,7 +7,7 @@ from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
 from QTrains import display_prec_feasibility, make_plots_Dwave
 from QTrains import plot_title, _ax_hist_passing_times, _ax_objective, passing_time_histigrams, objective_histograms
-from QTrains import analyze_QUBO_outputs, get_solutions_from_dmode
+from QTrains import analyze_QUBO_outputs, get_solutions_from_dmode, approx_no_physical_qbits
 from QTrains import save_qubo_4gates_comp, plot_hist_gates
 from QTrains import first_with_given_objective
 
@@ -155,6 +155,7 @@ def test_solving_QUBO():
 
     solve_qubo(q_input, q_pars, p)
 
+
     file = file_QUBO(q_input, q_pars, p)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
@@ -187,6 +188,12 @@ def test_solving_QUBO():
 
     sol = first_with_given_objective(sols, qubo_to_analyze, lp_sol["objective"])
     assert qubo_to_analyze.objective_val(sol) == objective
+
+    q_pars.solver = ""
+    no_logical, no_physical = approx_no_physical_qbits(q_input, q_pars, p)
+    assert qubo_to_analyze.noqubits == no_logical
+    assert no_physical > 50
+
 
 
 

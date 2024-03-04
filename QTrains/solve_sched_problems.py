@@ -1,10 +1,13 @@
 import pickle
+import itertools
 from scipy.optimize import linprog
 import neal
 from dwave.system import (
     EmbeddingComposite,
     DWaveSampler
 )
+from dwave.system.composites import FixedEmbeddingComposite
+from minorminer import find_embedding
 
 
 from .parameters import (Parameters, Railway_input)
@@ -114,6 +117,32 @@ def prepare_qubo(q_input, q_pars, p):
     file = file_QUBO(q_input, q_pars, p)
     with open(file, 'wb') as fp:
         pickle.dump(qubo_dict, fp)
+
+
+def approx_no_physical_qbits(q_input, q_pars, p):
+    file = file_QUBO(q_input, q_pars, p)
+    with open(file, 'rb') as fp:
+        dict_read = pickle.load(fp)
+
+    qubo_to_analyze = Analyze_qubo(dict_read)
+    Q = qubo_to_analyze.qubo
+
+    solver = DWaveSampler(solver=q_pars.solver)
+
+    __, target_edgelist, target_adjacency = solver.structure
+
+    emb = find_embedding(Q, target_edgelist, verbose=1)
+
+    no_logical = len(emb.keys())
+    physical_qbits_lists = list(emb.values())
+    physical_qbits_list = list(itertools.chain(*physical_qbits_lists))
+    no_physical =  len( set(physical_qbits_list) ) 
+
+    return no_logical, no_physical
+
+
+
+
 
 
 def solve_qubo(q_input, q_pars, p):
