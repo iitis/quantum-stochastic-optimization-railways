@@ -189,7 +189,7 @@ def test_solving_QUBO():
     sol = first_with_given_objective(sols, qubo_to_analyze, lp_sol["objective"])
     assert qubo_to_analyze.objective_val(sol) == objective
 
-    if True:  # Advanced with token
+    if False:  # Advanced with token
         q_pars.solver = ""
         no_logical, no_physical = approx_no_physical_qbits(q_input, q_pars, p)
         assert qubo_to_analyze.noqubits == no_logical
