@@ -221,7 +221,7 @@ def analyze_qubo_Dwave(q_input, q_pars, p):
 
     our_solutions = get_solutions_from_dmode(samplesets, q_pars)
 
-    results = analyze_QUBO_outputs(qubo_to_analyze, stations, our_solutions, lp_sol, softernpass = False)
+    results = analyze_QUBO_outputs(qubo_to_analyze, stations, our_solutions, lp_sol, softernpass = p.softern_pass)
 
 
     file =  file_hist(q_input, q_pars, p)
