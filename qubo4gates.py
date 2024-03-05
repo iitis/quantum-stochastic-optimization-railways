@@ -50,9 +50,11 @@ def save_QUBO(input4qubo, q_pars, p):
     Q = Analyze_qubo(dict_read)
     qubo_solution = Q.int_vars2qubo(lp_sol["variables"])
     ground_solutions = Q.heuristics_degenerate(qubo_solution, "PS")
-    print( ground_solutions )
+
     save_qubo_4gates_comp(dict_read, ground_solutions, file_q)
-    _ = analyze_QUBO_outputs(Q, input4qubo.objective_stations, ground_solutions, lp_sol, p.softern_pass)
+    results = analyze_QUBO_outputs(Q, input4qubo.objective_stations, ground_solutions, lp_sol, p.softern_pass)
+    print("no qbits", results["no qubits"])
+    print("objective optimal", results["lp objective"])
     
 
 
@@ -99,14 +101,17 @@ if __name__ == "__main__":
 
     # these are tunable
     small_sample = False
-    save_qubo = False
+    save_qubo = True
     no_trains = 2
 
 
     if no_trains == 1:
         delays = [{}]
         all_dmax = [2,4,6]
-    else:
+    elif no_trains == 2:
+        delays = [{}, {1:5, 2:2, 4:5}]
+        all_dmax = [2,6]
+    elif no_trains == 4:
         delays = [{}, {1:5, 2:2, 4:5}]
         all_dmax = [2]
 
@@ -116,8 +121,10 @@ if __name__ == "__main__":
 
                 if no_trains == 1:
                     input4qubo.qubo_real_1t(delay)
-                else:
+                elif no_trains == 2:
                     input4qubo.qubo_real_2t(delay)
+                elif no_trains == 4:
+                    input4qubo.qubo_real_4t(delay)
 
                 if save_qubo:
                     save_QUBO(input4qubo, q_pars, p)

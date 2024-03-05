@@ -170,7 +170,7 @@ def series_of_computation(qubo, parameters, p):
 
 
 if __name__ == "__main__":
-    softer_passing_time_constr = False
+    softer_passing_time_constr = True
 
     p = Process_parameters()
 

@@ -155,13 +155,13 @@ def plotDWave_6trains():
 
 
 
-def plotDWave_11trains_dmax6():
+def plotDWave_11trains_hist(dmax = 6):
 
     p = Process_parameters()
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
     q_par.method = "real"
-    q_par.dmax = 6
+    q_par.dmax = dmax
     q_par.ppair = 2.0
     q_par.psum = 4.0
     delays_list = [{}, {1:5, 2:2, 4:5}]
@@ -177,7 +177,6 @@ def plotDWave_11trains_dmax6():
 
 
     q_par.annealing_time = 1000
-    our_qubo.qubo_real_11t(delays_list[0])
     hist = passing_time_histigrams(our_qubo, q_par, p)
     write_file = file4csv(our_qubo, q_par, p)
     csv_write_hist(write_file, hist)
@@ -193,14 +192,47 @@ def plotDWave_11trains_dmax6():
     our_title = plot_title(our_qubo, q_par)
     print(f"11 trains bottom left, {our_title}")
 
+    energies = energies_histograms(our_qubo, q_par, p)
+    write_file = write_file.replace("qubo", "energies/energies_feasible")
+    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
+    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
+    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
+
 
     q_par.annealing_time = 1000
-    our_qubo.qubo_real_11t(delays_list[1])
     hist = passing_time_histigrams(our_qubo, q_par, p)
     write_file = file4csv(our_qubo, q_par, p)
     csv_write_hist(write_file, hist)
     print(f"11 trains bottom right, {our_title}")
     print(".............................")
+
+    energies = energies_histograms(our_qubo, q_par, p)
+    write_file = write_file.replace("qubo", "energies/energies_feasible")
+    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
+    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
+    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
+
+
+    q_par.ppair = 20.0
+    q_par.psum = 40.0
+    q_par.annealing_time = 10
+    energies = energies_histograms(our_qubo, q_par, p)
+    write_file = file4csv(our_qubo, q_par, p)
+    write_file = write_file.replace("qubo", "energies/energies_feasible")
+    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
+    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
+    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
+
+    q_par.annealing_time = 1000
+    energies = energies_histograms(our_qubo, q_par, p)
+    write_file = write_file.replace("qubo", "energies/energies_feasible")
+    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
+    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
+    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
+
+
+
+
 
 
 
@@ -844,7 +876,8 @@ def train_diagrams():
 if __name__ == "__main__":
     plotDWave_2trains_dmax2()
     #plotDWave_6trains()
-    #plotDWave_11trains_dmax6()
+    plotDWave_11trains_hist(dmax = 2)
+    plotDWave_11trains_hist(dmax = 6)
     #plot_DWave_soft_dmax6(no_trains = 11)
 
     plot2trains_gates_simulations(2.0,4.0)
