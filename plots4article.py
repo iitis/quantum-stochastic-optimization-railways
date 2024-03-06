@@ -10,6 +10,8 @@ from QTrains import Analyze_qubo
 from trains_timetable import Input_qubo
 from solve_qubo import Comp_parameters, Process_parameters
 
+from qubo4gates import gate_specifics_str, get_files_dirs
+
 
 
 
@@ -24,11 +26,14 @@ def csv_write_hist(file_name, hist, key1 = "value", key2 = "count"):
 
 
 
-def file4csv(our_qubo, q_par, p):
+def file4csv(our_qubo, q_par, p, layers = 1):
     write_file = file_hist(our_qubo, q_par, p)
     write_file = write_file.replace("histograms/LR_timetable/", "article_plots/")
     write_file = write_file.replace("histograms_soft/LR_timetable/", "article_plots/")
-    write_file = write_file.replace(".json", ".csv")
+    if q_par.method == "real":
+        write_file = write_file.replace(".json", ".csv")
+    else:
+        write_file = write_file.replace(".json", f"_{q_par.method}_{layers}layers.csv")
     return write_file
 
 
@@ -229,8 +234,6 @@ def plotDWave_11trains_hist(dmax = 6):
     csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
     write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
     csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
-
-
 
 
 
@@ -584,20 +587,8 @@ def embedding():
 ####################  GATES  ########################
 
 
-def data_string_gates(q_par, delays):
-    """  this ir rough encodung, will be expanded """
-    if q_par.ppair == 2.0 and q_par.psum == 4.0 and delays == {}:
-        return "summary.53."
-    if q_par.ppair == 20.0 and q_par.psum == 40.0 and delays == {}:
-        return "summary.51."
-    if q_par.ppair == 2.0 and q_par.psum == 4.0 and delays == {1:5, 2:2, 4:5}:
-        return "summary.51."
-    if q_par.ppair == 20.0 and q_par.psum == 40.0 and delays == {1:5, 2:2, 4:5}:
-        return "summary.50."
-    
 
-
-def plot2trains_gates_simulations(ppair, psum):
+def plot2trains_gates_simulations(ppair, psum, nolayers):
     p = Process_parameters()
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
@@ -616,14 +607,16 @@ def plot2trains_gates_simulations(ppair, psum):
 
     delays = delays_list[0]
     our_qubo.qubo_real_2t(delays)
-    comp_specifics_string = data_string_gates(q_par, delays)
-    replace_pair = ("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics_string}")
+    data_file = "QAOA Results/IonQ Simulations/"
+
+
+    cs1, csh = get_files_dirs(our_qubo, q_par, data_file, nolayers)
     
-    hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = replace_pair)
-    write_file = file4csv(our_qubo, q_par, p)
+    hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = csh)
+    write_file = file4csv(our_qubo, q_par, p, nolayers)
     csv_write_hist(write_file, hist)
 
-    hist = objective_histograms(our_qubo, q_par, p, replace_string = replace_pair)
+    hist = objective_histograms(our_qubo, q_par, p, replace_string = csh)
     write_file = write_file.replace("qubo", "objective")
     csv_write_hist(write_file, hist)
 
@@ -633,18 +626,17 @@ def plot2trains_gates_simulations(ppair, psum):
 
     delays = delays_list[1]
     our_qubo.qubo_real_2t(delays)
-    comp_specifics_string = data_string_gates(q_par, delays)
-    replace_pair = ("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics_string}")
+    cs1, csh = get_files_dirs(our_qubo, q_par, data_file, nolayers)
 
-    hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = replace_pair)
-    write_file = file4csv(our_qubo, q_par, p)
+    hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = csh)
+    write_file = file4csv(our_qubo, q_par, p, nolayers)
     csv_write_hist(write_file, hist)
 
-    hist = objective_histograms(our_qubo, q_par, p, replace_string = replace_pair)
+    hist = objective_histograms(our_qubo, q_par, p, replace_string = csh)
     write_file = write_file.replace("qubo", "objective")
     csv_write_hist(write_file, hist)
 
-    energies = energies_histograms(our_qubo, q_par, p, replace_string = replace_pair)
+    energies = energies_histograms(our_qubo, q_par, p, replace_string = csh)
     write_file = write_file.replace("objective", "energies/energies_feasible")
     csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
     write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
@@ -657,12 +649,13 @@ def plot2trains_gates_simulations(ppair, psum):
 
 
 
-def csv_file_scaling(q_par, delay):
+def csv_file_scaling_gates(q_par, delay, layers):
     if delay == {}:
         disturbed = "no"
     else:
         disturbed = "disturbed"
-    file = f"article_plots/gates_scaling/qubo_{q_par.method}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
+
+    file = f"article_plots/gates_scaling/qubo_{layers}layer_{q_par.method}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
 
     return file
 
@@ -676,41 +669,96 @@ def csv_write_gates_scaling(file, d):
             writer.writerow({'size': v, 'perc': perc[i]})
 
 
-def gates_scaling(delays, ppair, psum):
+def gates_scalling_update(d, our_qubo, q_par, p, data_file, nolayers):
+
+    cs1, csh = get_files_dirs(our_qubo, q_par, data_file, nolayers)
+    file = file_hist(our_qubo, q_par, p, replace_pair = csh)
+    with open(file, 'rb') as fp:
+        results = pickle.load(fp)
+    d["no qubits"].append(results['no qubits']),
+    d["perc_feasible"].append(results['perc feasible'])
+
+
+def gates_scaling_IonQ(delays, ppair, psum, nolayers):
     p = Process_parameters()
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
 
     print("IonQ simulation, 2 trains 18 qbits")
 
-
-    q_par.method = "IonQsim"
-    q_par.dmax = 2
     q_par.ppair = ppair
     q_par.psum = psum
+    q_par.method = "IonQsim"
+    data_file = "QAOA Results/IonQ Simulations/"
 
+    d = {"no qubits": [], "perc_feasible": []}
+
+    if delays == {}:
+
+        q_par.dmax = 2
+        our_qubo.qubo_real_1t(delays)
+        gates_scalling_update(d, our_qubo, q_par, p, data_file, nolayers)
+
+        q_par.dmax = 4
+        our_qubo.qubo_real_1t(delays)
+        gates_scalling_update(d, our_qubo, q_par, p, data_file, nolayers)
+
+        q_par.dmax = 6
+        our_qubo.qubo_real_1t(delays)
+        gates_scalling_update(d, our_qubo, q_par, p, data_file, nolayers)
+    
+    q_par.dmax = 2
     our_qubo.qubo_real_2t(delays)
-    comp_specifics_string = data_string_gates(q_par, delays)
-    replace_pair = ("2trains/", f"2trains_IonQSimulatorResults_18_Qubits/{comp_specifics_string}")
+    gates_scalling_update(d, our_qubo, q_par, p, data_file, nolayers)
 
-    file = file_hist(our_qubo, q_par, p, replace_pair = replace_pair)
-    with open(file, 'rb') as fp:
-        results = pickle.load(fp)
+    # TODO for larger ...
 
-    d = {"no qubits": [results['no qubits']], "perc_feasible": [results['perc feasible']]}
-    file = csv_file_scaling(q_par, delays)
+    file = csv_file_scaling_gates(q_par, delays, nolayers)
     csv_write_gates_scaling(file, d)
 
 
-def gates_scaling_seq():
+def gates_scaling_IBM(ppair, psum, nolayers):
+    p = Process_parameters()
+    our_qubo = Input_qubo()
+    q_par = Comp_parameters()
+
+    print("IonQ simulation, 2 trains 18 qbits")
+
+    q_par.ppair = ppair
+    q_par.psum = psum
+    q_par.method = "IBMsim"
+    data_file = "QAOA Results/IBM Simulations/"
+
+    d = {"no qubits": [], "perc_feasible": []}
+    delays = {}
+
+    q_par.dmax = 2
+    our_qubo.qubo_real_1t(delays)
+    gates_scalling_update(d, our_qubo, q_par, p, data_file, nolayers)
+
+    q_par.dmax = 4
+    our_qubo.qubo_real_1t(delays)
+    gates_scalling_update(d, our_qubo, q_par, p, data_file, nolayers)
+
+    q_par.dmax = 6
+    our_qubo.qubo_real_1t(delays)
+    gates_scalling_update(d, our_qubo, q_par, p, data_file, nolayers)
+    
+    # TODO for larger ...
+
+    file = csv_file_scaling_gates(q_par, delays, nolayers)
+    csv_write_gates_scaling(file, d)
+
+
+def gates_scaling_IonQ_seq(layers=1):
 
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
-    gates_scaling(delays_list[0], 2.0, 4.0)
-    gates_scaling(delays_list[1], 2.0, 4.0)
+    gates_scaling_IonQ(delays_list[0], 2.0, 4.0, layers)
+    gates_scaling_IonQ(delays_list[1], 2.0, 4.0, layers)
 
-    gates_scaling(delays_list[0], 20.0, 40.0)
-    gates_scaling(delays_list[1], 20.0, 40.0)
+    gates_scaling_IonQ(delays_list[0], 20.0, 40.0, layers)
+    gates_scaling_IonQ(delays_list[1], 20.0, 40.0, layers)
 
 
 
@@ -878,15 +926,21 @@ if __name__ == "__main__":
     #plotDWave_6trains()
     plotDWave_11trains_hist(dmax = 2)
     plotDWave_11trains_hist(dmax = 6)
-    #plot_DWave_soft_dmax6(no_trains = 11)
+    plot_DWave_soft_dmax6(no_trains = 11)
 
-    plot2trains_gates_simulations(2.0,4.0)
-    plot2trains_gates_simulations(20.0,40.0)
+    plot2trains_gates_simulations(2.0,4.0, 1)
+    plot2trains_gates_simulations(20.0,40.0, 1)
 
-    gates_scaling_seq()
+    plot2trains_gates_simulations(2.0,4.0, 2)
+    plot2trains_gates_simulations(20.0,40.0, 2)
+
+    gates_scaling_IonQ_seq()
+
+    gates_scaling_IBM(2.0,4.0, 1)
+    gates_scaling_IBM(20.0,40.0, 1)
 
 
-    #plot_real_live_MLR_2()
+    plot_real_live_MLR_2()
 
     #embedding()
 
