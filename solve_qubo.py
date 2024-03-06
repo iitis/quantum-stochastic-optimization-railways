@@ -16,8 +16,6 @@ plt.rc('font', size=10)
 
 
 
-
-
 def plot_hist(q_input, q_pars, p):
     """ plot histograms of trains passing time from results from QUBO """
 
