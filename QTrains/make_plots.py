@@ -72,7 +72,7 @@ def plot_title(q_input, q_pars):
     else:
         disturbed = "Disturbed"
     if q_pars.method == "real":
-        tit = f"{disturbed}, at={q_pars.annealing_time}$\mu$s, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
+        tit = f"{disturbed}, at={q_pars.annealing_time} mili seconds, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
     else:
         tit = f"{disturbed}, {q_pars.method}, ppair={round(q_pars.ppair)}, psum={round(q_pars.psum)}"
     return tit
