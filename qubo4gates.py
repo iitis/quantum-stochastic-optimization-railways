@@ -1,6 +1,5 @@
 """ prepare and analyze small qubos for gate computiong """
-import pickle
-import pandas as pd
+import gzip, pickle
 import json
 import matplotlib.pyplot as plt
 import argparse
@@ -51,11 +50,11 @@ def gate_specifics_str(q_pars, input4qubo, nolayers=1):
         return "summary.50."
     
     if q_pars.method == "IonQreal":
-        return "result.ionq-qpu-aria."
+        return ""
     if q_pars.method == "IBMsim":
         return "summary.IBM.5."
     if q_pars.method == "IBMreal":
-        return "result.0.ibm-qpu-brisbane."
+        return ""
 
 
 def get_files_dirs(input4qubo, q_pars, data_file, nolayers):
@@ -73,6 +72,17 @@ def get_files_dirs(input4qubo, q_pars, data_file, nolayers):
     replace_pairh = (trains_folder, f"{data_file}{trains_folder}{comp_specifics_string}")
     
     return replace_pair, replace_pairh
+
+
+def read_aria_summary(input4qubo, q_pars, p, replace_pair):
+    our_key = file_QUBO_comp(input4qubo, q_pars, p, (replace_pair[0], ""))
+    our_key = our_key.replace(".json", "")
+
+    file_comp = f"{args.datafile}expt.ionq-qpu-aria.all.json"
+    file_m = open(file_comp)
+    solutions_input = file_m.read()
+
+    print(solutions_input)
 
 
 def save_QUBO(input4qubo, q_pars, p):
@@ -103,44 +113,37 @@ def analyze_and_plot_hists(args, input4qubo, q_pars, p):
     file_comp = file_QUBO_comp(input4qubo, q_pars, p, replace_pair)  
     file_h = file_hist(input4qubo, q_pars, p, replace_pairh)
 
-    if "IonQ Aria Experiments" in args.datafile or "IBM Brisbane Experiments" in args.datafile:
-        file_comp = file_comp.replace(".json", ".json.pkl")
+    if "IonQ Aria Experiments" in args.datafile:
+        solutions_input = read_aria_summary(input4qubo, q_pars, p, replace_pair)
 
-        # TODO this does not work for now
-
-        solutions_input = pd.read_pickle(file_comp)
-
-        with open(file_comp, "rb") as fp:
-            solutions_input = pickle.load(fp)
     else:
 
         with open(file_comp, 'r') as fp:
             solutions_input = json.load(fp)
 
 
+        file = file_LP_output(input4qubo, q_pars, p)
+        with open(file, 'rb') as fp:
+            lp_sol = pickle.load(fp)
+                
+        file_q = file_QUBO(input4qubo, q_pars, p)
+        print(file_q)
+        with open(file_q, 'rb') as fp:
+            dict_read = pickle.load(fp)
+        Q = Analyze_qubo(dict_read)
 
-    file = file_LP_output(input4qubo, q_pars, p)
-    with open(file, 'rb') as fp:
-        lp_sol = pickle.load(fp)
-            
-    file_q = file_QUBO(input4qubo, q_pars, p)
-    print(file_q)
-    with open(file_q, 'rb') as fp:
-        dict_read = pickle.load(fp)
-    Q = Analyze_qubo(dict_read)
+        solutions = [sol["vars"] for sol in solutions_input]
+        print([sol["energy"] for sol in solutions_input])
 
-    solutions = [sol["vars"] for sol in solutions_input]
-    print([sol["energy"] for sol in solutions_input])
+        results = analyze_QUBO_outputs(Q, input4qubo.objective_stations, solutions, lp_sol, p.softern_pass)
 
-    results = analyze_QUBO_outputs(Q, input4qubo.objective_stations, solutions, lp_sol, p.softern_pass)
+        with open(file_h, 'wb') as fp:
+            pickle.dump(results, fp)
 
-    with open(file_h, 'wb') as fp:
-        pickle.dump(results, fp)
-
-    file_h = file_h.replace(".json", "_")
-    file_pass = f"{file_h}time_hists.pdf"
-    file_obj = f"{file_h}obj.pdf"            
-    plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pairh)
+        file_h = file_h.replace(".json", "_")
+        file_pass = f"{file_h}time_hists.pdf"
+        file_obj = f"{file_h}obj.pdf"            
+        plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pairh)
 
 
 if __name__ == "__main__":
@@ -184,11 +187,10 @@ if __name__ == "__main__":
     if "IonQ Simulations" in args.datafile:
         q_pars.method = "IonQsim"
     elif "IonQ Aria Experiments" in args.datafile:
-        q_pars.method = "IonQreal"
+        q_pars.method = "IonQsim"
     elif "IBM Simulations" in args.datafile:
         q_pars.method = "IBMsim"
-    elif "IBM Brisbane Experiments" in args.datafile:
-        q_pars.method = "IBMreal"
+
     
     
     p = Process_parameters()
