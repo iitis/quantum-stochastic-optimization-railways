@@ -197,7 +197,7 @@ if __name__ == "__main__":
         all_dmax = [2,4,6]
     elif no_trains == 2:
         delays = [{}, {1:5, 2:2, 4:5}]
-        all_dmax = [2]  # TODO here we can add 6 later on
+        all_dmax = [2,3]  # TODO here we can add 6 later on
     elif no_trains == 4:
         delays = [{}, {1:5, 2:2, 4:5}]
         all_dmax = [2]
