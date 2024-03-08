@@ -78,10 +78,15 @@ def read_aria_summary(input4qubo, q_pars, p, replace_pair):
     our_key = our_key.replace(".json", "")
 
     file_comp = f"{args.datafile}expt.ionq-qpu-aria.all.json"
-    file_m = open(file_comp)
-    solutions_input = file_m.read()
 
-    print(solutions_input)
+    with open(file_comp) as f:
+        expt_results = json.load(f)
+
+    for result in expt_results:
+        if result['qubo_name'] == our_key:
+            return [result]
+    return []
+
 
 
 def save_QUBO(input4qubo, q_pars, p):
@@ -121,27 +126,28 @@ def analyze_and_plot_hists(args, input4qubo, q_pars, p):
         with open(file_comp, 'r') as fp:
             solutions_input = json.load(fp)
 
-        file = file_LP_output(input4qubo, q_pars, p)
-        with open(file, 'rb') as fp:
-            lp_sol = pickle.load(fp)
+
+    file = file_LP_output(input4qubo, q_pars, p)
+    with open(file, 'rb') as fp:
+        lp_sol = pickle.load(fp)
                     
-        file_q = file_QUBO(input4qubo, q_pars, p)
-        with open(file_q, 'rb') as fp:
-            dict_read = pickle.load(fp)
-        Q = Analyze_qubo(dict_read)
+    file_q = file_QUBO(input4qubo, q_pars, p)
+    with open(file_q, 'rb') as fp:
+        dict_read = pickle.load(fp)
+    Q = Analyze_qubo(dict_read)
 
-        solutions = [sol["vars"] for sol in solutions_input]
-        print([sol["energy"] for sol in solutions_input])
+    solutions = [sol["vars"] for sol in solutions_input]
+    print([sol["energy"] for sol in solutions_input])
 
-        results = analyze_QUBO_outputs(Q, input4qubo.objective_stations, solutions, lp_sol, p.softern_pass)
+    results = analyze_QUBO_outputs(Q, input4qubo.objective_stations, solutions, lp_sol, p.softern_pass)
 
-        with open(file_h, 'wb') as fp:
-            pickle.dump(results, fp)
+    with open(file_h, 'wb') as fp:
+        pickle.dump(results, fp)
 
-        file_h = file_h.replace(".json", "_")
-        file_pass = f"{file_h}time_hists.pdf"
-        file_obj = f"{file_h}obj.pdf"            
-        plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pairh)
+    file_h = file_h.replace(".json", "_")
+    file_pass = f"{file_h}time_hists.pdf"
+    file_obj = f"{file_h}obj.pdf"            
+    plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pairh)
 
 
 if __name__ == "__main__":
@@ -197,7 +203,7 @@ if __name__ == "__main__":
         all_dmax = [2,4,6]
     elif no_trains == 2:
         delays = [{}, {1:5, 2:2, 4:5}]
-        all_dmax = [2,3]  # TODO here we can add 6 later on
+        all_dmax = [2] # TODO 3 can be added it there are these data 
     elif no_trains == 4:
         delays = [{}, {1:5, 2:2, 4:5}]
         all_dmax = [2]
@@ -216,7 +222,10 @@ if __name__ == "__main__":
                 if args.savequbo:
                     save_QUBO(input4qubo, q_pars, p)
                 else:
-                    analyze_and_plot_hists(args, input4qubo, q_pars, p)
+                    try:
+                        analyze_and_plot_hists(args, input4qubo, q_pars, p)
+                    except:
+                        print(f" does not work {q_pars.method}_notrains={input4qubo.notrains}_ppair={q_pars.ppair}_psum={q_pars.psum}_dmax={q_pars.dmax}_delay={input4qubo.delays}")
 
 
 
