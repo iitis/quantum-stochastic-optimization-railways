@@ -142,30 +142,29 @@ def series_of_computation(qubo, parameters, p):
 
     for delays in delays_list:
 
-        #qubo.qubo_real_1t(delays)
-        #process(qubo, parameters,p)
+        qubo.qubo_real_1t(delays)
+        process(qubo, parameters,p)
 
         qubo.qubo_real_2t(delays)
         process(qubo, parameters,p)
 
-        
-        #qubo.qubo_real_4t(delays)
-        #process(qubo, parameters,p)
+        qubo.qubo_real_4t(delays)
+        process(qubo, parameters,p)
 
-        #qubo.qubo_real_6t(delays)
-        #process(qubo, parameters,p)
+        qubo.qubo_real_6t(delays)
+        process(qubo, parameters,p)
 
-        #qubo.qubo_real_8t(delays)
-        #process(qubo, parameters,p)
+        qubo.qubo_real_8t(delays)
+        process(qubo, parameters,p)
 
-        #qubo.qubo_real_10t(delays)
-        #process(qubo, parameters,p)
+        qubo.qubo_real_10t(delays)
+        process(qubo, parameters,p)
 
-        #qubo.qubo_real_11t(delays)
-        #process(qubo, parameters,p)
+        qubo.qubo_real_11t(delays)
+        process(qubo, parameters,p)
 
-        #qubo.qubo_real_12t(delays)
-        #process(qubo, parameters,p)
+        qubo.qubo_real_12t(delays)
+        process(qubo, parameters,p)
 
 
 if __name__ == "__main__":
@@ -174,9 +173,9 @@ if __name__ == "__main__":
     p = Process_parameters()
 
     # these 4 will be from args parse
-    p.compute = True   # make computations / optimisation
+    p.compute = False   # make computations / optimisation
     p.analyze = True    # Analyze results
-    sim = True  # simulation of DWave
+    sim = False  # simulation of DWave
     count = False # estimates n.o. physical q-bits
     p.softern_pass = softer_passing_time_constr
 
