@@ -381,29 +381,50 @@ def embedding():
 
 
 def series_gates_simulations():
-    for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
-        plot_gates_simulations(ppair,psum, nolayers=1,dmax=2, notrains = 2)
-        plot_gates_simulations(ppair,psum, nolayers=2,dmax=2, notrains = 2)
+    """ series of computation for IonQ simulator """
 
     for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
         for dmax in [2,4,6]:
-            plot_gates_simulations(ppair,psum, nolayers=1,dmax=dmax, notrains = 1)
+            plot_gates(ppair,psum, nolayers=1,dmax=dmax, notrains = 1)
+
+    for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
+        plot_gates(ppair,psum, nolayers=1,dmax=2, notrains = 2)
+        plot_gates(ppair,psum, nolayers=2,dmax=2, notrains = 2)
 
 
 
-def plot_gates_simulations(ppair, psum, nolayers, dmax=2, notrains = 2):
+def series_gates_real():
+    """ series of computation for real device """
+    for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
+        for dmax in [2,4,6]:
+            plot_gates(ppair,psum, nolayers=1,dmax=dmax, notrains = 1, real = True)
+
+    for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
+        plot_gates(ppair,psum, nolayers=1,dmax=2, notrains = 2, real = True)
+
+
+
+
+def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
     p = Process_parameters()
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
 
-    q_par.method = "IonQsim"
+    
     q_par.dmax = dmax
     q_par.ppair = ppair
     q_par.psum = psum
 
+    if real:
+        data_file = "QAOA Results/IonQ Aria Experiments/"
+        q_par.method = "IonQreal"
+    else:
+        data_file = "QAOA Results/IonQ Simulations/"
+        q_par.method = "IonQsim"
+
 
     delays_list = [{}, {1:5, 2:2, 4:5}]
-    if notrains == 1:
+    if notrains == 1 or real:
         delays_list = [{}]
 
 
@@ -413,7 +434,7 @@ def plot_gates_simulations(ppair, psum, nolayers, dmax=2, notrains = 2):
         if notrains == 2:
             our_qubo.qubo_real_2t(delays)
 
-        data_file = "QAOA Results/IonQ Simulations/"
+
 
 
         _, csh = get_files_dirs(our_qubo, q_par, data_file, nolayers)
@@ -434,32 +455,6 @@ def plot_gates_simulations(ppair, psum, nolayers, dmax=2, notrains = 2):
         csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
         write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
         csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
-
-
-
-def plot_aria(ppair, psum, dmax=2, notrains = 2):
-    p = Process_parameters()
-    our_qubo = Input_qubo()
-    q_par = Comp_parameters()
-
-    q_par.method = "IonQreal"
-    q_par.dmax = dmax
-    q_par.ppair = ppair
-    q_par.psum = psum
-    delays = {}
-
-    if notrains == 1:
-        our_qubo.qubo_real_1t(delays)
-    if notrains == 2:
-        our_qubo.qubo_real_2t(delays)
-
-    datafile = "QAOA Results/IonQ Aria Experiments/"
-
-    replace_pair, _ = get_files_dirs(our_qubo, q_par, datafile, nolayers = 1)
-
-    aria_sum = read_aria_summary(our_qubo, q_par, p, datafile, replace_pair[0])
-    print(aria_sum)
-    sol = aria_sum["vars"]
 
 
 
@@ -742,7 +737,7 @@ if __name__ == "__main__":
 
     #embedding()
 
-    plot_aria(ppair=2.0, psum=4.0, dmax=2, notrains = 2)
+    series_gates_real()
 
     series_gates_simulations()
 
