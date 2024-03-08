@@ -10,7 +10,7 @@ from QTrains import Analyze_qubo
 from trains_timetable import Input_qubo
 from solve_qubo import Comp_parameters, Process_parameters
 
-from qubo4gates import gate_specifics_str, get_files_dirs
+from qubo4gates import read_aria_summary, get_files_dirs
 
 
 
@@ -41,264 +41,59 @@ def file4csv(our_qubo, q_par, p, layers = 1):
 
 
 
-def plotDWave_2trains_dmax2():
+def dWave_hist(no_trains = 2, dmax = 2, at = 10, soft = False):
 
     p = Process_parameters()
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
 
-    q_par.method = "real"
-    q_par.dmax = 2
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-    q_par.annealing_time = 10
-    delays_list = [{}, {1:5, 2:2, 4:5}]
-
-    our_qubo.qubo_real_2t(delays_list[0])
-
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-
-    hist = objective_histograms(our_qubo, q_par, p)
-    write_file = write_file.replace("qubo", "objective")
-    csv_write_hist(write_file, hist)
-
-    our_title = plot_title(our_qubo, q_par)
-    print(f"2 trains, 18 qubits passing time / objective, top {our_title}")
-
-
-    our_qubo.qubo_real_2t(delays_list[1])
-
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-
-    hist = objective_histograms(our_qubo, q_par, p)
-    write_file = write_file.replace("qubo", "objective")
-    csv_write_hist(write_file, hist)
-
-    our_title = plot_title(our_qubo, q_par)
-    print(f"2 trains, 18 qubits passing time / objective, botom {our_title}")
-    print("..............................")
-
-
-    energies = energies_histograms(our_qubo, q_par, p)
-    write_file = write_file.replace("objective", "energies/energies_feasible")
-    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
-    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
-    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
-
-    q_par.ppair = 20.0
-    q_par.psum = 40.0
-
-    write_file = file4csv(our_qubo, q_par, p)
-    energies = energies_histograms(our_qubo, q_par, p)
-    write_file = write_file.replace("qubo", "energies/energies_feasible")
-    print(write_file)
-    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
-    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
-    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
-
-
-
-def plotDWave_6trains():
-
-    p = Process_parameters()
-    our_qubo = Input_qubo()
-    q_par = Comp_parameters()
-    q_par.method = "real"
-    delays_list = [{}, {1:5, 2:2, 4:5}]
-
-    q_par.dmax = 2
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-    q_par.annealing_time = 10
-    our_qubo.qubo_real_6t(delays_list[0])
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-    our_title = plot_title(our_qubo, q_par)
-    print(f"6 trains top left {our_title[14:len(our_title)]}, dmax={q_par.dmax}")
-
-
-    q_par.dmax = 6
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-    q_par.annealing_time = 10
-    our_qubo.qubo_real_6t(delays_list[0])
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-    our_title = plot_title(our_qubo, q_par)
-    print(f"6 trains top fight {our_title[14:len(our_title)]},dm={q_par.dmax}")
-
-
-    q_par.dmax = 6
-    q_par.ppair = 20.0
-    q_par.psum = 40.0
-    q_par.annealing_time = 10
-    our_qubo.qubo_real_6t(delays_list[0])
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-    our_title = plot_title(our_qubo, q_par)
-    print(f"6 trains bottom left {our_title[14:len(our_title)]}, dmax={q_par.dmax}")
-
-
-    q_par.dmax = 6
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-    q_par.annealing_time = 1000
-    our_qubo.qubo_real_6t(delays_list[0])
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-    our_title = plot_title(our_qubo, q_par)
-    print(f"6 train bottom right {our_title[14:len(our_title)]},d={q_par.dmax}")
-    print("...............................")
-
-
-
-def plotDWave_11trains_hist(dmax = 6):
-
-    p = Process_parameters()
-    our_qubo = Input_qubo()
-    q_par = Comp_parameters()
     q_par.method = "real"
     q_par.dmax = dmax
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-    delays_list = [{}, {1:5, 2:2, 4:5}]
+    q_par.annealing_time = at
 
-
-    q_par.annealing_time = 10
-    our_qubo.qubo_real_11t(delays_list[0])
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-    our_title = plot_title(our_qubo, q_par)
-    print(f"11 trains top left, {our_title}")
-
-
-    q_par.annealing_time = 1000
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-    our_title = plot_title(our_qubo, q_par)
-    print(f"11 trains top right, {our_title}")
-
-    q_par.annealing_time = 10
-    our_qubo.qubo_real_11t(delays_list[1])
-
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-    our_title = plot_title(our_qubo, q_par)
-    print(f"11 trains bottom left, {our_title}")
-
-    energies = energies_histograms(our_qubo, q_par, p)
-    write_file = write_file.replace("qubo", "energies/energies_feasible")
-    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
-    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
-    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
-
-
-    q_par.annealing_time = 1000
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-    print(f"11 trains bottom right, {our_title}")
-    print(".............................")
-
-    energies = energies_histograms(our_qubo, q_par, p)
-    write_file = write_file.replace("qubo", "energies/energies_feasible")
-    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
-    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
-    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
-
-
-    q_par.ppair = 20.0
-    q_par.psum = 40.0
-    q_par.annealing_time = 10
-    energies = energies_histograms(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    write_file = write_file.replace("qubo", "energies/energies_feasible")
-    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
-    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
-    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
-
-    q_par.annealing_time = 1000
-    energies = energies_histograms(our_qubo, q_par, p)
-    write_file = write_file.replace("qubo", "energies/energies_feasible")
-    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
-    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
-    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
-
-
-
-
-
-def plot_DWave_soft_dmax6(no_trains = 11):
-
-    p = Process_parameters()
-    our_qubo = Input_qubo()
-    q_par = Comp_parameters()
-    q_par.method = "real"
-    q_par.dmax = 6
-    q_par.ppair = 2.0
-    q_par.psum = 4.0
-    p.softern_pass = True
+    if soft:
+        p.softern_pass = True
 
     delays_list = [{}, {1:5, 2:2, 4:5}]
-    delays = delays_list[1]
 
-    #fig = plt.figure(constrained_layout=True, figsize=(6, 4))
+    for delays in delays_list:
 
-    if no_trains == 10:
-        no_qbits = 168
-        our_qubo.qubo_real_10t(delays)
-    elif no_trains == 11:
-        no_qbits = 182
-        our_qubo.qubo_real_11t(delays)
-    elif no_trains == 12:
-        no_qbits = 196
-        our_qubo.qubo_real_12t(delays)
+        for (ppair, psum) in [(2.0, 4.0), (20.0, 40.0)]:
+
+            q_par.ppair = ppair
+            q_par.psum = psum
+
+            if no_trains == 2:
+                our_qubo.qubo_real_2t(delays)
+            if no_trains == 11:
+                our_qubo.qubo_real_11t(delays)
+
+            hist = passing_time_histigrams(our_qubo, q_par, p)
+            write_file = file4csv(our_qubo, q_par, p)
+            csv_write_hist(write_file, hist)
+
+            hist = objective_histograms(our_qubo, q_par, p)
+            write_file = write_file.replace("qubo", "objective")
+            csv_write_hist(write_file, hist)
+
+            our_title = plot_title(our_qubo, q_par)
+            print(our_title, f"soft{soft}")
+
+            energies = energies_histograms(our_qubo, q_par, p)
+            write_file = write_file.replace("objective", "energies/energies_feasible")
+            csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
+            write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
+            csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
     
-    print(f"DWave without Eq(5) check, {no_qbits} qbits, at= $10 \mu$s left, $1000 \mu$s right")
 
+def series_DWave_hist():
+    dWave_hist(no_trains = 2, dmax = 2)
+    dWave_hist(no_trains = 11, dmax = 2)
+    dWave_hist(no_trains = 11, at = 10, dmax = 6)
+    dWave_hist(no_trains = 11, at = 1000, dmax = 6)
 
-    q_par.annealing_time = 10
-
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-
-    q_par.annealing_time = 1000
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-
-    our_title = f"{no_trains} trains, upper, disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
-    print(f"{our_title}, annealing time 10 left, 1000 right")
-
-    q_par.ppair = 20.0
-    q_par.psum = 40.0
-    q_par.annealing_time = 10
-
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-    q_par.annealing_time = 1000
-
-    hist = passing_time_histigrams(our_qubo, q_par, p)
-    write_file = file4csv(our_qubo, q_par, p)
-    csv_write_hist(write_file, hist)
-
-    our_title = f"{no_trains} trains, lower, disturbed, ppair={q_par.ppair}, psum={q_par.psum}, dmax={int(q_par.dmax)}"
-    print(f"{our_title}, annealing time 10 left, 1000 right")
-    print("...................")
-
+    dWave_hist(no_trains = 11, dmax = 6, at = 10, soft = True)
+    dWave_hist(no_trains = 11, dmax = 6, at = 1000, soft = True)
 
 
 #########################  Scaling ####################
@@ -547,6 +342,7 @@ def fit(x, y, rmax, order = 1):
 
     return x_lin, y_lin
 
+
 def embedding():
 
     p = Process_parameters()
@@ -584,65 +380,87 @@ def embedding():
 ####################  GATES  ########################
 
 
+def series_gates_simulations():
+    for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
+        plot_gates_simulations(ppair,psum, nolayers=1,dmax=2, notrains = 2)
+        plot_gates_simulations(ppair,psum, nolayers=2,dmax=2, notrains = 2)
 
-def plot2trains_gates_simulations(ppair, psum, nolayers):
+    for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
+        for dmax in [2,4,6]:
+            plot_gates_simulations(ppair,psum, nolayers=1,dmax=dmax, notrains = 1)
+
+
+
+def plot_gates_simulations(ppair, psum, nolayers, dmax=2, notrains = 2):
     p = Process_parameters()
     our_qubo = Input_qubo()
     q_par = Comp_parameters()
 
-    print("IonQ simulation, 2 trains 18 qbits")
-
-
     q_par.method = "IonQsim"
-    q_par.dmax = 2
+    q_par.dmax = dmax
     q_par.ppair = ppair
     q_par.psum = psum
-    q_par.annealing_time = 10
 
 
     delays_list = [{}, {1:5, 2:2, 4:5}]
-
-    delays = delays_list[0]
-    our_qubo.qubo_real_2t(delays)
-    data_file = "QAOA Results/IonQ Simulations/"
+    if notrains == 1:
+        delays_list = [{}]
 
 
-    cs1, csh = get_files_dirs(our_qubo, q_par, data_file, nolayers)
-    
-    hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = csh)
-    write_file = file4csv(our_qubo, q_par, p, nolayers)
-    csv_write_hist(write_file, hist)
+    for delays in delays_list:
+        if notrains == 1:
+            our_qubo.qubo_real_1t(delays)
+        if notrains == 2:
+            our_qubo.qubo_real_2t(delays)
 
-    hist = objective_histograms(our_qubo, q_par, p, replace_string = csh)
-    write_file = write_file.replace("qubo", "objective")
-    csv_write_hist(write_file, hist)
-
-    our_title = plot_title(our_qubo, q_par)
-    print(f"Upper panel, left passing time, right objective, {our_title}")
+        data_file = "QAOA Results/IonQ Simulations/"
 
 
-    delays = delays_list[1]
-    our_qubo.qubo_real_2t(delays)
-    cs1, csh = get_files_dirs(our_qubo, q_par, data_file, nolayers)
+        _, csh = get_files_dirs(our_qubo, q_par, data_file, nolayers)
+        
+        hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = csh)
+        write_file = file4csv(our_qubo, q_par, p, nolayers)
+        csv_write_hist(write_file, hist)
 
-    hist = passing_time_histigrams(our_qubo, q_par, p, replace_string = csh)
-    write_file = file4csv(our_qubo, q_par, p, nolayers)
-    csv_write_hist(write_file, hist)
+        hist = objective_histograms(our_qubo, q_par, p, replace_string = csh)
+        write_file = write_file.replace("qubo", "objective")
+        csv_write_hist(write_file, hist)
 
-    hist = objective_histograms(our_qubo, q_par, p, replace_string = csh)
-    write_file = write_file.replace("qubo", "objective")
-    csv_write_hist(write_file, hist)
+        our_title = plot_title(our_qubo, q_par)
+        print(our_title)
 
-    energies = energies_histograms(our_qubo, q_par, p, replace_string = csh)
-    write_file = write_file.replace("objective", "energies/energies_feasible")
-    csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
-    write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
-    csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
+        energies = energies_histograms(our_qubo, q_par, p, replace_string = csh)
+        write_file = write_file.replace("objective", "energies/energies_feasible")
+        csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
+        write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
+        csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
 
 
-    our_title = plot_title(our_qubo, q_par)
-    print(f"Lower panel, eft passing time, right objective, {our_title}")
-    print("..........................")
+
+def plot_aria(ppair, psum, dmax=2, notrains = 2):
+    p = Process_parameters()
+    our_qubo = Input_qubo()
+    q_par = Comp_parameters()
+
+    q_par.method = "IonQreal"
+    q_par.dmax = dmax
+    q_par.ppair = ppair
+    q_par.psum = psum
+    delays = {}
+
+    if notrains == 1:
+        our_qubo.qubo_real_1t(delays)
+    if notrains == 2:
+        our_qubo.qubo_real_2t(delays)
+
+    datafile = "QAOA Results/IonQ Aria Experiments/"
+
+    replace_pair, _ = get_files_dirs(our_qubo, q_par, datafile, nolayers = 1)
+
+    aria_sum = read_aria_summary(our_qubo, q_par, p, datafile, replace_pair[0])
+    print(aria_sum)
+    sol = aria_sum["vars"]
+
 
 
 
@@ -919,27 +737,23 @@ def train_diagrams():
 
 
 if __name__ == "__main__":
-    plotDWave_2trains_dmax2()
-    #plotDWave_6trains()
-    plotDWave_11trains_hist(dmax = 2)
-    plotDWave_11trains_hist(dmax = 6)
-    plot_DWave_soft_dmax6(no_trains = 11)
 
-    plot2trains_gates_simulations(2.0,4.0, 1)
-    plot2trains_gates_simulations(20.0,40.0, 1)
-
-    plot2trains_gates_simulations(2.0,4.0, 2)
-    plot2trains_gates_simulations(20.0,40.0, 2)
-
-    gates_scaling_IonQ_seq()
-
-    gates_scaling_IBM(2.0,4.0, 1)
-    gates_scaling_IBM(20.0,40.0, 1)
-
-
-    plot_real_live_MLR_2()
+    #series_DWave_hist()
 
     #embedding()
+
+    plot_aria(ppair=2.0, psum=4.0, dmax=2, notrains = 2)
+
+    series_gates_simulations()
+
+    #gates_scaling_IonQ_seq()
+
+    #gates_scaling_IBM(2.0,4.0, 1)
+    #gates_scaling_IBM(20.0,40.0, 1)
+
+    #plot_real_live_MLR_2()
+
+    
 
     #feasibility_percentage()
 

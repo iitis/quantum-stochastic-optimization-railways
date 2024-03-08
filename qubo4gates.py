@@ -73,19 +73,19 @@ def get_files_dirs(input4qubo, q_pars, data_file, nolayers):
 
 
 
-def read_aria_summary(input4qubo, q_pars, p, replace_pair):
-    our_key = file_QUBO_comp(input4qubo, q_pars, p, (replace_pair[0], ""))
+def read_aria_summary(input4qubo, q_pars, p, datafile, replace_string):
+    our_key = file_QUBO_comp(input4qubo, q_pars, p, (replace_string, ""))
     our_key = our_key.replace(".json", "")
 
-    file_comp = f"{args.datafile}expt.ionq-qpu-aria.all.json"
+    file_comp = f"{datafile}expt.ionq-qpu-aria.all.json"
 
     with open(file_comp) as f:
         expt_results = json.load(f)
 
     for result in expt_results:
         if result['qubo_name'] == our_key:
-            return [result]
-    return []
+            return result
+    return {}
 
 
 
@@ -119,7 +119,7 @@ def analyze_and_plot_hists(args, input4qubo, q_pars, p):
     file_h = file_hist(input4qubo, q_pars, p, replace_pairh)
 
     if "IonQ Aria Experiments" in args.datafile:
-        solutions_input = read_aria_summary(input4qubo, q_pars, p, replace_pair)
+        solutions_input = [read_aria_summary(input4qubo, q_pars, p, args.datafile, replace_pair[0])]
 
     else:
 
