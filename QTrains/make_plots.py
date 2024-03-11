@@ -7,9 +7,9 @@ from .solve_sched_problems import file_hist
 
 
 
-def passing_time_histigrams(q_input, q_pars, p, replace_string = ("", "")):
+def passing_time_histigrams(q_input, q_pars, replace_string = ("", "")):
     """ returs dict histogram of passing times between staitons in q_input (objectvive stations) """
-    file = file_hist(q_input, q_pars, p, replace_string)
+    file = file_hist(q_input, q_pars, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
     hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
@@ -18,14 +18,14 @@ def passing_time_histigrams(q_input, q_pars, p, replace_string = ("", "")):
     ys = [hist_pass.count(x) for x in xs]
 
     hist = {"value":xs, "count":ys, "stations":q_input.objective_stations, "no_trains":q_input.notrains, "dmax":q_pars.dmax,
-             "softern":p.softern_pass}
+             "softern":q_pars.softern_pass}
 
     return hist
 
 
-def objective_histograms(q_input, q_pars, p, replace_string = ("", "")):
+def objective_histograms(q_input, q_pars, replace_string = ("", "")):
     """ returns dict histogram of objectives"""
-    file = file_hist(q_input, q_pars, p, replace_string)
+    file = file_hist(q_input, q_pars, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
@@ -41,9 +41,9 @@ def objective_histograms(q_input, q_pars, p, replace_string = ("", "")):
     return hist
 
 
-def energies_histograms(q_input, q_pars, p, replace_string = ("", "")):
+def energies_histograms(q_input, q_pars, replace_string = ("", "")):
     """ returns dict histogram of energies, feasible and not feasible"""
-    file = file_hist(q_input, q_pars, p, replace_string)
+    file = file_hist(q_input, q_pars, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
@@ -116,12 +116,12 @@ def _ax_objective(ax, hist):
     ax.set_ylabel("counts")
 
 
-def make_plots_Dwave(q_input, q_pars, p):
+def make_plots_Dwave(q_input, q_pars):
     """ plotting of DWave results """
 
     fig, ax = plt.subplots(figsize=(4, 3))
     
-    hist = passing_time_histigrams(q_input, q_pars, p)
+    hist = passing_time_histigrams(q_input, q_pars)
     _ax_hist_passing_times(ax, hist)
     our_title = plot_title(q_input, q_pars)
 
@@ -129,7 +129,7 @@ def make_plots_Dwave(q_input, q_pars, p):
 
     plt.title(our_title)
 
-    file = file_hist(q_input, q_pars, p)
+    file = file_hist(q_input, q_pars)
     file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
     plt.savefig(file_pass)
     plt.clf()
@@ -137,7 +137,7 @@ def make_plots_Dwave(q_input, q_pars, p):
 
     fig, ax = plt.subplots(figsize=(4, 3))
 
-    hist = objective_histograms(q_input, q_pars, p)
+    hist = objective_histograms(q_input, q_pars)
     _ax_objective(ax, hist)
     our_title= f"{plot_title(q_input, q_pars)}, dmax={int(q_pars.dmax)}"
 
@@ -145,17 +145,17 @@ def make_plots_Dwave(q_input, q_pars, p):
     
     plt.title(our_title)
 
-    file = file_hist(q_input, q_pars, p)
+    file = file_hist(q_input, q_pars)
     file_obj = file.replace(".json", "obj.pdf")
     plt.savefig(file_obj)
     plt.clf()
 
 
-def plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pair):
+def plot_hist_gates(q_pars, input4qubo, file_pass, file_obj, replace_pair):
     """ plots histrogram from gate computers output """
 
     fig, ax = plt.subplots(figsize=(4, 3))
-    hist = passing_time_histigrams(input4qubo, q_pars, p, replace_string = replace_pair)
+    hist = passing_time_histigrams(input4qubo, q_pars, replace_string = replace_pair)
     _ax_hist_passing_times(ax, hist)
     our_title = plot_title(input4qubo, q_pars)
 
@@ -169,7 +169,7 @@ def plot_hist_gates(q_pars, input4qubo, p, file_pass, file_obj, replace_pair):
 
     fig, ax = plt.subplots(figsize=(4, 3))
 
-    hist = objective_histograms(input4qubo, q_pars, p, replace_string = replace_pair)
+    hist = objective_histograms(input4qubo, q_pars, replace_string = replace_pair)
     _ax_objective(ax, hist)
     our_title= f"{plot_title(input4qubo, q_pars)}, dmax={int(q_pars.dmax)}"
 

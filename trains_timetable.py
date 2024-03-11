@@ -208,10 +208,6 @@ class Comp_parameters():
         self.token = ""
         assert self.annealing_time * self.num_reads < 1_000_000
 
-
-class Process_parameters():
-    """ particular parameters  """
-    def __init__(self):
         self.compute = False
         self.analyze = False
         self.softern_pass = False

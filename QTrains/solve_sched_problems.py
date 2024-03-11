@@ -16,28 +16,28 @@ from .make_qubo import (QuboVars, Analyze_qubo, update_hist, is_feasible)
 
 
 ####### make files names and directories, where each step of the solving scheme is saved
-def file_LP_output(q_input, q_pars, p):
+def file_LP_output(q_input, q_pars):
     """ returns string, the file name and dir to store LP results """
     file = q_input.file
     file = file.replace("qubo", "LP")
-    if p.delta == 0:
+    if q_pars.delta == 0:
         file = f"{file}_{q_pars.dmax}.json"
     else:
-        file = f"{file}_{q_pars.dmax}_stochastic{p.delta}.json"
+        file = f"{file}_{q_pars.dmax}_stochastic{q_pars.delta}.json"
     file = file.replace("QUBOs", "solutions")
     return file
 
-def file_QUBO(q_input, q_pars, p):
+def file_QUBO(q_input, q_pars):
     """ returns string, the file name and dir to store QUBO and its features """
-    if p.delta == 0:
+    if q_pars.delta == 0:
         file = f"{q_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}.json"
     else:
         file = f"{q_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}_stochastic{p.delta}.json"
     return file
 
-def file_QUBO_comp(q_input, q_pars, p, replace_pair = ("", "")):
+def file_QUBO_comp(q_input, q_pars, replace_pair = ("", "")):
     """ returns string, the file name and dir to store results of computaiton on QUBO """
-    file = file_QUBO(q_input, q_pars, p)
+    file = file_QUBO(q_input, q_pars)
     file = file.replace("QUBOs", "solutions")
     if q_pars.method == "sim":
         file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.beta_range[0]}_{q_pars.num_sweeps}.json")
@@ -47,10 +47,10 @@ def file_QUBO_comp(q_input, q_pars, p, replace_pair = ("", "")):
     return file
 
 
-def file_hist(q_input, q_pars, p, replace_pair = ("", "")):
+def file_hist(q_input, q_pars, replace_pair = ("", "")):
     """ file for histogram """
-    file = file_QUBO_comp(q_input, q_pars, p, replace_pair = replace_pair)
-    if not p.softern_pass:
+    file = file_QUBO_comp(q_input, q_pars, replace_pair = replace_pair)
+    if not q_pars.softern_pass:
         file = file.replace("solutions", "histograms")
     else:
         file = file.replace("solutions", "histograms_soft")
@@ -58,7 +58,7 @@ def file_hist(q_input, q_pars, p, replace_pair = ("", "")):
     return file
 
 #### ILP solver
-def solve_on_LP(q_input, q_pars, p):
+def solve_on_LP(q_input, q_pars):
     """ solve the problem using LP, and save results """
     stay = q_input.stay
     headways = q_input.headways
@@ -73,7 +73,7 @@ def solve_on_LP(q_input, q_pars, p):
     rail_input = Railway_input(pars, objective_stations, delays = q_input.delays)
     v = Variables(rail_input)
     bounds, integrality = v.bonds_and_integrality()
-    problem = LinearPrograming(v, rail_input, M = q_pars.M, delta=p.delta)
+    problem = LinearPrograming(v, rail_input, M = q_pars.M, delta=q_pars.delta)
     opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
                   b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
@@ -85,13 +85,13 @@ def solve_on_LP(q_input, q_pars, p):
     d["variables"] = v.variables
     d["objective"] = problem.compute_objective(v, rail_input)
 
-    file = file_LP_output(q_input, q_pars, p)
+    file = file_LP_output(q_input, q_pars)
     with open(file, 'wb') as fp:
         pickle.dump(d, fp)
 
 
 #####  QUBO handling ######
-def prepare_qubo(q_input, q_pars, p):
+def prepare_qubo(q_input, q_pars):
     """ create and save QUBO given railway input and parameters 
     
     delta is the parameter that increases passing time, for stochastic purpose
@@ -109,19 +109,20 @@ def prepare_qubo(q_input, q_pars, p):
 
     par = Parameters(timetable, stay=stay, headways=headways,
                    preparation_t=preparation_t, dmax=dmax, circulation=q_input.circ)
+    
     rail_input = Railway_input(par, objective_stations, delays = q_input.delays)
     q = QuboVars(rail_input, ppair=ppair, psum=psum)
-    q.make_qubo(rail_input, p.delta)
+    q.make_qubo(rail_input, q_pars.delta)
     qubo_dict = q.store_in_dict(rail_input)
 
-    file = file_QUBO(q_input, q_pars, p)
+    file = file_QUBO(q_input, q_pars)
     with open(file, 'wb') as fp:
         pickle.dump(qubo_dict, fp)
 
 
-def approx_no_physical_qbits(q_input, q_pars, p):
+def approx_no_physical_qbits(q_input, q_pars):
     """ returns number of logical qbits and approximates number of physical qubits using embeder """
-    file = file_QUBO(q_input, q_pars, p)
+    file = file_QUBO(q_input, q_pars)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
@@ -143,9 +144,9 @@ def approx_no_physical_qbits(q_input, q_pars, p):
 
 
 
-def solve_qubo(q_input, q_pars, p):
+def solve_qubo(q_input, q_pars):
     """ solve the problem given by QUBO and store results """
-    file = file_QUBO(q_input, q_pars, p)
+    file = file_QUBO(q_input, q_pars)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
@@ -173,7 +174,7 @@ def solve_qubo(q_input, q_pars, p):
                 annealing_time=q_pars.annealing_time
         )
 
-    file = file_QUBO_comp(q_input, q_pars, p)
+    file = file_QUBO_comp(q_input, q_pars)
     with open(file, 'wb') as fp:
         pickle.dump(sampleset, fp)
 
@@ -199,20 +200,20 @@ def get_solutions_from_dmode(samplesets, q_pars):
                     
 
 
-def analyze_qubo_Dwave(q_input, q_pars, p):
+def analyze_qubo_Dwave(q_input, q_pars):
     """ analyze results of computation on QUBO and comparison with LP """
     show_var_vals = False
 
-    file = file_QUBO(q_input, q_pars, p)
+    file = file_QUBO(q_input, q_pars)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
-    file = file_LP_output(q_input, q_pars, p)
+    file = file_LP_output(q_input, q_pars)
     with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
     qubo_to_analyze = Analyze_qubo(dict_read)
-    file = file_QUBO_comp(q_input, q_pars, p)
+    file = file_QUBO_comp(q_input, q_pars)
     print( file )
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
@@ -221,10 +222,10 @@ def analyze_qubo_Dwave(q_input, q_pars, p):
 
     our_solutions = get_solutions_from_dmode(samplesets, q_pars)
 
-    results = analyze_QUBO_outputs(qubo_to_analyze, stations, our_solutions, lp_sol, softernpass = p.softern_pass)
+    results = analyze_QUBO_outputs(qubo_to_analyze, stations, our_solutions, lp_sol, softernpass = q_pars.softern_pass)
 
 
-    file =  file_hist(q_input, q_pars, p)
+    file =  file_hist(q_input, q_pars)
     with open(file, 'wb') as fp:
         pickle.dump(results, fp)
 
@@ -315,10 +316,10 @@ def dsiplay_solution_analysis(q_input, our_solution, lp_solution, timetable = Fa
         print("  ..............................  ")
 
 
-def display_prec_feasibility(q_input, q_pars, p):
+def display_prec_feasibility(q_input, q_pars):
     """ print results of computation """
 
-    file = file_hist(q_input, q_pars, p)
+    file = file_hist(q_input, q_pars)
     with open(file, 'rb') as fp:
         res_dict = pickle.load(fp)
 
