@@ -19,9 +19,9 @@ In ```solve_qubo.py``` trains scheduling problems are solved via Integer Linear 
 
 Arguments:
 
-  --mode MODE: process mode: 0: prepare only QUBO, 1: make, computation (ILP and annealing), 2: analyze outputs, 3: count q-bits - by dafault: ```2```
-  --simulation SIMULATION: if True solve / analyze output of simulated annealing (via DWave software), if False real annealing - by default: False
-  --softern_pass SOFTERN_PASS: if true analyze output without feasibility check on minimal passing time constrain - by default: False
+- --mode MODE: process mode: 0: prepare only QUBO, 1: make, computation (ILP and annealing), 2: analyze outputs, 3: count q-bits - by dafault: ```2```
+- --simulation SIMULATION: if True solve / analyze output of simulated annealing (via DWave software), if False real annealing - by default: False
+- --softern_pass SOFTERN_PASS: if true analyze output without feasibility check on minimal passing time constrain - by default: False
 
 
 Example usage:
@@ -44,10 +44,10 @@ Script ```qubo4gates.py``` saves QUBO and ground state as well as analyses outpu
 
 Arguments:
 
-  --notrains NOTRAINS  number of trains, 1,2,4 are supported, by default: ``2``
-  --savequbo SAVEQUBO  if True prepare qubo else analyze outputs, by default: False
-  --nolayers NOLAYERS  number of layers of QAOA in analyzed data, by default: ```1```
-  --datafile DATAFILE  file with data, by default:  ```"QAOA Results/IonQ Simulations/"```
+- --notrains NOTRAINS  number of trains, 1,2,4 are supported, by default: ``2``
+- --savequbo SAVEQUBO  if True prepare qubo else analyze outputs, by default: False
+- --nolayers NOLAYERS  number of layers of QAOA in analyzed data, by default: ```1```
+- --datafile DATAFILE  file with data, by default:  ```"QAOA Results/IonQ Simulations/"```
 
 
 Example usage:

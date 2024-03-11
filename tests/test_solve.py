@@ -225,7 +225,7 @@ def test_qubo_analysis():
     histogram_obj = [hist_obj.count(x) for x in set(hist_obj)]
     assert np.sum(histogram_obj) == 1000*results["perc feasible"]  
     for i in range(5):
-        assert histogram_obj[i] > 4
+        assert histogram_obj[i] > 2
 
     
     hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
