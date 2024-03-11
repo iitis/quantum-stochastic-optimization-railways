@@ -8,54 +8,54 @@ from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
 from QTrains import display_prec_feasibility, make_plots_Dwave, approx_no_physical_qbits
 
-from trains_timetable import Input_qubo, Comp_parameters
+from trains_timetable import Input_timetable, Comp_parameters
 
 
 
-def plot_hist(q_input, q_pars):
+def plot_hist(trains_input, q_pars):
     """ plot histograms of trains passing time from results from QUBO """
 
-    make_plots_Dwave(q_input, q_pars)
-    display_prec_feasibility(q_input, q_pars)
+    make_plots_Dwave(trains_input, q_pars)
+    display_prec_feasibility(trains_input, q_pars)
 
 
 
-def process(q_input, q_pars):
+def process(trains_input, q_pars):
     """ the sequence of calculation  makes computation if results has not been saved already"""
 
 
-    file = file_QUBO(q_input, q_pars)
+    file = file_QUBO(trains_input, q_pars)
     if not os.path.isfile(file):
-        prepare_qubo(q_input, q_pars)
+        prepare_qubo(trains_input, q_pars)
 
     if q_pars.compute:
 
-        file = file_LP_output(q_input, q_pars)
+        file = file_LP_output(trains_input, q_pars)
         if not os.path.isfile(file):
-            solve_on_LP(q_input, q_pars)
+            solve_on_LP(trains_input, q_pars)
 
-        file = file_QUBO_comp(q_input, q_pars)
+        file = file_QUBO_comp(trains_input, q_pars)
         if not os.path.isfile(file):
-            solve_qubo(q_input, q_pars)
+            solve_qubo(trains_input, q_pars)
 
     if q_pars.analyze:
         try:
-            file = file_hist(q_input, q_pars)
+            file = file_hist(trains_input, q_pars)
             if not os.path.isfile(file):
-                analyze_qubo_Dwave(q_input, q_pars)
+                analyze_qubo_Dwave(trains_input, q_pars)
 
-            plot_hist(q_input, q_pars)
+            plot_hist(trains_input, q_pars)
         except:
-            file = file_QUBO_comp(q_input, q_pars)
+            file = file_QUBO_comp(trains_input, q_pars)
             print(" XXXXXXXXXXXXXXXXXXXXXX  ")
             print( f"not working for {file}" )
 
 
-def get_no_physical_qbits(ret_dict, q_input, q_pars, trains):
+def get_no_physical_qbits(ret_dict, trains_input, q_pars, trains):
     """ counts no physical q-bits update dict """
-    no_logical, no_physical = approx_no_physical_qbits(q_input, q_pars)
+    no_logical, no_physical = approx_no_physical_qbits(trains_input, q_pars)
 
-    if q_input.delays != {}:
+    if trains_input.delays != {}:
         ret_dict[f"{trains}_{q_pars.dmax}_disturbed"] = {"no_logical": no_logical, "no_physical": no_physical} 
     else:
         ret_dict[f"{trains}_{q_pars.dmax}_notdisturbed"] = {"no_logical": no_logical, "no_physical": no_physical} 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
         q_par.analyze = True
 
 
-    our_qubo = Input_qubo()
+    our_qubo = Input_timetable()
     
 
         

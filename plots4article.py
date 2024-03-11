@@ -7,7 +7,7 @@ from QTrains import plot_title, file_hist, objective_histograms, energies_histog
 from QTrains import get_solutions_from_dmode, best_feasible_state
 from QTrains import file_QUBO_comp, file_QUBO, file_LP_output
 from QTrains import Analyze_qubo
-from trains_timetable import Input_qubo, Comp_parameters
+from trains_timetable import Input_timetable, Comp_parameters
 
 from qubo4gates import get_files_dirs
 
@@ -25,8 +25,8 @@ def csv_write_hist(file_name, hist, key1 = "value", key2 = "count"):
 
 
 
-def file4csv(our_qubo, q_par, layers = 1):
-    write_file = file_hist(our_qubo, q_par)
+def file4csv(trains_input, q_par, layers = 1):
+    write_file = file_hist(trains_input, q_par)
     write_file = write_file.replace("histograms/LR_timetable/", "article_plots/")
     write_file = write_file.replace("histograms_soft/LR_timetable/", "article_plots/")
     if q_par.method == "real":
@@ -42,7 +42,7 @@ def file4csv(our_qubo, q_par, layers = 1):
 
 def dWave_hist(no_trains = 2, dmax = 2, at = 10, soft = False):
 
-    our_qubo = Input_qubo()
+    trains_input = Input_timetable()
     q_par = Comp_parameters()
 
     q_par.method = "real"
@@ -60,22 +60,22 @@ def dWave_hist(no_trains = 2, dmax = 2, at = 10, soft = False):
             q_par.psum = psum
 
             if no_trains == 2:
-                our_qubo.qubo_real_2t(delays)
+                trains_input.qubo_real_2t(delays)
             if no_trains == 11:
-                our_qubo.qubo_real_11t(delays)
+                trains_input.qubo_real_11t(delays)
 
-            hist = passing_time_histigrams(our_qubo, q_par)
-            write_file = file4csv(our_qubo, q_par)
+            hist = passing_time_histigrams(trains_input, q_par)
+            write_file = file4csv(trains_input, q_par)
             csv_write_hist(write_file, hist)
 
-            hist = objective_histograms(our_qubo, q_par)
+            hist = objective_histograms(trains_input, q_par)
             write_file = write_file.replace("qubo", "objective")
             csv_write_hist(write_file, hist)
 
-            our_title = plot_title(our_qubo, q_par)
+            our_title = plot_title(trains_input, q_par)
             print(our_title, f"soft{soft}")
 
-            energies = energies_histograms(our_qubo, q_par)
+            energies = energies_histograms(trains_input, q_par)
             write_file = write_file.replace("objective", "energies/energies_feasible")
             csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
             write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
@@ -94,9 +94,9 @@ def series_DWave_hist():
 
 #########################  Scaling ####################
     
-def add_elemet(our_qubo, q_par, no_qubits, no_physical_qbits, no_qubo_terms, feasibility_perc):
+def add_elemet(trains_input, q_par, no_qubits, no_physical_qbits, no_qubo_terms, feasibility_perc):
 
-    file = file_hist(our_qubo, q_par)
+    file = file_hist(trains_input, q_par)
     with open(file, 'rb') as fp:
         res_dict = pickle.load(fp)
     
@@ -107,12 +107,12 @@ def add_elemet(our_qubo, q_par, no_qubits, no_physical_qbits, no_qubo_terms, fea
     with open("solutions/embedding.json", 'rb') as fp:
         embeddinq_dict = pickle.load(fp)
 
-    if our_qubo.delays == {}:
+    if trains_input.delays == {}:
         disturbed = "notdisturbed"
     else:
         disturbed = "disturbed"
 
-    phys_qbits = embeddinq_dict[f"{our_qubo.notrains}_{q_par.dmax}_{disturbed}"]
+    phys_qbits = embeddinq_dict[f"{trains_input.notrains}_{q_par.dmax}_{disturbed}"]
 
     assert phys_qbits['no_logical'] == res_dict["no qubits"]
 
@@ -142,30 +142,30 @@ def get_series(q_par, delays, rmax):
 
     for d in [2,6]:
         q_par.dmax = d
-        our_qubo = Input_qubo()
-        our_qubo.qubo_real_1t(delays)
-        add_elemet(our_qubo, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
-        our_qubo = Input_qubo()
-        our_qubo.qubo_real_2t(delays)
-        add_elemet(our_qubo, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
-        our_qubo = Input_qubo()
-        our_qubo.qubo_real_4t(delays)
-        add_elemet(our_qubo, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
-        our_qubo = Input_qubo()    
-        our_qubo.qubo_real_6t(delays)
-        add_elemet(our_qubo, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
-        our_qubo = Input_qubo()
-        our_qubo.qubo_real_8t(delays)
-        add_elemet(our_qubo, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
-        our_qubo = Input_qubo()
-        our_qubo.qubo_real_10t(delays)
-        add_elemet(our_qubo, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
-        our_qubo = Input_qubo()
-        our_qubo.qubo_real_11t(delays)
-        add_elemet(our_qubo, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
-        our_qubo = Input_qubo()
-        our_qubo.qubo_real_12t(delays)
-        add_elemet(our_qubo, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
+        trains_input = Input_timetable()
+        trains_input.qubo_real_1t(delays)
+        add_elemet(trains_input, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
+        trains_input = Input_timetable()
+        trains_input.qubo_real_2t(delays)
+        add_elemet(trains_input, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
+        trains_input = Input_timetable()
+        trains_input.qubo_real_4t(delays)
+        add_elemet(trains_input, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
+        trains_input = Input_timetable()    
+        trains_input.qubo_real_6t(delays)
+        add_elemet(trains_input, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
+        trains_input = Input_timetable()
+        trains_input.qubo_real_8t(delays)
+        add_elemet(trains_input, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
+        trains_input = Input_timetable()
+        trains_input.qubo_real_10t(delays)
+        add_elemet(trains_input, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
+        trains_input = Input_timetable()
+        trains_input.qubo_real_11t(delays)
+        add_elemet(trains_input, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
+        trains_input = Input_timetable()
+        trains_input.qubo_real_12t(delays)
+        add_elemet(trains_input, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
 
     x_lin, y_lin = log_linear_fit(no_physical_qubits, feasibility_perc, rmax)
 
@@ -400,7 +400,7 @@ def series_gates_real():
 
 def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
 
-    our_qubo = Input_qubo()
+    trains_input = Input_timetable()
     q_par = Comp_parameters()
 
     
@@ -423,27 +423,27 @@ def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
 
     for delays in delays_list:
         if notrains == 1:
-            our_qubo.qubo_real_1t(delays)
+            trains_input.qubo_real_1t(delays)
         if notrains == 2:
-            our_qubo.qubo_real_2t(delays)
+            trains_input.qubo_real_2t(delays)
 
 
 
 
-        _, csh = get_files_dirs(our_qubo, q_par, data_file, nolayers)
+        _, csh = get_files_dirs(trains_input, q_par, data_file, nolayers)
         
-        hist = passing_time_histigrams(our_qubo, q_par, replace_string = csh)
-        write_file = file4csv(our_qubo, q_par, nolayers)
+        hist = passing_time_histigrams(trains_input, q_par, replace_string = csh)
+        write_file = file4csv(trains_input, q_par, nolayers)
         csv_write_hist(write_file, hist)
 
-        hist = objective_histograms(our_qubo, q_par, replace_string = csh)
+        hist = objective_histograms(trains_input, q_par, replace_string = csh)
         write_file = write_file.replace("qubo", "objective")
         csv_write_hist(write_file, hist)
 
-        our_title = plot_title(our_qubo, q_par)
+        our_title = plot_title(trains_input, q_par)
         print(our_title)
 
-        energies = energies_histograms(our_qubo, q_par, replace_string = csh)
+        energies = energies_histograms(trains_input, q_par, replace_string = csh)
         write_file = write_file.replace("objective", "energies/energies_feasible")
         csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
         write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
@@ -472,10 +472,10 @@ def csv_write_gates_scaling(file, d):
             writer.writerow({'size': v, 'perc': perc[i]})
 
 
-def gates_scalling_update(d, our_qubo, q_par, data_file, nolayers):
+def gates_scalling_update(d, trains_input, q_par, data_file, nolayers):
 
-    cs1, csh = get_files_dirs(our_qubo, q_par, data_file, nolayers)
-    file = file_hist(our_qubo, q_par, replace_pair = csh)
+    cs1, csh = get_files_dirs(trains_input, q_par, data_file, nolayers)
+    file = file_hist(trains_input, q_par, replace_pair = csh)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
     d["no qubits"].append(results['no qubits']),
@@ -484,7 +484,7 @@ def gates_scalling_update(d, our_qubo, q_par, data_file, nolayers):
 
 def gates_scaling_IonQ(delays, ppair, psum, nolayers):
 
-    our_qubo = Input_qubo()
+    trains_input = Input_timetable()
     q_par = Comp_parameters()
 
     print("IonQ simulation, 2 trains 18 qbits")
@@ -499,20 +499,20 @@ def gates_scaling_IonQ(delays, ppair, psum, nolayers):
     if delays == {}:
 
         q_par.dmax = 2
-        our_qubo.qubo_real_1t(delays)
-        gates_scalling_update(d, our_qubo, q_par, data_file, nolayers)
+        trains_input.qubo_real_1t(delays)
+        gates_scalling_update(d, trains_input, q_par, data_file, nolayers)
 
         q_par.dmax = 4
-        our_qubo.qubo_real_1t(delays)
-        gates_scalling_update(d, our_qubo, q_par, data_file, nolayers)
+        trains_input.qubo_real_1t(delays)
+        gates_scalling_update(d, trains_input, q_par, data_file, nolayers)
 
         q_par.dmax = 6
-        our_qubo.qubo_real_1t(delays)
-        gates_scalling_update(d, our_qubo, q_par, data_file, nolayers)
+        trains_input.qubo_real_1t(delays)
+        gates_scalling_update(d, trains_input, q_par, data_file, nolayers)
     
     q_par.dmax = 2
-    our_qubo.qubo_real_2t(delays)
-    gates_scalling_update(d, our_qubo, q_par, data_file, nolayers)
+    trains_input.qubo_real_2t(delays)
+    gates_scalling_update(d, trains_input, q_par, data_file, nolayers)
 
     # TODO for larger ...
 
@@ -521,7 +521,7 @@ def gates_scaling_IonQ(delays, ppair, psum, nolayers):
 
 
 def gates_scaling_IBM(ppair, psum, nolayers):
-    our_qubo = Input_qubo()
+    trains_input = Input_timetable()
     q_par = Comp_parameters()
 
     print("IonQ simulation, 2 trains 18 qbits")
@@ -535,16 +535,16 @@ def gates_scaling_IBM(ppair, psum, nolayers):
     delays = {}
 
     q_par.dmax = 2
-    our_qubo.qubo_real_1t(delays)
-    gates_scalling_update(d, our_qubo, q_par, data_file, nolayers)
+    trains_input.qubo_real_1t(delays)
+    gates_scalling_update(d, trains_input, q_par, data_file, nolayers)
 
     q_par.dmax = 4
-    our_qubo.qubo_real_1t(delays)
-    gates_scalling_update(d, our_qubo, q_par, data_file, nolayers)
+    trains_input.qubo_real_1t(delays)
+    gates_scalling_update(d, trains_input, q_par, data_file, nolayers)
 
     q_par.dmax = 6
-    our_qubo.qubo_real_1t(delays)
-    gates_scalling_update(d, our_qubo, q_par, data_file, nolayers)
+    trains_input.qubo_real_1t(delays)
+    gates_scalling_update(d, trains_input, q_par, data_file, nolayers)
     
     # TODO for larger ...
 
@@ -655,7 +655,7 @@ def csv_write_train_diagram(file, train_d):
 
 def train_diagrams():
 
-    our_qubo = Input_qubo()
+    trains_input = Input_timetable()
     q_par = Comp_parameters()
 
     q_par.method = "real"
@@ -668,18 +668,18 @@ def train_diagrams():
 
     print("train diagram")
 
-    our_qubo.qubo_real_11t(delays_list[1])    
-    file = file_QUBO_comp(our_qubo, q_par)
+    trains_input.qubo_real_11t(delays_list[1])    
+    file = file_QUBO_comp(trains_input, q_par)
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
 
     solutions = get_solutions_from_dmode(samplesets, q_par)
 
-    file = file_QUBO(our_qubo, q_par)
+    file = file_QUBO(trains_input, q_par)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
-    file = file_LP_output(our_qubo, q_par)
+    file = file_LP_output(trains_input, q_par)
     with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
@@ -710,7 +710,7 @@ def train_diagrams():
     csv_write_train_diagram(file, input_dict)
 
 
-    solution, energy = high_excited_state(solutions, qubo_to_analyze, our_qubo.objective_stations, increased_pt=20)
+    solution, energy = high_excited_state(solutions, qubo_to_analyze, trains_input.objective_stations, increased_pt=20)
     v = qubo_to_analyze.qubo2int_vars(solution)
 
     file =  "article_plots/Etrain_diagram.pdf"

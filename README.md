@@ -15,7 +15,7 @@ Files:
 
 #### Quantum annealing 
 
-In ```solve_qubo.py``` trains scheduling problems are solved via Integer Linear Programming and quantum (or simulated) annealing
+In ```process_q_annealing.py ``` trains scheduling problems are solved via Integer Linear Programming and quantum (or simulated) annealing
 
 Arguments:
 
@@ -26,21 +26,21 @@ Arguments:
 
 Example usage:
 
-```python3 solve_qubo.py --mode 1 --sim True```
+```python3 process_q_annealing.py --mode 1 --sim True```
 
 Solve the series of problems by simulated annealing (does not perform calculations already performed and saved).
 
-```python3 solve_qubo.py --mode 1```
+```python3 process_q_annealing.py --mode 1```
 
 Solve the series of problems by real D-Wave annealing (does not perform calculations already performed and saved).
 
-```python3 solve_qubo.py --mode 2 --softern_pass True```
+```python3 process_q_annealing.py --mode 2 --softern_pass True```
 
 
 
 #### Quantum gate computing
 
-Script ```qubo4gates.py``` saves QUBO and ground state as well as analyses output dedicated to gates computing.
+Script ```process_q_gates.py``` saves QUBO and ground state as well as analyses output dedicated to gates computing.
 
 Arguments:
 
@@ -52,11 +52,11 @@ Arguments:
 
 Example usage:
 
-```python3 qubo4gates.py --notrains 2 --nolayer 1 --datafile "QAOA Results/IonQ Simulations/" ```
+```python3 process_q_gates.py --notrains 2 --nolayer 1 --datafile "QAOA Results/IonQ Simulations/" ```
 
 Analyzes ```2``` trains results in ```"QAOA Results/IonQ Simulations/" ``` where ```2``` layers of QAOA was used
 
-```python3 qubo4gates.py --notrains 2 --savequbo true ```
+```python3 process_q_gates.py --notrains 2 --savequbo true ```
 
 Prepared QUBOs for ```2``` trains problems and save them in ```QUBOs/gates/2trains/```
 

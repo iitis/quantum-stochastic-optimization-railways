@@ -13,7 +13,7 @@ from QTrains import first_with_given_objective
 
 # input
 
-class Input_qubo():
+class Input_timetable():
     """ store railway parameters """
     def __init__(self):
         self.stay = 1
@@ -65,37 +65,37 @@ class Comp_parameters():
 def test_file_names():
      # testing
 
-    q_input = Input_qubo()
-    q_input.qubo1()
-    #q_input.qubo2()
+    trains_input = Input_timetable()
+    trains_input.qubo1()
+    #trains_input.qubo2()
     q_pars = Comp_parameters()
     q_pars.method = "sim"
 
-    file = file_LP_output(q_input, q_pars)
+    file = file_LP_output(trains_input, q_pars)
     assert file == "solutions/LP_1_5.json"
 
-    file = file_QUBO(q_input, q_pars)
+    file = file_QUBO(trains_input, q_pars)
     assert file == "QUBOs/qubo_1_5_2.0_4.0.json"
 
-    file = file_QUBO_comp(q_input, q_pars)
+    file = file_QUBO_comp(trains_input, q_pars)
     assert file ==  "solutions/qubo_1_5_2.0_4.0_sim_1000_0.001_500.json"
 
-    file = file_hist(q_input, q_pars)
+    file = file_hist(trains_input, q_pars)
     assert file == "histograms/qubo_1_5_2.0_4.0_sim_1000_0.001_500.json"
 
 
 def test_solving_process():
      # testing
 
-    q_input = Input_qubo()
-    q_input.qubo1()
+    trains_input = Input_timetable()
+    trains_input.qubo1()
     q_pars = Comp_parameters()
     q_pars.method = "sim"
 
 
-    solve_on_LP(q_input, q_pars)
+    solve_on_LP(trains_input, q_pars)
 
-    file = file_LP_output(q_input, q_pars)
+    file = file_LP_output(trains_input, q_pars)
     with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
@@ -112,9 +112,9 @@ def test_solving_process():
     assert lp_sol["variables"]['y_CS_1_3'].value == 0
 
 
-    prepare_qubo(q_input, q_pars)
+    prepare_qubo(trains_input, q_pars)
     
-    file = file_QUBO(q_input, q_pars)
+    file = file_QUBO(trains_input, q_pars)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
@@ -142,20 +142,20 @@ def test_solving_process():
     assert len(Q.keys()) == 306  # Number of non-zero couplings
 
 def test_solving_QUBO():
-    q_input = Input_qubo()
-    q_input.qubo1()
+    trains_input = Input_timetable()
+    trains_input.qubo1()
     q_pars = Comp_parameters()
     q_pars.method = "sim"
 
-    solve_qubo(q_input, q_pars)
+    solve_qubo(trains_input, q_pars)
 
 
-    file = file_QUBO(q_input, q_pars)
+    file = file_QUBO(trains_input, q_pars)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
     qubo_to_analyze = Analyze_qubo(dict_read)
-    file = file_QUBO_comp(q_input, q_pars)
+    file = file_QUBO_comp(trains_input, q_pars)
 
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
@@ -176,7 +176,7 @@ def test_solving_QUBO():
     sols = get_solutions_from_dmode(samplesets, q_pars)
     assert len(sols) == 1000
 
-    file = file_LP_output(q_input, q_pars)
+    file = file_LP_output(trains_input, q_pars)
     with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
@@ -185,7 +185,7 @@ def test_solving_QUBO():
 
     if False:  # Advanced with token
         q_pars.solver = ""
-        no_logical, no_physical = approx_no_physical_qbits(q_input, q_pars, p)
+        no_logical, no_physical = approx_no_physical_qbits(trains_input, q_pars, p)
         assert qubo_to_analyze.noqubits == no_logical
         assert no_physical > 50
 
@@ -194,14 +194,14 @@ def test_solving_QUBO():
 
 
 def test_qubo_analysis():
-    q_input = Input_qubo()
-    q_input.qubo1()
+    trains_input = Input_timetable()
+    trains_input.qubo1()
     q_pars = Comp_parameters()
     q_pars.method = "sim"
 
-    analyze_qubo_Dwave(q_input, q_pars)
+    analyze_qubo_Dwave(trains_input, q_pars)
 
-    file = file_hist(q_input, q_pars)
+    file = file_hist(trains_input, q_pars)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
@@ -220,7 +220,7 @@ def test_qubo_analysis():
         assert histogram_obj[i] > 2
 
     
-    hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
+    hist_pass = results[f"{trains_input.objective_stations[0]}_{trains_input.objective_stations[1]}"]
 
     xs = list( range(np.max(hist_pass) + 1) )
     histogram_pass = [hist_pass.count(x) for x in xs]
@@ -234,9 +234,9 @@ def test_qubo_analysis():
     assert histogram_pass[12:17]==test_list  # decreasing histogram
 
 
-    hist_e = energies_histograms(q_input, q_pars)
-    hist_o = objective_histograms(q_input, q_pars)
-    hist_p = passing_time_histigrams(q_input, q_pars)
+    hist_e = energies_histograms(trains_input, q_pars)
+    hist_o = objective_histograms(trains_input, q_pars)
+    hist_p = passing_time_histigrams(trains_input, q_pars)
 
     assert hist_e["ground_state"] == -20
     assert np.min(hist_e["feasible_value"]) == -20
@@ -247,25 +247,25 @@ def test_qubo_analysis():
 
 
 def test_plotting():
-    q_input = Input_qubo()
-    q_input.qubo1()
+    trains_input = Input_timetable()
+    trains_input.qubo1()
     q_pars = Comp_parameters()
     q_pars.method = "sim"
 
-    make_plots_Dwave(q_input, q_pars)
-    display_prec_feasibility(q_input, q_pars)
+    make_plots_Dwave(trains_input, q_pars)
+    display_prec_feasibility(trains_input, q_pars)
 
 def test_auxiliaty_plotting_functions():
-    q_input = Input_qubo()
-    q_input.qubo1()
+    trains_input = Input_timetable()
+    trains_input.qubo1()
     q_pars = Comp_parameters()
     q_pars.method = "sim"
 
-    plot_tit = plot_title(q_input, q_pars)
+    plot_tit = plot_title(trains_input, q_pars)
     assert plot_tit == "Not disturbed, sim, ppair=2, psum=4"
 
-    hist_o = objective_histograms(q_input, q_pars)
-    hist_p = passing_time_histigrams(q_input, q_pars)
+    hist_o = objective_histograms(trains_input, q_pars)
+    hist_p = passing_time_histigrams(trains_input, q_pars)
 
 
     _, ax = plt.subplots(figsize=(4, 3))
@@ -278,16 +278,16 @@ def test_auxiliaty_plotting_functions():
 
 
 def test_gates():
-    q_input = Input_qubo()
-    q_input.qubo1()
+    trains_input = Input_timetable()
+    trains_input.qubo1()
     q_pars = Comp_parameters()
     q_pars.method = "IonQsim"
 
-    file = file_LP_output(q_input, q_pars)
+    file = file_LP_output(trains_input, q_pars)
     with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
-    file = file_QUBO(q_input, q_pars)
+    file = file_QUBO(trains_input, q_pars)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
@@ -297,7 +297,7 @@ def test_gates():
 
     all_solutions = Q.heuristics_degenerate(qubo_solution, "PS")
 
-    ret = analyze_QUBO_outputs(Q, q_input.objective_stations, all_solutions, lp_sol, q_pars.softern_pass)
+    ret = analyze_QUBO_outputs(Q, trains_input.objective_stations, all_solutions, lp_sol, q_pars.softern_pass)
 
     assert ret == {'perc feasible': 1.0, 'MR_CS': [12, 12], 'no qubits': 30,
                    'no qubo terms': 306, 'lp objective': 0.0,
@@ -317,10 +317,10 @@ def test_gates():
 
     replace_pair = ("qubo_1_5_2.0_4.0.json", "qubo_1_5_2.0_4.0_sim_1000_0.001_500.json")
     
-    plot_hist_gates(q_pars, q_input, file_pass= "histograms/test_pass.pdf", file_obj="histograms/test_obj.pdf", replace_pair = replace_pair)
+    plot_hist_gates(q_pars, trains_input, file_pass= "histograms/test_pass.pdf", file_obj="histograms/test_obj.pdf", replace_pair = replace_pair)
 
 
-    hist_e = energies_histograms(q_input, q_pars, replace_pair)
+    hist_e = energies_histograms(trains_input, q_pars, replace_pair)
     assert hist_e['ground_state'] == -20.0
 
 

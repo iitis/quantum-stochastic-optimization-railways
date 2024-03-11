@@ -1,6 +1,6 @@
 
 
-class Input_qubo():
+class Input_timetable():
     """ store railway parameters """
     def __init__(self):
         self.stay = 1

@@ -7,25 +7,25 @@ from .solve_sched_problems import file_hist
 
 
 
-def passing_time_histigrams(q_input, q_pars, replace_string = ("", "")):
-    """ returs dict histogram of passing times between staitons in q_input (objectvive stations) """
-    file = file_hist(q_input, q_pars, replace_string)
+def passing_time_histigrams(trains_input, q_pars, replace_string = ("", "")):
+    """ returs dict histogram of passing times between staitons in trains_input (objectvive stations) """
+    file = file_hist(trains_input, q_pars, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
-    hist_pass = results[f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}"]
+    hist_pass = results[f"{trains_input.objective_stations[0]}_{trains_input.objective_stations[1]}"]
 
     xs = list( range(np.max(hist_pass) + 1) )
     ys = [hist_pass.count(x) for x in xs]
 
-    hist = {"value":xs, "count":ys, "stations":q_input.objective_stations, "no_trains":q_input.notrains, "dmax":q_pars.dmax,
+    hist = {"value":xs, "count":ys, "stations":trains_input.objective_stations, "no_trains":trains_input.notrains, "dmax":q_pars.dmax,
              "softern":q_pars.softern_pass}
 
     return hist
 
 
-def objective_histograms(q_input, q_pars, replace_string = ("", "")):
+def objective_histograms(trains_input, q_pars, replace_string = ("", "")):
     """ returns dict histogram of objectives"""
-    file = file_hist(q_input, q_pars, replace_string)
+    file = file_hist(trains_input, q_pars, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
@@ -41,9 +41,9 @@ def objective_histograms(q_input, q_pars, replace_string = ("", "")):
     return hist
 
 
-def energies_histograms(q_input, q_pars, replace_string = ("", "")):
+def energies_histograms(trains_input, q_pars, replace_string = ("", "")):
     """ returns dict histogram of energies, feasible and not feasible"""
-    file = file_hist(q_input, q_pars, replace_string)
+    file = file_hist(trains_input, q_pars, replace_string)
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
@@ -66,9 +66,9 @@ def energies_histograms(q_input, q_pars, replace_string = ("", "")):
 
 ##### plots
 
-def plot_title(q_input, q_pars):
+def plot_title(trains_input, q_pars):
     """ title for plot of passing times """
-    if q_input.delays == {}:
+    if trains_input.delays == {}:
         disturbed = "Not disturbed"
     else:
         disturbed = "Disturbed"
@@ -116,36 +116,36 @@ def _ax_objective(ax, hist):
     ax.set_ylabel("counts")
 
 
-def make_plots_Dwave(q_input, q_pars):
+def make_plots_Dwave(trains_input, q_pars):
     """ plotting of DWave results """
 
     fig, ax = plt.subplots(figsize=(4, 3))
     
-    hist = passing_time_histigrams(q_input, q_pars)
+    hist = passing_time_histigrams(trains_input, q_pars)
     _ax_hist_passing_times(ax, hist)
-    our_title = plot_title(q_input, q_pars)
+    our_title = plot_title(trains_input, q_pars)
 
     fig.subplots_adjust(bottom=0.2, left = 0.15)
 
     plt.title(our_title)
 
-    file = file_hist(q_input, q_pars)
-    file_pass = file.replace(".json", f"{q_input.objective_stations[0]}_{q_input.objective_stations[1]}.pdf")
+    file = file_hist(trains_input, q_pars)
+    file_pass = file.replace(".json", f"{trains_input.objective_stations[0]}_{trains_input.objective_stations[1]}.pdf")
     plt.savefig(file_pass)
     plt.clf()
 
 
     fig, ax = plt.subplots(figsize=(4, 3))
 
-    hist = objective_histograms(q_input, q_pars)
+    hist = objective_histograms(trains_input, q_pars)
     _ax_objective(ax, hist)
-    our_title= f"{plot_title(q_input, q_pars)}, dmax={int(q_pars.dmax)}"
+    our_title= f"{plot_title(trains_input, q_pars)}, dmax={int(q_pars.dmax)}"
 
     fig.subplots_adjust(bottom=0.2, left = 0.15)
     
     plt.title(our_title)
 
-    file = file_hist(q_input, q_pars)
+    file = file_hist(trains_input, q_pars)
     file_obj = file.replace(".json", "obj.pdf")
     plt.savefig(file_obj)
     plt.clf()
