@@ -1,5 +1,5 @@
 """ prepare and analyze small qubos for gate computiong """
-import gzip, pickle
+import pickle
 import json
 import matplotlib.pyplot as plt
 import argparse
@@ -9,9 +9,8 @@ from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import file_QUBO_comp, file_hist, file_QUBO, file_LP_output
 from QTrains import analyze_QUBO_outputs, plot_hist_gates
 from QTrains import save_qubo_4gates_comp
-from trains_timetable import Input_qubo
 
-from solve_qubo import Comp_parameters, Process_parameters
+from trains_timetable import Input_qubo, Comp_parameters, Process_parameters
 
 
 
@@ -20,7 +19,6 @@ plt.rc('font', family='serif')
 plt.rc('font', size=10)
 
 
-    
 
 def gate_specifics_str(q_pars, input4qubo, nolayers=1):
     """ assigns string of specifics of gate computers or its simulators """
@@ -172,7 +170,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--nolayers",
         type=int,
-        help="number of layers for QAOA if analyze data",
+        help="number of layers of QAOA in analyzed data",
         default=1,
     )
 

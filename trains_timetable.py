@@ -181,3 +181,38 @@ class Input_qubo():
         s_del = self.instance_delay_string()
         self.file = f"QUBOs/LR_timetable/1train/qubo_1t_{s_del}"
         self.notrains = 1
+
+
+
+
+class Comp_parameters():
+    """ stores parameters of QUBO and computaiton """
+    def __init__(self):
+        self.M = 50
+        self.num_all_runs = 25_000
+
+        self.num_reads = 500
+        assert self.num_all_runs % self.num_reads == 0
+
+        self.ppair = 2.0
+        self.psum = 4.0
+        self.dmax = 6
+
+        self.method = "sim"
+        # for simulated annelaing
+        self.beta_range = (0.001, 50)
+        self.num_sweeps = 500
+        # for real annealing
+        self.annealing_time = 1000
+        self.solver = "Advantage_system6.3"
+        self.token = ""
+        assert self.annealing_time * self.num_reads < 1_000_000
+
+
+class Process_parameters():
+    """ particular parameters  """
+    def __init__(self):
+        self.compute = False
+        self.analyze = False
+        self.softern_pass = False
+        self.delta = 0

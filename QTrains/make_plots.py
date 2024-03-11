@@ -5,6 +5,10 @@ import copy
 
 from .solve_sched_problems import file_hist
 
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
+plt.rc('font', size=10)
+
 
 def passing_time_histigrams(q_input, q_pars, p, replace_string = ("", "")):
     """ returs dict histogram of passing times between staitons in q_input (objectvive stations) """
