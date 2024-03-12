@@ -9,7 +9,13 @@ def passing_time_histigrams(trains_input, q_pars, file_hist):
 
     with open(file_hist, 'rb') as fp:
         results = pickle.load(fp)
+
     hist_pass = results[f"{trains_input.objective_stations[0]}_{trains_input.objective_stations[1]}"]
+
+    if hist_pass == []:
+        hist = {"value":[], "count":[], "stations":trains_input.objective_stations, "no_trains":trains_input.notrains, "dmax":q_pars.dmax,
+             "softern":q_pars.softern_pass}
+        return hist
 
     xs = list( range(np.max(hist_pass) + 1) )
     ys = [hist_pass.count(x) for x in xs]

@@ -380,6 +380,7 @@ def series_gates_simulations():
     for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
         for dmax in [2,4,6]:
             plot_gates(ppair,psum, nolayers=1,dmax=dmax, notrains = 1)
+            plot_gates(ppair,psum, nolayers=2,dmax=dmax, notrains = 1)
 
     for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
         plot_gates(ppair,psum, nolayers=1,dmax=2, notrains = 2)
@@ -392,9 +393,11 @@ def series_gates_real():
     for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
         for dmax in [2,4,6]:
             plot_gates(ppair,psum, nolayers=1,dmax=dmax, notrains = 1, real = True)
+            plot_gates(ppair,psum, nolayers=2,dmax=dmax, notrains = 1, real = True)
 
     for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
         plot_gates(ppair,psum, nolayers=1,dmax=2, notrains = 2, real = True)
+        plot_gates(ppair,psum, nolayers=2,dmax=2, notrains = 2, real = True)
 
 
 
@@ -729,21 +732,21 @@ def train_diagrams():
 
 if __name__ == "__main__":
 
-    series_DWave_hist()
+    #series_DWave_hist()
 
-    embedding()
+    #embedding()
 
     series_gates_real()
 
     series_gates_simulations()
 
-    gates_scaling_IonQ_seq()
+    #gates_scaling_IonQ_seq()
 
-    gates_scaling_IBM(2.0,4.0, 1)
-    gates_scaling_IBM(20.0,40.0, 1)
+    #gates_scaling_IBM(2.0,4.0, 1)
+    #gates_scaling_IBM(20.0,40.0, 1)
 
-    plot_real_live_MLR_2()
+    #plot_real_live_MLR_2()
 
-    feasibility_percentage()
+    #feasibility_percentage()
 
-    train_diagrams()
+    #train_diagrams()
