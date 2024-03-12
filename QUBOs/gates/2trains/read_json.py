@@ -2,7 +2,7 @@
 import pickle
 
 # add file name
-file_q = 'qubo_2t_delays_124_525_6_20.0_40.0.json'
+file_q = 'qubo_2t_delays_124_525_2_20.0_40.0.json'
 
 
 with open(file_q, 'rb') as fp:

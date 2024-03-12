@@ -26,12 +26,9 @@ def test_4train_qubo():
     with open(file_input, 'rb') as fp:
         compare_qubo = pickle.load(fp)
 
-    for k in created_qubo:
-        print(".............")
-        print(k)
-        print(created_qubo[k] == compare_qubo[k])
+    for k, value in created_qubo.items():
+        assert value == compare_qubo[k]
 
-    assert created_qubo["qbit_inds"] == compare_qubo["qbit_inds"]
 
 
 def test_2train_qubo():
@@ -39,12 +36,13 @@ def test_2train_qubo():
     q_par = Comp_parameters()
     q_par.ppair = 2.0
     q_par.psum = 4.0
-    q_par.dmax = 2
     trains_input = Input_timetable()
     delays = {}
     trains_input.qubo_real_2t(delays)
 
     file_input = "tests/files/2train_QUBO.json"
+
+    q_par.dmax = 2
 
     prepare_qubo(trains_input, q_par, file_input)
 
@@ -56,12 +54,9 @@ def test_2train_qubo():
     with open(file_input, 'rb') as fp:
         compare_qubo = pickle.load(fp)
 
-    for k in created_qubo:
-        print(".............")
-        print(k)
-        print(created_qubo[k] == compare_qubo[k])
+    for k, value in created_qubo.items():
+        assert value == compare_qubo[k]
 
-    #assert created_qubo["qbit_inds"] == compare_qubo["qbit_inds"]
 
 
 def test_1train_qubo():
@@ -86,9 +81,5 @@ def test_1train_qubo():
     with open(file_input, 'rb') as fp:
         compare_qubo = pickle.load(fp)
 
-    for k in created_qubo:
-        print(".............")
-        print(k)
-        print(created_qubo[k] == compare_qubo[k])
-
-    assert created_qubo["qbit_inds"] == compare_qubo["qbit_inds"]
+    for k, value in created_qubo.items():
+        assert value == compare_qubo[k]
