@@ -20,20 +20,15 @@ def file_LP_output(trains_input, q_pars):
     """ returns string, the file name and dir to store LP results """
     file = trains_input.file
     file = file.replace("qubo", "LP")
-    if q_pars.delta == 0:
-        file = f"{file}_{q_pars.dmax}.json"
-    else:
-        file = f"{file}_{q_pars.dmax}_stochastic{q_pars.delta}.json"
+    file = f"{file}_{q_pars.dmax}.json"
+
     file = file.replace("QUBOs", "solutions")
     return file
 
 def file_QUBO(trains_input, q_pars):
     """ returns string, the file name and dir to store QUBO and its features """
-    if q_pars.delta == 0:
-        file = f"{trains_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}.json"
-    else:
-        file = f"{trains_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}_stochastic{p.delta}.json"
-    return file
+    return f"{trains_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}.json"
+
 
 def file_QUBO_comp(trains_input, q_pars, replace_pair = ("", "")):
     """ returns string, the file name and dir to store results of computaiton on QUBO """
@@ -58,7 +53,7 @@ def file_hist(trains_input, q_pars, replace_pair = ("", "")):
     return file
 
 #### ILP solver
-def solve_on_LP(trains_input, q_pars):
+def solve_on_LP(trains_input, q_pars, output_file):
     """ solve the problem using LP, and save results """
     stay = trains_input.stay
     headways = trains_input.headways
@@ -73,7 +68,7 @@ def solve_on_LP(trains_input, q_pars):
     rail_input = Railway_input(pars, objective_stations, delays = trains_input.delays)
     v = Variables(rail_input)
     bounds, integrality = v.bonds_and_integrality()
-    problem = LinearPrograming(v, rail_input, M = q_pars.M, delta=q_pars.delta)
+    problem = LinearPrograming(v, rail_input, M = q_pars.M)
     opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
                   b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
                   integrality = integrality)
@@ -85,16 +80,14 @@ def solve_on_LP(trains_input, q_pars):
     d["variables"] = v.variables
     d["objective"] = problem.compute_objective(v, rail_input)
 
-    file = file_LP_output(trains_input, q_pars)
-    with open(file, 'wb') as fp:
+    with open(output_file, 'wb') as fp:
         pickle.dump(d, fp)
 
 
 #####  QUBO handling ######
-def prepare_qubo(trains_input, q_pars):
+def prepare_qubo(trains_input, q_pars, output_file):
     """ create and save QUBO given railway input and parameters 
     
-    delta is the parameter that increases passing time, for stochastic purpose
     """
     stay = trains_input.stay
     headways = trains_input.headways
@@ -112,11 +105,10 @@ def prepare_qubo(trains_input, q_pars):
     
     rail_input = Railway_input(par, objective_stations, delays = trains_input.delays)
     q = QuboVars(rail_input, ppair=ppair, psum=psum)
-    q.make_qubo(rail_input, q_pars.delta)
+    q.make_qubo(rail_input)
     qubo_dict = q.store_in_dict(rail_input)
 
-    file = file_QUBO(trains_input, q_pars)
-    with open(file, 'wb') as fp:
+    with open(output_file, 'wb') as fp:
         pickle.dump(qubo_dict, fp)
 
 
@@ -144,10 +136,10 @@ def approx_no_physical_qbits(trains_input, q_pars):
 
 
 
-def solve_qubo(trains_input, q_pars):
+def solve_qubo(trains_input, q_pars, input_file, output_file):
     """ solve the problem given by QUBO and store results """
-    file = file_QUBO(trains_input, q_pars)
-    with open(file, 'rb') as fp:
+    
+    with open(input_file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
     qubo_to_analyze = Analyze_qubo(dict_read)
@@ -174,8 +166,7 @@ def solve_qubo(trains_input, q_pars):
                 annealing_time=q_pars.annealing_time
         )
 
-    file = file_QUBO_comp(trains_input, q_pars)
-    with open(file, 'wb') as fp:
+    with open(output_file, 'wb') as fp:
         pickle.dump(sampleset, fp)
 
     print(f"solved qubo method {q_pars.method}")
@@ -200,22 +191,18 @@ def get_solutions_from_dmode(samplesets, q_pars):
                     
 
 
-def analyze_qubo_Dwave(trains_input, q_pars):
+def analyze_qubo_Dwave(trains_input, q_pars, qubo_file, lp_file, qubo_output_file, hist_file):
     """ analyze results of computation on QUBO and comparison with LP """
-    show_var_vals = False
 
-    file = file_QUBO(trains_input, q_pars)
-    with open(file, 'rb') as fp:
-        dict_read = pickle.load(fp)
+    with open(qubo_file, 'rb') as fp:
+        dict_qubo = pickle.load(fp)
 
-    file = file_LP_output(trains_input, q_pars)
-    with open(file, 'rb') as fp:
+    qubo_to_analyze = Analyze_qubo(dict_qubo)
+
+    with open(lp_file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
-    qubo_to_analyze = Analyze_qubo(dict_read)
-    file = file_QUBO_comp(trains_input, q_pars)
-    print( file )
-    with open(file, 'rb') as fp:
+    with open(qubo_output_file, 'rb') as fp:
         samplesets = pickle.load(fp)
 
     stations = trains_input.objective_stations
@@ -224,9 +211,7 @@ def analyze_qubo_Dwave(trains_input, q_pars):
 
     results = analyze_QUBO_outputs(qubo_to_analyze, stations, our_solutions, lp_sol, softernpass = q_pars.softern_pass)
 
-
-    file =  file_hist(trains_input, q_pars)
-    with open(file, 'wb') as fp:
+    with open(hist_file, 'wb') as fp:
         pickle.dump(results, fp)
 
 
@@ -276,7 +261,7 @@ def analyze_QUBO_outputs(qubo, stations, our_solutions, lp_solution, softernpass
 ######## gates  #######
         
 
-def save_qubo_4gates_comp(dict_qubo, ground_sols, input_file):
+def save_qubo_4gates_comp(dict_qubo, ground_sols, output_file):
     "creates and seves file with ground oslution and small qubo for gate computing"
     our_qubo = Analyze_qubo(dict_qubo)
     qubo4gates = {}
@@ -287,8 +272,7 @@ def save_qubo_4gates_comp(dict_qubo, ground_sols, input_file):
         assert E == our_qubo.energy(ground_sol)
     qubo4gates["ground_energy"] = E
 
-    new_file = input_file.replace("LR_timetable/", "gates/")
-    with open(new_file, 'wb') as fp_w:
+    with open(output_file, 'wb') as fp_w:
         pickle.dump(qubo4gates, fp_w)
 
 
@@ -316,11 +300,10 @@ def dsiplay_solution_analysis(trains_input, our_solution, lp_solution, timetable
         print("  ..............................  ")
 
 
-def display_prec_feasibility(trains_input, q_pars):
+def display_prec_feasibility(trains_input, q_pars, file_h):
     """ print results of computation """
 
-    file = file_hist(trains_input, q_pars)
-    with open(file, 'rb') as fp:
+    with open(file_h, 'rb') as fp:
         res_dict = pickle.load(fp)
 
     

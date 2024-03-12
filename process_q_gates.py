@@ -71,9 +71,8 @@ def get_files_dirs(trains_input, q_pars, data_file, nolayers):
 
 
 
-def read_aria_summary(trains_input, q_pars, datafile, replace_string):
-    our_key = file_QUBO_comp(trains_input, q_pars, (replace_string, ""))
-    our_key = our_key.replace(".json", "")
+def read_aria_summary(trains_input, q_pars, datafile, our_key):
+    
 
     file_comp = f"{datafile}expt.ionq-qpu-aria.all.json"
 
@@ -87,22 +86,20 @@ def read_aria_summary(trains_input, q_pars, datafile, replace_string):
 
 
 
-def save_QUBO(trains_input, q_pars):
+def save_QUBO(trains_input, q_pars, lp_file, qubo_file, output_file):
     """ saves the QUBO in the file for given instance """
-    file = file_LP_output(trains_input, q_pars)
-    with open(file, 'rb') as fp:
+    with open(lp_file, 'rb') as fp:
         lp_sol = pickle.load(fp)
-            
-    file_q = file_QUBO(trains_input, q_pars)
-    print(file_q)
-    with open(file_q, 'rb') as fp:
+
+    with open(qubo_file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
     Q = Analyze_qubo(dict_read)
     qubo_solution = Q.int_vars2qubo(lp_sol["variables"])
     ground_solutions = Q.heuristics_degenerate(qubo_solution, "PS")
 
-    save_qubo_4gates_comp(dict_read, ground_solutions, file_q)
+    save_qubo_4gates_comp(dict_read, ground_solutions, output_file)
+
     results = analyze_QUBO_outputs(Q, trains_input.objective_stations, ground_solutions, lp_sol, q_pars.softern_pass)
     print("no qbits", results["no qubits"])
     print("objective optimal", results["lp objective"])
@@ -117,10 +114,11 @@ def analyze_and_plot_hists(args, trains_input, q_pars):
     file_h = file_hist(trains_input, q_pars, replace_pairh)
 
     if "IonQ Aria Experiments" in args.datafile:
-        solutions_input = [read_aria_summary(trains_input, q_pars, args.datafile, replace_pair[0])]
+        our_key = file_comp.replace(replace_pair[0], "")
+        our_key = our_key.replace(".json", "")
+        solutions_input = [read_aria_summary(trains_input, q_pars, args.datafile, our_key)]
 
     else:
-
         with open(file_comp, 'r') as fp:
             solutions_input = json.load(fp)
 
@@ -142,10 +140,11 @@ def analyze_and_plot_hists(args, trains_input, q_pars):
     with open(file_h, 'wb') as fp:
         pickle.dump(results, fp)
 
-    file_h = file_h.replace(".json", "_")
-    file_pass = f"{file_h}time_hists.pdf"
-    file_obj = f"{file_h}obj.pdf"            
-    plot_hist_gates(q_pars, trains_input, file_pass, file_obj, replace_pairh)
+    file_temp = file_h.replace(".json", "_")
+    file_pass = f"{file_temp}time_hists.pdf"
+    file_obj = f"{file_temp}obj.pdf"
+            
+    plot_hist_gates(q_pars, trains_input, file_h, file_pass, file_obj)
 
 
 if __name__ == "__main__":
@@ -217,7 +216,11 @@ if __name__ == "__main__":
                     trains_input.qubo_real_4t(delay)
 
                 if args.savequbo:
-                    save_QUBO(trains_input, q_pars)
+
+                    lp_file = file_LP_output(trains_input, q_pars)      
+                    qubo_file = file_QUBO(trains_input, q_pars)
+                    output_file = qubo_file.replace("LR_timetable/", "gates/")
+                    save_QUBO(trains_input, q_pars, lp_file, qubo_file, output_file)
                 else:
                     try:
                         analyze_and_plot_hists(args, trains_input, q_pars)

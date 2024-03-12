@@ -7,10 +7,10 @@ from .solve_sched_problems import file_hist
 
 
 
-def passing_time_histigrams(trains_input, q_pars, replace_string = ("", "")):
+def passing_time_histigrams(trains_input, q_pars, file_hist):
     """ returs dict histogram of passing times between staitons in trains_input (objectvive stations) """
-    file = file_hist(trains_input, q_pars, replace_string)
-    with open(file, 'rb') as fp:
+
+    with open(file_hist, 'rb') as fp:
         results = pickle.load(fp)
     hist_pass = results[f"{trains_input.objective_stations[0]}_{trains_input.objective_stations[1]}"]
 
@@ -23,10 +23,10 @@ def passing_time_histigrams(trains_input, q_pars, replace_string = ("", "")):
     return hist
 
 
-def objective_histograms(trains_input, q_pars, replace_string = ("", "")):
+def objective_histograms(trains_input, q_pars, file_hist):
     """ returns dict histogram of objectives"""
-    file = file_hist(trains_input, q_pars, replace_string)
-    with open(file, 'rb') as fp:
+
+    with open(file_hist, 'rb') as fp:
         results = pickle.load(fp)
 
     hist_obj = results["qubo objectives"]
@@ -41,10 +41,10 @@ def objective_histograms(trains_input, q_pars, replace_string = ("", "")):
     return hist
 
 
-def energies_histograms(trains_input, q_pars, replace_string = ("", "")):
+def energies_histograms(trains_input, q_pars, file_hist):
     """ returns dict histogram of energies, feasible and not feasible"""
-    file = file_hist(trains_input, q_pars, replace_string)
-    with open(file, 'rb') as fp:
+
+    with open(file_hist, 'rb') as fp:
         results = pickle.load(fp)
 
     hist_feas = results["energies feasible"]
@@ -116,12 +116,13 @@ def _ax_objective(ax, hist):
     ax.set_ylabel("counts")
 
 
-def make_plots_Dwave(trains_input, q_pars):
+def make_plots_Dwave(trains_input, q_pars, file_h):
     """ plotting of DWave results """
 
     fig, ax = plt.subplots(figsize=(4, 3))
-    
-    hist = passing_time_histigrams(trains_input, q_pars)
+
+    file_h = file_hist(trains_input, q_pars)
+    hist = passing_time_histigrams(trains_input, q_pars, file_h)
     _ax_hist_passing_times(ax, hist)
     our_title = plot_title(trains_input, q_pars)
 
@@ -137,7 +138,7 @@ def make_plots_Dwave(trains_input, q_pars):
 
     fig, ax = plt.subplots(figsize=(4, 3))
 
-    hist = objective_histograms(trains_input, q_pars)
+    hist = objective_histograms(trains_input, q_pars, file_h)
     _ax_objective(ax, hist)
     our_title= f"{plot_title(trains_input, q_pars)}, dmax={int(q_pars.dmax)}"
 
@@ -151,11 +152,11 @@ def make_plots_Dwave(trains_input, q_pars):
     plt.clf()
 
 
-def plot_hist_gates(q_pars, input4qubo, file_pass, file_obj, replace_pair):
+def plot_hist_gates(q_pars, input4qubo, file_hist, file_pass, file_obj):
     """ plots histrogram from gate computers output """
 
     fig, ax = plt.subplots(figsize=(4, 3))
-    hist = passing_time_histigrams(input4qubo, q_pars, replace_string = replace_pair)
+    hist = passing_time_histigrams(input4qubo, q_pars, file_hist)
     _ax_hist_passing_times(ax, hist)
     our_title = plot_title(input4qubo, q_pars)
 
@@ -169,7 +170,7 @@ def plot_hist_gates(q_pars, input4qubo, file_pass, file_obj, replace_pair):
 
     fig, ax = plt.subplots(figsize=(4, 3))
 
-    hist = objective_histograms(input4qubo, q_pars, replace_string = replace_pair)
+    hist = objective_histograms(input4qubo, q_pars, file_hist)
     _ax_objective(ax, hist)
     our_title= f"{plot_title(input4qubo, q_pars)}, dmax={int(q_pars.dmax)}"
 

@@ -12,43 +12,36 @@ from trains_timetable import Input_timetable, Comp_parameters
 
 
 
-def plot_hist(trains_input, q_pars):
-    """ plot histograms of trains passing time from results from QUBO """
-
-    make_plots_Dwave(trains_input, q_pars)
-    display_prec_feasibility(trains_input, q_pars)
-
-
-
 def process(trains_input, q_pars):
     """ the sequence of calculation  makes computation if results has not been saved already"""
 
 
-    file = file_QUBO(trains_input, q_pars)
-    if not os.path.isfile(file):
-        prepare_qubo(trains_input, q_pars)
+    qubo_file = file_QUBO(trains_input, q_pars)
+    if not os.path.isfile(qubo_file):
+        prepare_qubo(trains_input, q_pars, qubo_file)
 
     if q_pars.compute:
 
-        file = file_LP_output(trains_input, q_pars)
-        if not os.path.isfile(file):
-            solve_on_LP(trains_input, q_pars)
+        lp_file = file_LP_output(trains_input, q_pars)
+        if not os.path.isfile(lp_file):
+            solve_on_LP(trains_input, q_pars, lp_file)
 
-        file = file_QUBO_comp(trains_input, q_pars)
-        if not os.path.isfile(file):
-            solve_qubo(trains_input, q_pars)
+        qubo_output_file = file_QUBO_comp(trains_input, q_pars)
+        if not os.path.isfile(qubo_output_file):
+            solve_qubo(trains_input, q_pars, qubo_file, qubo_output_file)
 
     if q_pars.analyze:
         try:
-            file = file_hist(trains_input, q_pars)
-            if not os.path.isfile(file):
-                analyze_qubo_Dwave(trains_input, q_pars)
+            hist_file = file_hist(trains_input, q_pars)
+            if not os.path.isfile(hist_file):
+                analyze_qubo_Dwave(trains_input, q_pars, qubo_file, lp_file, qubo_output_file, hist_file)
 
-            plot_hist(trains_input, q_pars)
+            make_plots_Dwave(trains_input, q_pars, hist_file)
+            display_prec_feasibility(trains_input, q_pars, hist_file)
         except:
-            file = file_QUBO_comp(trains_input, q_pars)
             print(" XXXXXXXXXXXXXXXXXXXXXX  ")
-            print( f"not working for {file}" )
+            qubo_output_file = file_QUBO_comp(trains_input, q_pars)
+            print( f"not working for {qubo_output_file}" )
 
 
 def get_no_physical_qbits(ret_dict, trains_input, q_pars, trains):
@@ -213,7 +206,3 @@ if __name__ == "__main__":
                 q_par.psum = 40.0
                 series_of_computation(our_qubo, q_par)
     
-
-
-
-

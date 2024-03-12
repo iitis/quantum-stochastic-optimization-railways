@@ -93,9 +93,10 @@ def test_solving_process():
     q_pars.method = "sim"
 
 
-    solve_on_LP(trains_input, q_pars)
-
     file = file_LP_output(trains_input, q_pars)
+    solve_on_LP(trains_input, q_pars, file)
+
+
     with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
 
@@ -112,9 +113,8 @@ def test_solving_process():
     assert lp_sol["variables"]['y_CS_1_3'].value == 0
 
 
-    prepare_qubo(trains_input, q_pars)
-    
     file = file_QUBO(trains_input, q_pars)
+    prepare_qubo(trains_input, q_pars, file)
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
@@ -147,17 +147,17 @@ def test_solving_QUBO():
     q_pars = Comp_parameters()
     q_pars.method = "sim"
 
-    solve_qubo(trains_input, q_pars)
+    input_file = file_QUBO(trains_input, q_pars)
+    output_file = file_QUBO_comp(trains_input, q_pars)
 
+    solve_qubo(trains_input, q_pars, input_file, output_file)
 
-    file = file_QUBO(trains_input, q_pars)
-    with open(file, 'rb') as fp:
+    with open(input_file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
     qubo_to_analyze = Analyze_qubo(dict_read)
-    file = file_QUBO_comp(trains_input, q_pars)
 
-    with open(file, 'rb') as fp:
+    with open(output_file, 'rb') as fp:
         samplesets = pickle.load(fp)
 
     assert list(samplesets.keys()) == [0, 1]
@@ -199,10 +199,17 @@ def test_qubo_analysis():
     q_pars = Comp_parameters()
     q_pars.method = "sim"
 
-    analyze_qubo_Dwave(trains_input, q_pars)
+    qubo_file = file_QUBO(trains_input, q_pars)
 
-    file = file_hist(trains_input, q_pars)
-    with open(file, 'rb') as fp:
+    lp_file = file_LP_output(trains_input, q_pars)
+
+    qubo_output_file = file_QUBO_comp(trains_input, q_pars)
+
+    hist_file = file_hist(trains_input, q_pars)
+
+    analyze_qubo_Dwave(trains_input, q_pars, qubo_file, lp_file, qubo_output_file, hist_file)
+
+    with open(hist_file, 'rb') as fp:
         results = pickle.load(fp)
 
     hist_obj = results["qubo objectives"]
@@ -233,10 +240,10 @@ def test_qubo_analysis():
     test_list.sort(reverse=True)
     assert histogram_pass[12:17]==test_list  # decreasing histogram
 
-
-    hist_e = energies_histograms(trains_input, q_pars)
-    hist_o = objective_histograms(trains_input, q_pars)
-    hist_p = passing_time_histigrams(trains_input, q_pars)
+    file_h = file_hist(trains_input, q_pars)
+    hist_e = energies_histograms(trains_input, q_pars, file_h)
+    hist_o = objective_histograms(trains_input, q_pars, file_h)
+    hist_p = passing_time_histigrams(trains_input, q_pars, file_h)
 
     assert hist_e["ground_state"] == -20
     assert np.min(hist_e["feasible_value"]) == -20
@@ -252,8 +259,10 @@ def test_plotting():
     q_pars = Comp_parameters()
     q_pars.method = "sim"
 
-    make_plots_Dwave(trains_input, q_pars)
-    display_prec_feasibility(trains_input, q_pars)
+    file_h = file_hist(trains_input, q_pars)
+
+    make_plots_Dwave(trains_input, q_pars, file_h)
+    display_prec_feasibility(trains_input, q_pars, file_h)
 
 def test_auxiliaty_plotting_functions():
     trains_input = Input_timetable()
@@ -264,8 +273,9 @@ def test_auxiliaty_plotting_functions():
     plot_tit = plot_title(trains_input, q_pars)
     assert plot_tit == "Not disturbed, sim, ppair=2, psum=4"
 
-    hist_o = objective_histograms(trains_input, q_pars)
-    hist_p = passing_time_histigrams(trains_input, q_pars)
+    file_h = file_hist(trains_input, q_pars)
+    hist_o = objective_histograms(trains_input, q_pars, file_h)
+    hist_p = passing_time_histigrams(trains_input, q_pars, file_h)
 
 
     _, ax = plt.subplots(figsize=(4, 3))
@@ -316,11 +326,12 @@ def test_gates():
     assert dict_read["ground_energy"] == Q.energy(qubo_solution)
 
     replace_pair = ("qubo_1_5_2.0_4.0.json", "qubo_1_5_2.0_4.0_sim_1000_0.001_500.json")
+
+    file_h = file_hist(trains_input, q_pars, replace_pair)
     
-    plot_hist_gates(q_pars, trains_input, file_pass= "histograms/test_pass.pdf", file_obj="histograms/test_obj.pdf", replace_pair = replace_pair)
+    plot_hist_gates(q_pars, trains_input, file_h, file_pass= "histograms/test_pass.pdf", file_obj="histograms/test_obj.pdf")
 
-
-    hist_e = energies_histograms(trains_input, q_pars, replace_pair)
+    hist_e = energies_histograms(trains_input, q_pars, file_h)
     assert hist_e['ground_state'] == -20.0
 
 

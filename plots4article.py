@@ -9,7 +9,7 @@ from QTrains import file_QUBO_comp, file_QUBO, file_LP_output
 from QTrains import Analyze_qubo
 from trains_timetable import Input_timetable, Comp_parameters
 
-from qubo4gates import get_files_dirs
+from process_q_gates import get_files_dirs
 
 
 
@@ -64,18 +64,19 @@ def dWave_hist(no_trains = 2, dmax = 2, at = 10, soft = False):
             if no_trains == 11:
                 trains_input.qubo_real_11t(delays)
 
-            hist = passing_time_histigrams(trains_input, q_par)
-            write_file = file4csv(trains_input, q_par)
+            file_h = file_hist(trains_input, q_par)
+            hist = passing_time_histigrams(trains_input, q_par, file_h)
+            write_file = file4csv(trains_input, q_par, file_h)
             csv_write_hist(write_file, hist)
 
-            hist = objective_histograms(trains_input, q_par)
+            hist = objective_histograms(trains_input, q_par, file_h)
             write_file = write_file.replace("qubo", "objective")
             csv_write_hist(write_file, hist)
 
             our_title = plot_title(trains_input, q_par)
             print(our_title, f"soft{soft}")
 
-            energies = energies_histograms(trains_input, q_par)
+            energies = energies_histograms(trains_input, q_par, file_h)
             write_file = write_file.replace("objective", "energies/energies_feasible")
             csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
             write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
@@ -432,18 +433,19 @@ def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
 
         _, csh = get_files_dirs(trains_input, q_par, data_file, nolayers)
         
-        hist = passing_time_histigrams(trains_input, q_par, replace_string = csh)
+        file_histogram = file_hist(trains_input, q_par, replace_pair = csh)
+        hist = passing_time_histigrams(trains_input, q_par, file_histogram)
         write_file = file4csv(trains_input, q_par, nolayers)
         csv_write_hist(write_file, hist)
 
-        hist = objective_histograms(trains_input, q_par, replace_string = csh)
+        hist = objective_histograms(trains_input, q_par, file_histogram)
         write_file = write_file.replace("qubo", "objective")
         csv_write_hist(write_file, hist)
 
         our_title = plot_title(trains_input, q_par)
         print(our_title)
 
-        energies = energies_histograms(trains_input, q_par, replace_string = csh)
+        energies = energies_histograms(trains_input, q_par, file_histogram)
         write_file = write_file.replace("objective", "energies/energies_feasible")
         csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
         write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
