@@ -3,9 +3,6 @@ import pickle
 import numpy as np
 import copy
 
-from .solve_sched_problems import file_hist
-
-
 
 def passing_time_histigrams(trains_input, q_pars, file_hist):
     """ returs dict histogram of passing times between staitons in trains_input (objectvive stations) """
@@ -23,7 +20,7 @@ def passing_time_histigrams(trains_input, q_pars, file_hist):
     return hist
 
 
-def objective_histograms(trains_input, q_pars, file_hist):
+def objective_histograms(file_hist):
     """ returns dict histogram of objectives"""
 
     with open(file_hist, 'rb') as fp:
@@ -41,7 +38,7 @@ def objective_histograms(trains_input, q_pars, file_hist):
     return hist
 
 
-def energies_histograms(trains_input, q_pars, file_hist):
+def energies_histograms(file_hist):
     """ returns dict histogram of energies, feasible and not feasible"""
 
     with open(file_hist, 'rb') as fp:
@@ -116,70 +113,30 @@ def _ax_objective(ax, hist):
     ax.set_ylabel("counts")
 
 
-def make_plots_Dwave(trains_input, q_pars, file_h):
+def plot_hist_pass_obj(trains_input, q_pars, file_hist, file_pass, file_obj):
     """ plotting of DWave results """
 
     fig, ax = plt.subplots(figsize=(4, 3))
 
-    file_h = file_hist(trains_input, q_pars)
-    hist = passing_time_histigrams(trains_input, q_pars, file_h)
+    hist = passing_time_histigrams(trains_input, q_pars, file_hist)
     _ax_hist_passing_times(ax, hist)
     our_title = plot_title(trains_input, q_pars)
-
     fig.subplots_adjust(bottom=0.2, left = 0.15)
-
     plt.title(our_title)
-
-    file = file_hist(trains_input, q_pars)
-    file_pass = file.replace(".json", f"{trains_input.objective_stations[0]}_{trains_input.objective_stations[1]}.pdf")
     plt.savefig(file_pass)
     plt.clf()
 
 
     fig, ax = plt.subplots(figsize=(4, 3))
-
-    hist = objective_histograms(trains_input, q_pars, file_h)
+    hist = objective_histograms(file_hist)
     _ax_objective(ax, hist)
     our_title= f"{plot_title(trains_input, q_pars)}, dmax={int(q_pars.dmax)}"
-
     fig.subplots_adjust(bottom=0.2, left = 0.15)
-    
     plt.title(our_title)
-
-    file = file_hist(trains_input, q_pars)
-    file_obj = file.replace(".json", "obj.pdf")
     plt.savefig(file_obj)
     plt.clf()
 
 
-def plot_hist_gates(q_pars, input4qubo, file_hist, file_pass, file_obj):
-    """ plots histrogram from gate computers output """
-
-    fig, ax = plt.subplots(figsize=(4, 3))
-    hist = passing_time_histigrams(input4qubo, q_pars, file_hist)
-    _ax_hist_passing_times(ax, hist)
-    our_title = plot_title(input4qubo, q_pars)
-
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-
-    plt.title(our_title)
-
-    plt.savefig(file_pass)
-    plt.clf()
-
-
-    fig, ax = plt.subplots(figsize=(4, 3))
-
-    hist = objective_histograms(input4qubo, q_pars, file_hist)
-    _ax_objective(ax, hist)
-    our_title= f"{plot_title(input4qubo, q_pars)}, dmax={int(q_pars.dmax)}"
-
-    fig.subplots_adjust(bottom=0.2, left = 0.15)
-    
-    plt.title(our_title)
-
-    plt.savefig(file_obj)
-    plt.clf()
 
 
 # train diagrams
@@ -233,9 +190,6 @@ def plot_train_diagrams(input_dict, file):
     xs = input_dict["space"]
     ys = input_dict["time"]
     stations_loc = input_dict["stations_loc"]
-
-
-    colors = {0: "black", 1: "red", 2: "green", 3: "blue", 4: "orange", 5: "brown", 6: "cyan"}
 
     for j in ys.keys():
         plt.plot(ys[j], xs[j], "o-", label=f"train {j} ", linewidth=0.85, markersize=2)

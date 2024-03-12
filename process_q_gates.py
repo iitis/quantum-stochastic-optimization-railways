@@ -7,7 +7,7 @@ import argparse
 from QTrains import Analyze_qubo
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import file_QUBO_comp, file_hist, file_QUBO, file_LP_output
-from QTrains import analyze_QUBO_outputs, plot_hist_gates
+from QTrains import analyze_QUBO_outputs, plot_hist_pass_obj
 from QTrains import save_qubo_4gates_comp
 
 from trains_timetable import Input_timetable, Comp_parameters
@@ -110,8 +110,10 @@ def analyze_and_plot_hists(args, trains_input, q_pars):
     """ analyze experiments outputs, save histograms as .json as well as plot histograms """
     replace_pair, replace_pairh = get_files_dirs(trains_input, q_pars, args.datafile, args.nolayers)
 
-    file_comp = file_QUBO_comp(trains_input, q_pars, replace_pair)  
-    file_h = file_hist(trains_input, q_pars, replace_pairh)
+    file_comp = file_QUBO_comp(trains_input, q_pars)
+    file_comp = file_comp.replace(replace_pair[0], replace_pair[1])
+    file_h = file_hist(trains_input, q_pars)
+    file_h = file_h.replace(replace_pairh[0], replace_pairh[1])
 
     if "IonQ Aria Experiments" in args.datafile:
         our_key = file_comp.replace(replace_pair[0], "")
@@ -143,8 +145,8 @@ def analyze_and_plot_hists(args, trains_input, q_pars):
     file_temp = file_h.replace(".json", "_")
     file_pass = f"{file_temp}time_hists.pdf"
     file_obj = f"{file_temp}obj.pdf"
-            
-    plot_hist_gates(q_pars, trains_input, file_h, file_pass, file_obj)
+
+    plot_hist_pass_obj(trains_input, q_pars, file_h, file_pass, file_obj)
 
 
 if __name__ == "__main__":

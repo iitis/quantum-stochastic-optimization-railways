@@ -30,7 +30,7 @@ def file_QUBO(trains_input, q_pars):
     return f"{trains_input.file}_{q_pars.dmax}_{q_pars.ppair}_{q_pars.psum}.json"
 
 
-def file_QUBO_comp(trains_input, q_pars, replace_pair = ("", "")):
+def file_QUBO_comp(trains_input, q_pars):
     """ returns string, the file name and dir to store results of computaiton on QUBO """
     file = file_QUBO(trains_input, q_pars)
     file = file.replace("QUBOs", "solutions")
@@ -38,13 +38,13 @@ def file_QUBO_comp(trains_input, q_pars, replace_pair = ("", "")):
         file = file.replace(".json", f"_{q_pars.method}_{q_pars.num_all_runs}_{q_pars.beta_range[0]}_{q_pars.num_sweeps}.json")
     elif q_pars.method == "real":
         file = file.replace(".json", f"_{q_pars.solver}_{q_pars.num_all_runs}_{q_pars.annealing_time}.json")
-    file = file.replace(replace_pair[0], replace_pair[1])
+
     return file
 
 
-def file_hist(trains_input, q_pars, replace_pair = ("", "")):
+def file_hist(trains_input, q_pars):
     """ file for histogram """
-    file = file_QUBO_comp(trains_input, q_pars, replace_pair = replace_pair)
+    file = file_QUBO_comp(trains_input, q_pars)
     if not q_pars.softern_pass:
         file = file.replace("solutions", "histograms")
     else:

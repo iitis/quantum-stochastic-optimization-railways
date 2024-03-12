@@ -6,7 +6,7 @@ import argparse
 
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
-from QTrains import display_prec_feasibility, make_plots_Dwave, approx_no_physical_qbits
+from QTrains import display_prec_feasibility, plot_hist_pass_obj, approx_no_physical_qbits
 
 from trains_timetable import Input_timetable, Comp_parameters
 
@@ -17,30 +17,32 @@ def process(trains_input, q_pars):
 
 
     qubo_file = file_QUBO(trains_input, q_pars)
+    lp_file = file_LP_output(trains_input, q_pars)
+    qubo_output_file = file_QUBO_comp(trains_input, q_pars)
+    hist_file = file_hist(trains_input, q_pars)
+
     if not os.path.isfile(qubo_file):
         prepare_qubo(trains_input, q_pars, qubo_file)
 
     if q_pars.compute:
 
-        lp_file = file_LP_output(trains_input, q_pars)
         if not os.path.isfile(lp_file):
             solve_on_LP(trains_input, q_pars, lp_file)
 
-        qubo_output_file = file_QUBO_comp(trains_input, q_pars)
         if not os.path.isfile(qubo_output_file):
             solve_qubo(trains_input, q_pars, qubo_file, qubo_output_file)
 
     if q_pars.analyze:
         try:
-            hist_file = file_hist(trains_input, q_pars)
             if not os.path.isfile(hist_file):
                 analyze_qubo_Dwave(trains_input, q_pars, qubo_file, lp_file, qubo_output_file, hist_file)
 
-            make_plots_Dwave(trains_input, q_pars, hist_file)
+            file_pass = hist_file.replace(".json", f"{trains_input.objective_stations[0]}_{trains_input.objective_stations[1]}.pdf")
+            file_obj = hist_file.replace(".json", "obj.pdf")
+            plot_hist_pass_obj(trains_input, q_pars, hist_file, file_pass, file_obj)
             display_prec_feasibility(trains_input, q_pars, hist_file)
         except:
-            print(" XXXXXXXXXXXXXXXXXXXXXX  ")
-            qubo_output_file = file_QUBO_comp(trains_input, q_pars)
+            print(" XXXXXXXXXXXXXXXXXXXXXX  ") 
             print( f"not working for {qubo_output_file}" )
 
 

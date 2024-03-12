@@ -69,14 +69,14 @@ def dWave_hist(no_trains = 2, dmax = 2, at = 10, soft = False):
             write_file = file4csv(trains_input, q_par, file_h)
             csv_write_hist(write_file, hist)
 
-            hist = objective_histograms(trains_input, q_par, file_h)
+            hist = objective_histograms(file_h)
             write_file = write_file.replace("qubo", "objective")
             csv_write_hist(write_file, hist)
 
             our_title = plot_title(trains_input, q_par)
             print(our_title, f"soft{soft}")
 
-            energies = energies_histograms(trains_input, q_par, file_h)
+            energies = energies_histograms(file_h)
             write_file = write_file.replace("objective", "energies/energies_feasible")
             csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
             write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
@@ -433,19 +433,20 @@ def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
 
         _, csh = get_files_dirs(trains_input, q_par, data_file, nolayers)
         
-        file_histogram = file_hist(trains_input, q_par, replace_pair = csh)
+        file_histogram = file_hist(trains_input, q_par)
+        file_histogram = file_histogram.replace(csh[0], csh[1])
         hist = passing_time_histigrams(trains_input, q_par, file_histogram)
         write_file = file4csv(trains_input, q_par, nolayers)
         csv_write_hist(write_file, hist)
 
-        hist = objective_histograms(trains_input, q_par, file_histogram)
+        hist = objective_histograms(file_histogram)
         write_file = write_file.replace("qubo", "objective")
         csv_write_hist(write_file, hist)
 
         our_title = plot_title(trains_input, q_par)
         print(our_title)
 
-        energies = energies_histograms(trains_input, q_par, file_histogram)
+        energies = energies_histograms(file_histogram)
         write_file = write_file.replace("objective", "energies/energies_feasible")
         csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
         write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
@@ -476,9 +477,11 @@ def csv_write_gates_scaling(file, d):
 
 def gates_scalling_update(d, trains_input, q_par, data_file, nolayers):
 
-    cs1, csh = get_files_dirs(trains_input, q_par, data_file, nolayers)
-    file = file_hist(trains_input, q_par, replace_pair = csh)
-    with open(file, 'rb') as fp:
+    _, csh = get_files_dirs(trains_input, q_par, data_file, nolayers)
+    file_histogram = file_hist(trains_input, q_par)
+    file_histogram = file_histogram.replace(csh[0], csh[1])
+    
+    with open(file_histogram, 'rb') as fp:
         results = pickle.load(fp)
     d["no qubits"].append(results['no qubits']),
     d["perc_feasible"].append(results['perc feasible'])

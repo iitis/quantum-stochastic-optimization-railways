@@ -94,7 +94,7 @@ def test_qubo_analyze():
     assert qubo_to_analyze.heuristics_degenerate(solution, "C") == [[1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]]
 
 
-    file =  "tests/pics/qubodiagram.pdf"
+    file =  "tests/files/qubodiagram.pdf"
     input_dict = train_path_data(v, qubo_to_analyze)
     plot_train_diagrams(input_dict, file)
 
@@ -170,10 +170,10 @@ def test_qubo_analyze():
 
     qubo_dict = q.store_in_dict(rail_input)
 
-    with open('tests/qubo.json', 'wb') as fp:
+    with open('tests/files/qubo.json', 'wb') as fp:
         pickle.dump(qubo_dict, fp)
 
-    with open('tests/qubo.json', 'rb') as fp:
+    with open('tests/files/qubo.json', 'rb') as fp:
         dict_read = pickle.load(fp)
 
     assert qubo_dict == dict_read
