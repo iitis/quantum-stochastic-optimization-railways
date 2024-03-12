@@ -158,9 +158,9 @@ class Input_timetable():
         starts from 8 a.m.  0 -> 8:00
 
         """
-        self.circ = {(11,14): "CS"}
-        self.timetable = {"PS":{11:14, 14:58}, "MR":{11:17, 14:55},
-                          "CS":{11:32, 14:40}
+        self.circ = {(1,14): "CS"}
+        self.timetable = {"PS":{1:14, 14:58}, "MR":{1:17, 14:55},
+                          "CS":{1:32, 14:40}
                         }
         self.objective_stations = ["MR", "CS"]
         self.delays = d
