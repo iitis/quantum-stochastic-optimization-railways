@@ -732,21 +732,21 @@ def train_diagrams():
 
 if __name__ == "__main__":
 
-    #series_DWave_hist()
+    series_DWave_hist()
 
-    #embedding()
+    embedding()
 
     series_gates_real()
 
     series_gates_simulations()
 
-    #gates_scaling_IonQ_seq()
+    gates_scaling_IonQ_seq()
 
-    #gates_scaling_IBM(2.0,4.0, 1)
-    #gates_scaling_IBM(20.0,40.0, 1)
+    gates_scaling_IBM(2.0,4.0, 1)
+    gates_scaling_IBM(20.0,40.0, 1)
 
-    #plot_real_live_MLR_2()
+    plot_real_live_MLR_2()
 
-    #feasibility_percentage()
+    feasibility_percentage()
 
-    #train_diagrams()
+    train_diagrams()
