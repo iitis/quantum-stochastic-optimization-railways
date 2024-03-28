@@ -36,7 +36,6 @@ def gate_specifics_str(q_pars, trains_input, nolayers=1):
                 return "summary.51."
             if q_pars.ppair == 2.0 and q_pars.psum == 4.0 and trains_input.delays != {}:
                 return "summary.51."
-
         return "summary.50."
 
     if q_pars.method == "IonQreal":
@@ -48,6 +47,8 @@ def gate_specifics_str(q_pars, trains_input, nolayers=1):
         return "summary.IBM.5."
     if q_pars.method == "IBMreal":
         return ""
+    
+    return ""
 
 
 def get_files_dirs(trains_input, q_pars, data_file, nolayers):
@@ -226,4 +227,4 @@ if __name__ == "__main__":
                         analyze_and_plot_hists(args, trains_input, q_pars)
                     except:
                         print(f" does not work {q_pars.method}_notrains={trains_input.notrains}_ppair={q_pars.ppair}_psum={q_pars.psum}_dmax={q_pars.dmax}_delay={trains_input.delays}")
-        
+
