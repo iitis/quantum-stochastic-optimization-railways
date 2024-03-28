@@ -1,22 +1,14 @@
-""" prepare and analyze small qubos for gate computiong """
+""" prepare inputs and analyze outputs from gate computing """
 import pickle
 import json
-import matplotlib.pyplot as plt
 import argparse
 
 from QTrains import Analyze_qubo
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
-from QTrains import file_QUBO_comp, file_hist, file_QUBO, file_LP_output
 from QTrains import analyze_QUBO_outputs, plot_hist_pass_obj
 from QTrains import save_qubo_4gates_comp
 
 from trains_timetable import Input_timetable, Comp_parameters
-
-
-
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
-plt.rc('font', size=10)
 
 
 
@@ -44,9 +36,9 @@ def gate_specifics_str(q_pars, trains_input, nolayers=1):
                 return "summary.51."
             if q_pars.ppair == 2.0 and q_pars.psum == 4.0 and trains_input.delays != {}:
                 return "summary.51."
-            
+
         return "summary.50."
-    
+
     if q_pars.method == "IonQreal":
         if nolayers == 2:
             return "2layers_"
@@ -69,7 +61,7 @@ def get_files_dirs(trains_input, q_pars, data_file, nolayers):
 
     replace_pair = (f"solutions/LR_timetable/{trains_folder}", f"{data_file}{comp_specifics_string}")
     replace_pairh = (trains_folder, f"{data_file}{trains_folder}{comp_specifics_string}")
-    
+
     return replace_pair, replace_pairh
 
 
@@ -77,7 +69,7 @@ def get_files_dirs(trains_input, q_pars, data_file, nolayers):
 def read_aria_summary(args, our_key):
 
     datafile = args.datafile
-    
+
     if args.nolayers == 1:
         file_comp = f"{datafile}expt.ionq-qpu-aria.all.json"
     elif args.nolayers == 2:
@@ -110,7 +102,7 @@ def save_QUBO(trains_input, q_pars, lp_file, qubo_file, output_file):
     results = analyze_QUBO_outputs(Q, trains_input.objective_stations, ground_solutions, lp_sol, q_pars.softern_pass)
     print("no qbits", results["no qubits"])
     print("objective optimal", results["lp objective"])
-    
+
 
 
 def analyze_and_plot_hists(args, trains_input, q_pars):
@@ -135,7 +127,7 @@ def analyze_and_plot_hists(args, trains_input, q_pars):
     file = file_LP_output(trains_input, q_pars)
     with open(file, 'rb') as fp:
         lp_sol = pickle.load(fp)
-                    
+
     file_q = file_QUBO(trains_input, q_pars)
     with open(file_q, 'rb') as fp:
         dict_read = pickle.load(fp)
@@ -200,14 +192,14 @@ if __name__ == "__main__":
     elif "IBM Simulations" in args.datafile:
         q_pars.method = "IBMsim"
 
-    
+
     no_trains = args.notrains
     if no_trains == 1:
         delays = [{}]
         all_dmax = [2,4,6]
     elif no_trains == 2:
         delays = [{}, {1:5, 2:2, 4:5}]
-        all_dmax = [2] # TODO 3 can be added it there are these data 
+        all_dmax = [2] # TODO 3 can be added it there are these data
     elif no_trains == 4:
         delays = [{}, {1:5, 2:2, 4:5}]
         all_dmax = [2]
@@ -225,7 +217,7 @@ if __name__ == "__main__":
 
                 if args.savequbo:
 
-                    lp_file = file_LP_output(trains_input, q_pars)      
+                    lp_file = file_LP_output(trains_input, q_pars)
                     qubo_file = file_QUBO(trains_input, q_pars)
                     output_file = qubo_file.replace("LR_timetable/", "gates/")
                     save_QUBO(trains_input, q_pars, lp_file, qubo_file, output_file)
@@ -234,7 +226,4 @@ if __name__ == "__main__":
                         analyze_and_plot_hists(args, trains_input, q_pars)
                     except:
                         print(f" does not work {q_pars.method}_notrains={trains_input.notrains}_ppair={q_pars.ppair}_psum={q_pars.psum}_dmax={q_pars.dmax}_delay={trains_input.delays}")
-
-
-
-            
+        

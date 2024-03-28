@@ -1,7 +1,6 @@
-""" main computation script """
+""" prepare inputs and analyze outputs from quantum annelaing """
 import pickle
 import os.path
-#import matplotlib.pyplot as plt
 import argparse
 
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
@@ -41,9 +40,10 @@ def process(trains_input, q_pars):
             file_obj = hist_file.replace(".json", "obj.pdf")
             plot_hist_pass_obj(trains_input, q_pars, hist_file, file_pass, file_obj)
             display_prec_feasibility(trains_input, q_pars, hist_file)
-        except:
-            print(" XXXXXXXXXXXXXXXXXXXXXX  ") 
+        except Exception as e:
+            print(" XXXXXXXXXXXXXXXXXXXXXX  ")
             print( f"not working for {qubo_output_file}" )
+            print(f"{e}")
 
 
 def get_no_physical_qbits(ret_dict, trains_input, q_pars, trains):
@@ -51,9 +51,9 @@ def get_no_physical_qbits(ret_dict, trains_input, q_pars, trains):
     no_logical, no_physical = approx_no_physical_qbits(trains_input, q_pars)
 
     if trains_input.delays != {}:
-        ret_dict[f"{trains}_{q_pars.dmax}_disturbed"] = {"no_logical": no_logical, "no_physical": no_physical} 
+        ret_dict[f"{trains}_{q_pars.dmax}_disturbed"] = {"no_logical": no_logical, "no_physical": no_physical}
     else:
-        ret_dict[f"{trains}_{q_pars.dmax}_notdisturbed"] = {"no_logical": no_logical, "no_physical": no_physical} 
+        ret_dict[f"{trains}_{q_pars.dmax}_notdisturbed"] = {"no_logical": no_logical, "no_physical": no_physical}
 
 
 def count_no_qbits(qubo, parameters):
@@ -61,9 +61,9 @@ def count_no_qbits(qubo, parameters):
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
     ret_dict = {}
-    
+
     for d in [2,6]:
-        parameters.dmax = d 
+        parameters.dmax = d
 
         for delays in delays_list:
 
@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
 
     our_qubo = Input_timetable()
-    
+
 
         
     if args.simulation:
@@ -185,7 +185,7 @@ if __name__ == "__main__":
             q_par.ppair = 20.0
             q_par.psum = 40.0
             series_of_computation(our_qubo, q_par)
-    
+
     elif args.mode == 3:
         q_par.solver = "Advantage_system4.1"
         no_qbits = count_no_qbits(our_qubo, q_par)

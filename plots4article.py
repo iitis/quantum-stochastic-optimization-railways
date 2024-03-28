@@ -736,7 +736,7 @@ def train_diagrams():
     csv_write_train_diagram(file, input_dict)
 
 
-    solution, energy = high_excited_state(solutions, qubo_to_analyze, trains_input.objective_stations, increased_pt=20)
+    solution, _ = high_excited_state(solutions, qubo_to_analyze, trains_input.objective_stations, increased_pt=20)
     v = qubo_to_analyze.qubo2int_vars(solution)
 
     file =  "article_plots/Etrain_diagram.pdf"
