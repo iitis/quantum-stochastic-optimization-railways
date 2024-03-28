@@ -81,7 +81,7 @@ def dWave_hist(no_trains = 2, dmax = 2, at = 10, soft = False):
             csv_write_hist(write_file, energies, key1 = "feasible_value", key2 = "feasible_count")
             write_file = write_file.replace("energies/energies_feasible", "energies/energies_notfeasible")
             csv_write_hist(write_file, energies, key1 = "notfeasible_value", key2 = "notfeasible_count")
-    
+
 
 def series_DWave_hist():
     dWave_hist(no_trains = 2, at = 10, dmax = 2)
@@ -95,13 +95,13 @@ def series_DWave_hist():
 
 
 #########################  Scaling ####################
-    
+
 def add_elemet(trains_input, q_par, no_qubits, no_physical_qbits, no_qubo_terms, feasibility_perc):
 
     file = file_hist(trains_input, q_par)
     with open(file, 'rb') as fp:
         res_dict = pickle.load(fp)
-    
+
     no_qubits.append(res_dict["no qubits"])
     no_qubo_terms.append(res_dict["no qubo terms"])
     feasibility_perc.append(res_dict["perc feasible"])
@@ -122,7 +122,7 @@ def add_elemet(trains_input, q_par, no_qubits, no_physical_qbits, no_qubo_terms,
 
 
 def log_linear_fit(x, y, rmax):
-    
+
     x_lin = list(range(0,rmax, 50))
     if rmax > 0:
         if 0 in y:
@@ -153,7 +153,7 @@ def get_series(q_par, delays, rmax):
         trains_input = Input_timetable()
         trains_input.qubo_real_4t(delays)
         add_elemet(trains_input, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
-        trains_input = Input_timetable()    
+        trains_input = Input_timetable()
         trains_input.qubo_real_6t(delays)
         add_elemet(trains_input, q_par, no_qubits, no_physical_qubits, no_qubo_terms, feasibility_perc)
         trains_input = Input_timetable()
@@ -212,7 +212,7 @@ def csv_write_scaling(file, file_fit_small, file_fit, d):
         for i,v in enumerate(size):
             writer.writerow({'x_lin': v, 'y_lin': perc[i]})
 
-    
+
 def feasibility_percentage():
 
     q_par = Comp_parameters()
@@ -279,8 +279,6 @@ def feasibility_percentage():
     csv_write_scaling(file, file_fit_small, file_fit, d)
 
     print("..........................................")
-    
-
 
 
 def csv_write_embedding(embeddinq_dict, q_par, delay):
@@ -301,7 +299,6 @@ def csv_write_embedding(embeddinq_dict, q_par, delay):
             ph = embeddinq_dict[f"{trains}_{q_par.dmax}_{disturbed}"]["no_physical"]
 
             writer.writerow({'no_logical': l, 'no_physical': ph})
-
             logical.append(l)
             physical.append(ph)
 
@@ -734,20 +731,12 @@ def train_diagrams():
 if __name__ == "__main__":
 
     series_DWave_hist()
-
     embedding()
-
     series_gates_real()
-
     series_gates_simulations()
-
     gates_scaling_IonQ_seq()
-
     gates_scaling_IBM(2.0,4.0, 1)
     gates_scaling_IBM(20.0,40.0, 1)
-
     plot_real_live_MLR_2()
-
     feasibility_percentage()
-
     train_diagrams()
