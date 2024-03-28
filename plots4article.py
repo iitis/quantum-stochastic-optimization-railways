@@ -1,7 +1,7 @@
 """ saves data in .csv files for plots """
 import pickle
-import numpy as np
 import csv
+import numpy as np
 
 from QTrains import high_excited_state
 from QTrains import plot_title, file_hist, objective_histograms, energies_histograms, passing_time_histigrams, train_path_data
@@ -25,7 +25,7 @@ def csv_write_hist(file_name, hist, key1 = "value", key2 = "count"):
     - key1: string - key for value in histogram
     - key2: string - key for counts in histogram
     """
-    with open(file_name, 'w', newline='') as csvfile:
+    with open(file_name, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = [key1, key2]
         value = hist[key1]
         count = hist[key2]
@@ -125,6 +125,14 @@ def series_DWave_hist():
 #########################  Scaling ####################
 
 def add_elemet(trains_input, q_par, no_qubits, no_physical_qbits, no_qubo_terms, feasibility_perc):
+    """
+    updates following lists:
+    no_qubits, no_qubo_terms, feasibility_perc, no_physical_qbits
+
+    for instance determined by
+    - trains_input - object of Input_timetable class
+    - q_par - object of Comp_parameters class
+    """
 
     file = file_hist(trains_input, q_par)
     with open(file, 'rb') as fp:
@@ -150,6 +158,11 @@ def add_elemet(trains_input, q_par, no_qubits, no_physical_qbits, no_qubo_terms,
 
 
 def log_linear_fit(x, y, rmax):
+    """
+    fites line to log(y) = ax + b
+    then extrapoltation the fit to range rmax
+    returns 2 arrays of such extrapolation: x_lin, y_lin
+    """
 
     x_lin = list(range(0,rmax, 50))
     if rmax > 0:
@@ -218,21 +231,21 @@ def csv_file_scaling(q_par, delay):
 
 
 def csv_write_scaling(file, file_fit_small, file_fit, d):
-    with open(file, 'w', newline='') as csvfile:
+    with open(file, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ["size", "perc"]
         size = d["no_physical"]
         perc = d["feasibility_perc"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         for i,v in enumerate(size):
             writer.writerow({'size': v, 'perc': perc[i]})
-    with open(file_fit_small, 'w', newline='') as csvfile:
+    with open(file_fit_small, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ["x_lin", "y_lin"]
         size = d["x_lin"][0:11]
         perc = d["y_lin"][0:11]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         for i,v in enumerate(size):
             writer.writerow({'x_lin': v, 'y_lin': perc[i]})
-    with open(file_fit, 'w', newline='') as csvfile:
+    with open(file_fit, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ["x_lin", "y_lin"]
         size = d["x_lin"]
         perc = d["y_lin"]
@@ -317,7 +330,7 @@ def csv_write_embedding(embeddinq_dict, q_par, delay):
 
     file_name = f"article_plots/noqbits/embedding{q_par.dmax}_{disturbed}.csv"
 
-    with open(file_name, 'w', newline='') as csvfile:
+    with open(file_name, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ['no_logical', 'no_physical']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         logical = []
@@ -334,7 +347,7 @@ def csv_write_embedding(embeddinq_dict, q_par, delay):
     x_fit, y_fit = fit(logical, physical, 15000, order = order)
 
     file_name = f"article_plots/noqbits/smallfit_order{order}_{q_par.dmax}_{disturbed}.csv"
-    with open(file_name, 'w', newline='') as csvfile:
+    with open(file_name, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ['no_logical', 'no_physical']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         for i, lqbits in enumerate(x_fit[0:9]):
@@ -342,7 +355,7 @@ def csv_write_embedding(embeddinq_dict, q_par, delay):
 
 
     file_name = f"article_plots/noqbits/fit_order{order}_{q_par.dmax}_{disturbed}.csv"
-    with open(file_name, 'w', newline='') as csvfile:
+    with open(file_name, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ['no_logical', 'no_physical']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         for i, lqbits in enumerate(x_fit):
@@ -431,7 +444,7 @@ def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
     trains_input = Input_timetable()
     q_par = Comp_parameters()
 
-    
+
     q_par.dmax = dmax
     q_par.ppair = ppair
     q_par.psum = psum
@@ -490,7 +503,7 @@ def csv_file_scaling_gates(q_par, delay, layers):
     return file
 
 def csv_write_gates_scaling(file, d):
-    with open(file, 'w', newline='') as csvfile:
+    with open(file, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ['size', "perc"]
         size = d['no qubits']
         perc = d["perc_feasible"]
@@ -504,10 +517,10 @@ def gates_scalling_update(d, trains_input, q_par, data_file, nolayers):
     _, csh = get_files_dirs(trains_input, q_par, data_file, nolayers)
     file_histogram = file_hist(trains_input, q_par)
     file_histogram = file_histogram.replace(csh[0], csh[1])
-    
+
     with open(file_histogram, 'rb') as fp:
         results = pickle.load(fp)
-    d["no qubits"].append(results['no qubits']),
+    d["no qubits"].append(results['no qubits'])
     d["perc_feasible"].append(results['perc feasible'])
 
 
@@ -538,7 +551,7 @@ def gates_scaling_IonQ(delays, ppair, psum, nolayers):
         q_par.dmax = 6
         trains_input.qubo_real_1t(delays)
         gates_scalling_update(d, trains_input, q_par, data_file, nolayers)
-    
+
     q_par.dmax = 2
     trains_input.qubo_real_2t(delays)
     gates_scalling_update(d, trains_input, q_par, data_file, nolayers)
@@ -617,19 +630,6 @@ def MLR_data(file):
     return{"count":our_h, "value":b_middle}
 
 
-def _ax_hist_real_data(ax, hist):
-
-    xs = hist["value"]
-    ys = hist["count"]
-    ax.bar(xs,ys, color = "gray",  ec="darkblue")
-    ax.set_xlabel(f"measured passing time CS -- MR")
-    ax.set_xlim(left=6, right = 24)
-    ax.set_xticks(range(6, 24, 2))
-    ax.set_ylabel("counts")
-
-
-
-
 def plot_real_live_MLR_2():
 
     print("real MLR")
@@ -671,7 +671,7 @@ def csv_write_train_diagram(file, train_d):
     space = train_d["space"]
     time = train_d["time"]
     for j, route in space.items():
-        with open(f"{file}{j}.csv", 'w', newline='') as csvfile:
+        with open(f"{file}{j}.csv", 'w', newline='', encoding="utf-8") as csvfile:
             fieldnames = ["loc", "t"]
             ts = time[j]
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -694,7 +694,7 @@ def train_diagrams():
 
     print("train diagram")
 
-    trains_input.qubo_real_11t(delays_list[1])    
+    trains_input.qubo_real_11t(delays_list[1])
     file = file_QUBO_comp(trains_input, q_par)
     with open(file, 'rb') as fp:
         samplesets = pickle.load(fp)
@@ -719,15 +719,15 @@ def train_diagrams():
     #plot_train_diagrams(input_dict, file)
     file =  "article_plots/train_diagrams/conflicted/train"
     csv_write_train_diagram(file, input_dict)
-    
+
 
     file =  "article_plots/ILPtrain_diagram.pdf"
     input_dict = train_path_data(v, qubo_to_analyze, exclude_st = exclude_st)
     file =  "article_plots/train_diagrams/ILP/train"
     csv_write_train_diagram(file, input_dict)
-    
 
-    solution, energy = best_feasible_state(solutions, qubo_to_analyze)
+
+    solution, _ = best_feasible_state(solutions, qubo_to_analyze)
     v = qubo_to_analyze.qubo2int_vars(solution)
 
     file =  "article_plots/Btrain_diagram.pdf"
