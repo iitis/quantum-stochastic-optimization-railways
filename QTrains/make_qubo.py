@@ -1,8 +1,8 @@
 "encoding problem as QUBO"
 import copy
 import itertools
-import numpy as np
 from functools import reduce
+import numpy as np
 from .parameters import pairs_same_direction, station_pairs
 from .LP_problem import Variable
 
@@ -255,7 +255,7 @@ class Analyze_qubo():
             our_var.value = t
             variables[f"t_{s}_{j}"] = our_var
         return variables
-    
+
     def int_vars2qubo(self, int_vars):
         """ change int var values into qubo var values"""
         qubo_sol = [0 for _ in range(self.noqubits)]
@@ -263,42 +263,42 @@ class Analyze_qubo():
             if t == int_vars[f"t_{s}_{j}"].value:
                 qubo_sol[q_index] = 1
         return qubo_sol
-    
+
 
     def heuristics_degenerate(self, solution, station):
-            """ 
-            heuristic search for degenerate state od solution,
-              assuming that we do not count objective at station 
-            """
+        """ 
+        heuristic search for degenerate state od solution,
+        assuming that we do not count objective at station 
+        """
 
-            # station around which the search can be done not in any of train's paths
-            st_in_path = [station in st_list for st_list in self.trains_paths.values() ]
-            if not reduce(lambda x,y: x or y, st_in_path):
-                return [solution]
-            
-            key2swap = {}
-            for key, value in self.qbit_inds.items():
-                (s,j,t) = value
-                if station == s:
-                    if j in key2swap.keys():
-                        key2swap[j].append(key)
-                    else:
-                        key2swap[j] = [key]
+        # station around which the search can be done not in any of train's paths
+        st_in_path = [station in st_list for st_list in self.trains_paths.values() ]
+        if not reduce(lambda x,y: x or y, st_in_path):
+            return [solution]
 
-            deg_solutions = []    
-            E = self.energy(solution)
-            for per_list in key2swap.values():
-                inds = list(itertools.permutations(per_list))
-                for ind in inds:
-                    sol = copy.deepcopy(solution)
-                    sol[ind[0]] = 1
-                    for k in range(1,len(ind)):
-                        sol[ind[k]] = 0
-                    if E == self.energy(sol):
-                        if sol not in deg_solutions:
-                            deg_solutions.append(sol)
+        key2swap = {}
+        for key, value in self.qbit_inds.items():
+            (s,j,_) = value
+            if station == s:
+                if j in key2swap:
+                    key2swap[j].append(key)
+                else:
+                    key2swap[j] = [key]
 
-            return deg_solutions
+        deg_solutions = []    
+        E = self.energy(solution)
+        for per_list in key2swap.values():
+            inds = list(itertools.permutations(per_list))
+            for ind in inds:
+                sol = copy.deepcopy(solution)
+                sol[ind[0]] = 1
+                for k in range(1,len(ind)):
+                    sol[ind[k]] = 0
+                if E == self.energy(sol):
+                    if sol not in deg_solutions:
+                        deg_solutions.append(sol)
+
+        return deg_solutions
 
 
     def count_broken_constrains(self, var_list):
@@ -395,7 +395,7 @@ def update_hist(qubo, sol_q, stations, hist, softern_pass_t = False):
     if softern_pass_t - passing time constrain is not considered
     """
     if is_feasible(sol_q, qubo, softern_pass_t):
-        
+
         vq = qubo.qubo2int_vars(sol_q)
         h = hist_passing_times(vq, stations, qubo)
         hist.extend( h )
@@ -412,10 +412,9 @@ def is_feasible(solution, qubo, softern_pass_t = False):
     if softern_pass_t - passing time constrain is not considered
     """
     if softern_pass_t:
-        c_sum, c_headway, c_pas, c_circ = qubo.count_broken_constrains(solution)
+        c_sum, c_headway, _, c_circ = qubo.count_broken_constrains(solution) # c_pass not counted for
         return c_sum == 0 and c_headway == 0 and c_circ == 0 and qubo.broken_MO_conditions(solution) == 0
-    else:
-        return qubo.count_broken_constrains(solution) == (0,0,0,0) and qubo.broken_MO_conditions(solution) == 0
+    return qubo.count_broken_constrains(solution) == (0,0,0,0) and qubo.broken_MO_conditions(solution) == 0
 
 
 def filter_feasible(solutions, qubo, softern_pass_t = False):
@@ -443,7 +442,7 @@ def high_excited_state(solutions, qubo, stations, increased_pt):
         if is_feasible(solution, qubo):
             vq = qubo.qubo2int_vars(solution)
             h = hist_passing_times(vq, stations, qubo)
-            if (increased_pt in h):
+            if increased_pt in h:
                 return solution, qubo.objective_val(solution)
     return 0, 0
 
@@ -471,7 +470,4 @@ def worst_feasible_state(solutions, qubo):
                 current_worst_objective = objective
                 current_worst_state = solution
     return current_worst_state, current_worst_objective
-
-
-
 

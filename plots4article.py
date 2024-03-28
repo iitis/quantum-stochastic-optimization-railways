@@ -84,7 +84,8 @@ def dWave_hist(no_trains = 2, dmax = 2, at = 10, soft = False):
     
 
 def series_DWave_hist():
-    dWave_hist(no_trains = 2, dmax = 2)
+    dWave_hist(no_trains = 2, at = 10, dmax = 2)
+    dWave_hist(no_trains = 2, at = 1000, dmax = 2)
     dWave_hist(no_trains = 11, dmax = 2)
     dWave_hist(no_trains = 11, at = 10, dmax = 6)
     dWave_hist(no_trains = 11, at = 1000, dmax = 6)

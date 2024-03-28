@@ -145,7 +145,7 @@ def test_solving_QUBO():
     input_file = "tests/files/test_QUBO.json"
     output_file = "tests/files/test_QUBO_output.json"
 
-    solve_qubo(trains_input, q_pars, input_file, output_file)
+    solve_qubo(q_pars, input_file, output_file)
 
     with open(input_file, 'rb') as fp:
         dict_read = pickle.load(fp)

@@ -30,7 +30,7 @@ def process(trains_input, q_pars):
             solve_on_LP(trains_input, q_pars, lp_file)
 
         if not os.path.isfile(qubo_output_file):
-            solve_qubo(trains_input, q_pars, qubo_file, qubo_output_file)
+            solve_qubo(q_pars, qubo_file, qubo_output_file)
 
     if q_pars.analyze:
         try:

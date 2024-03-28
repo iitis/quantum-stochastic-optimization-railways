@@ -1,7 +1,9 @@
-import matplotlib.pyplot as plt
+"""plots and auxiliary functions """
 import pickle
-import numpy as np
 import copy
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 
 def passing_time_histigrams(trains_input, q_pars, file_hist):
@@ -85,7 +87,6 @@ def plot_title(trains_input, q_pars):
 
 def _ax_hist_passing_times(ax, hist, add_text = True):
     """ axes for the passing time plots """
-    
     xs = hist["value"]
     ys = hist["count"]
     ax.bar(xs,ys)
@@ -110,7 +111,7 @@ def _ax_objective(ax, hist):
     xs = hist["value"]
     ys = hist["count"]
     ground = hist["ground_state"]
-    
+
     ax.bar(list(xs),ys, width = 0.3, color = "gray", label = "QUBO")
     ax.axvline(x = ground, lw = 2, color = 'red', linestyle = 'dashed', label = 'ground state')
 
@@ -146,9 +147,17 @@ def plot_hist_pass_obj(trains_input, q_pars, file_hist, file_pass, file_obj):
 
 
 # train diagrams
-    
 
 def train_path_data(v, p, exclude_st = "", initial_tt = False):
+    """
+    returns dict, input to train diagram plotter
+
+    input:
+    - v - dict - solution in integer variables
+    - p -  Parameters class
+    - exclude_st = "" string of excluded stations,
+    - initial_tt = False, if True data for initial (conflicted) timetable
+    """
     paths = p.trains_paths
     tp = list(paths.values())[0]
     tp = copy.deepcopy(tp)
@@ -183,8 +192,7 @@ def train_path_data(v, p, exclude_st = "", initial_tt = False):
                         ys[j].append(time - p.stay)
 
                     xs[j].append(stations_loc[s])
-                    xs[j].append(stations_loc[s])
-                    
+                    xs[j].append(stations_loc[s])   
 
     return {"space": xs, "time":ys, "stations_loc": stations_loc}
     

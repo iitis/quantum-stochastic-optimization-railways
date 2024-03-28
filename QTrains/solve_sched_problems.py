@@ -1,3 +1,4 @@
+""" execution module for solving trains scheduling problem  """
 import pickle
 import itertools
 from scipy.optimize import linprog
@@ -102,7 +103,7 @@ def prepare_qubo(trains_input, q_pars, output_file):
 
     par = Parameters(timetable, stay=stay, headways=headways,
                    preparation_t=preparation_t, dmax=dmax, circulation=trains_input.circ)
-    
+
     rail_input = Railway_input(par, objective_stations, delays = trains_input.delays)
     q = QuboVars(rail_input, ppair=ppair, psum=psum)
     q.make_qubo(rail_input)
@@ -130,15 +131,15 @@ def approx_no_physical_qbits(trains_input, q_pars):
     no_logical = len(emb.keys())
     physical_qbits_lists = list(emb.values())
     physical_qbits_list = list(itertools.chain(*physical_qbits_lists))
-    no_physical =  len( set(physical_qbits_list) ) 
+    no_physical =  len( set(physical_qbits_list) )
 
     return no_logical, no_physical
 
 
 
-def solve_qubo(trains_input, q_pars, input_file, output_file):
+def solve_qubo(q_pars, input_file, output_file):
     """ solve the problem given by QUBO and store results """
-    
+
     with open(input_file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
@@ -178,17 +179,17 @@ def get_solutions_from_dmode(samplesets, q_pars):
     solutions = []
     for sampleset in samplesets.values():
         if q_pars.method == "sim":
-            for (sol, energy, occ) in sampleset.record:
+            for (sol, _, occ) in sampleset.record:  # not used energy in the middle
                 for _ in range(occ):
                     solutions.append(sol)
         elif q_pars.method == "real":
-            for (sol, energy, occ, other) in sampleset.record:
+            for (sol, _, occ, _) in sampleset.record:
                 for _ in range(occ):
                     solutions.append(sol)
     assert len(solutions) == q_pars.num_all_runs
     return solutions
 
-                    
+
 
 
 def analyze_qubo_Dwave(trains_input, q_pars, qubo_file, lp_file, qubo_output_file, hist_file):
@@ -241,7 +242,7 @@ def analyze_QUBO_outputs(qubo, stations, our_solutions, lp_solution, softernpass
             no_feasible += 1
             qubo_objectives.append(qubo.objective_val(solution))
             energy_feasible.append(qubo.energy(solution))
-            
+
             update_hist(qubo, solution, stations, hist, softernpass)
         else:
             energy_notfeasible.append(qubo.energy(solution))
@@ -259,7 +260,7 @@ def analyze_QUBO_outputs(qubo, stations, our_solutions, lp_solution, softernpass
     return results
 
 ######## gates  #######
-        
+
 
 def save_qubo_4gates_comp(dict_qubo, ground_sols, output_file):
     "creates and seves file with ground oslution and small qubo for gate computing"
@@ -278,7 +279,7 @@ def save_qubo_4gates_comp(dict_qubo, ground_sols, output_file):
 
 ##### results presentation
 
-        
+
 def dsiplay_solution_analysis(trains_input, our_solution, lp_solution, timetable = False):
     "prints features of the solution fram gate computer"
     print( "..........  QUBO ........   " )
@@ -306,7 +307,7 @@ def display_prec_feasibility(trains_input, q_pars, file_h):
     with open(file_h, 'rb') as fp:
         res_dict = pickle.load(fp)
 
-    
+
     print("xxxxxxxxx    RESULTS     xxxxxx ", trains_input.file,  "xxxxx")
     print("delays", trains_input.delays )
     print("method", q_pars.method)
