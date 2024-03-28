@@ -1,3 +1,4 @@
+""" saves data in .csv files for plots """
 import pickle
 import numpy as np
 import csv
@@ -15,6 +16,15 @@ from process_q_gates import get_files_dirs
 
 
 def csv_write_hist(file_name, hist, key1 = "value", key2 = "count"):
+    """ 
+    write histogram to csv 
+
+    input:
+    - file_name: string - csv file name
+    - hist: dict - containing histogram
+    - key1: string - key for value in histogram
+    - key2: string - key for counts in histogram
+    """
     with open(file_name, 'w', newline='') as csvfile:
         fieldnames = [key1, key2]
         value = hist[key1]
@@ -26,6 +36,12 @@ def csv_write_hist(file_name, hist, key1 = "value", key2 = "count"):
 
 
 def file4csv(trains_input, q_par, layers = 1):
+    """
+    returns string, the file name (and dir) for the cvs file
+    input:
+    - trains_input - object of Input_timetable class
+    - q_par - object of Comp_parameters class
+    """
     write_file = file_hist(trains_input, q_par)
     write_file = write_file.replace("histograms/LR_timetable/", "article_plots/")
     write_file = write_file.replace("histograms_soft/LR_timetable/", "article_plots/")
@@ -39,8 +55,16 @@ def file4csv(trains_input, q_par, layers = 1):
 ############# DWave #########
 
 
-
 def dWave_hist(no_trains = 2, dmax = 2, at = 10, soft = False):
+    """
+    write csv files of analysis of dWave outputs for given instance size and parameters:
+
+    input:
+    - no_trains: int
+    - dmax: int,
+    - at: int (annealing time)
+    - soft: bool - if True does not check minimal passing time constrain for feasibility check
+    """
 
     trains_input = Input_timetable()
     q_par = Comp_parameters()
@@ -84,6 +108,10 @@ def dWave_hist(no_trains = 2, dmax = 2, at = 10, soft = False):
 
 
 def series_DWave_hist():
+    """
+    performs series of computations concerning DWave 
+    saves series of csv files
+    """
     dWave_hist(no_trains = 2, at = 10, dmax = 2)
     dWave_hist(no_trains = 2, at = 1000, dmax = 2)
     dWave_hist(no_trains = 11, dmax = 2)
@@ -172,11 +200,11 @@ def get_series(q_par, delays, rmax):
     x_lin, y_lin = log_linear_fit(no_physical_qubits, feasibility_perc, rmax)
 
     d = {"no_qubits":no_qubits, "no_physical":no_physical_qubits, "no_qubo_terms":no_qubo_terms, "feasibility_perc":feasibility_perc, "x_lin":x_lin, "y_lin":y_lin}
-
     return d
 
 
 def csv_file_scaling(q_par, delay):
+    """ returns strings, 3 names of files for scalling of quantum computation (both paradigms) """
     if delay == {}:
         disturbed = "no"
     else:
@@ -302,7 +330,7 @@ def csv_write_embedding(embeddinq_dict, q_par, delay):
             logical.append(l)
             physical.append(ph)
 
-    order = 1 
+    order = 1
     x_fit, y_fit = fit(logical, physical, 15000, order = order)
 
     file_name = f"article_plots/noqbits/smallfit_order{order}_{q_par.dmax}_{disturbed}.csv"
@@ -312,7 +340,7 @@ def csv_write_embedding(embeddinq_dict, q_par, delay):
         for i, lqbits in enumerate(x_fit[0:9]):
             writer.writerow({'no_logical': lqbits, 'no_physical': y_fit[i]})
 
-    
+
     file_name = f"article_plots/noqbits/fit_order{order}_{q_par.dmax}_{disturbed}.csv"
     with open(file_name, 'w', newline='') as csvfile:
         fieldnames = ['no_logical', 'no_physical']
@@ -325,7 +353,7 @@ def csv_write_embedding(embeddinq_dict, q_par, delay):
 
 
 def fit(x, y, rmax, order = 1):
-    
+
     x_lin = np.array(list(range(0,rmax, 50)))
     if order == 1:
         a, b = np.polyfit(x, y, 1)
@@ -349,7 +377,6 @@ def embedding():
 
     with open("solutions/embedding.json", 'rb') as fp:
         embeddinq_dict = pickle.load(fp)
-    
 
     q_par.dmax = 2
     delay = delays_list[0]
@@ -366,7 +393,6 @@ def embedding():
     q_par.dmax = 6
     delay = delays_list[1]
     csv_write_embedding(embeddinq_dict, q_par, delay)
-    
 
 
 ####################  GATES  ########################
@@ -429,11 +455,8 @@ def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
         if notrains == 2:
             trains_input.qubo_real_2t(delays)
 
-
-
-
         _, csh = get_files_dirs(trains_input, q_par, data_file, nolayers)
-        
+
         file_histogram = file_hist(trains_input, q_par)
         file_histogram = file_histogram.replace(csh[0], csh[1])
         hist = passing_time_histigrams(trains_input, q_par, file_histogram)
@@ -551,7 +574,7 @@ def gates_scaling_IBM(ppair, psum, nolayers):
     q_par.dmax = 6
     trains_input.qubo_real_1t(delays)
     gates_scalling_update(d, trains_input, q_par, data_file, nolayers)
-    
+
     # TODO for larger ...
 
     file = csv_file_scaling_gates(q_par, delays, nolayers)
@@ -629,7 +652,6 @@ def plot_real_live_MLR_2():
     csv_write_hist(write_file, hist)
 
 
-    
     print("..... time  and data .....")
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
@@ -655,8 +677,6 @@ def csv_write_train_diagram(file, train_d):
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             for i,loc in enumerate(route):
                 writer.writerow({'loc': loc, 't': ts[i]})
-
-
 
 
 def train_diagrams():
@@ -691,7 +711,7 @@ def train_diagrams():
 
     qubo_to_analyze = Analyze_qubo(dict_read)
     exclude_st = ""
-    
+
     v = lp_sol["variables"]
 
     file =  "article_plots/Conflicted_train_diagram.pdf"
@@ -725,7 +745,6 @@ def train_diagrams():
     csv_write_train_diagram(file, input_dict)
 
     print("......................")
-
 
 
 if __name__ == "__main__":
