@@ -82,9 +82,9 @@ def test_qubo_analyze():
     assert qubo_to_analyze.heuristics_degenerate(solution, "A") == [[1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
                                                                     [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
                                                                     [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]
-    s1, s2, s3 = qubo_to_analyze.heuristics_degenerate(solution, "A")
-
-    assert qubo_to_analyze.energy(s1) == qubo_to_analyze.energy(s2) == qubo_to_analyze.energy(s3) 
+    print(qubo_to_analyze.heuristics_degenerate(solution, "A"))
+    [s1, s2, s3] = qubo_to_analyze.heuristics_degenerate(solution, "A")
+    assert qubo_to_analyze.energy(s1) == qubo_to_analyze.energy(s2) == qubo_to_analyze.energy(s3)
 
     assert qubo_to_analyze.binary_vars2sjt(s1) == {('A', 1): 0, ('A', 3): 2, ('B', 1): 2, ('B', 3): 6}
     assert qubo_to_analyze.binary_vars2sjt(s2) == {('A', 1): 0, ('A', 3): 3, ('B', 1): 2, ('B', 3): 6}
@@ -157,7 +157,7 @@ def test_qubo_analyze():
     assert first_with_given_objective(solutions, qubo_to_analyze, 1) == [1,0,0,1,0,0,1,0,0,0,0,1]
     assert best_feasible_state(solutions, qubo_to_analyze) == ([1,0,0,1,0,0,1,0,0,1,0,0], 0)
     assert worst_feasible_state(solutions, qubo_to_analyze) == ([1,0,0,1,0,0,1,0,0,0,0,1], 1)
-    
+
 
 
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
@@ -375,7 +375,6 @@ def test_qubo_vs_LP():
 
     # QUBO
     hist_list = list([])
-    qubo_objective = list([])
     q = QuboVars(rail_input)
     q.make_qubo(rail_input, delta = 1)
     qubo_dict = q.store_in_dict(rail_input)
@@ -459,8 +458,4 @@ def test_2trains():
             assert el == q.qubo[k]
         else:
             assert el + objective[k] == q.qubo[k]
-
-
-
-
 

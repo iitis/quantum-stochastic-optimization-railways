@@ -8,8 +8,7 @@ from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
 from QTrains import display_prec_feasibility, plot_hist_pass_obj
 from QTrains import plot_title, _ax_hist_passing_times, _ax_objective, passing_time_histigrams, objective_histograms, energies_histograms
 from QTrains import analyze_QUBO_outputs, get_solutions_from_dmode, approx_no_physical_qbits
-from QTrains import save_qubo_4gates_comp, plot_hist_pass_obj
-from QTrains import first_with_given_objective
+from QTrains import save_qubo_4gates_comp, first_with_given_objective
 
 # input
 
@@ -110,7 +109,7 @@ def test_solving_process():
 
     file = "tests/files/test_QUBO.json"
     prepare_qubo(trains_input, q_pars, file)
-    
+
     with open(file, 'rb') as fp:
         dict_read = pickle.load(fp)
 
@@ -163,7 +162,7 @@ def test_solving_QUBO():
     for (sol, energy, occ) in samplesets[0].record:
         energies.append(energy)
         assert len(sol) == 30
-    
+
     objective = 0
     assert np.min(energies) + qubo_to_analyze.sum_ofset == objective
 
@@ -213,16 +212,16 @@ def test_qubo_analysis():
     assert ground == 0.0
     assert np.min(hist_obj) == 0.0
     histogram_obj = [hist_obj.count(x) for x in set(hist_obj)]
-    assert np.sum(histogram_obj) == 1000*results["perc feasible"]  
+    assert np.sum(histogram_obj) == 1000*results["perc feasible"]
     for i in range(5):
         assert histogram_obj[i] > 2
 
-    
+
     hist_pass = results[f"{trains_input.objective_stations[0]}_{trains_input.objective_stations[1]}"]
 
     xs = list( range(np.max(hist_pass) + 1) )
     histogram_pass = [hist_pass.count(x) for x in xs]
-    
+
 
     assert np.sum(histogram_pass) == 2*1000*results["perc feasible"]  # there are 2 trains
     assert histogram_pass[0:12] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -290,7 +289,7 @@ def test_gates():
                    'no qubo terms': 306, 'lp objective': 0.0,
                    'q ofset': 20.0, 'qubo objectives': [0.0],
                    'energies feasible': [-Q.sum_ofset], 'energies notfeasible': []}
-    
+
 
     test_f = "tests/files/qubo_and_ground.json"
     save_qubo_4gates_comp(dict_qubo, all_solutions, test_f)
@@ -300,6 +299,4 @@ def test_gates():
 
     assert dict_read["ground_solutions"] == all_solutions
     assert dict_read["ground_energy"] == Q.energy(qubo_solution)
-
-
 
