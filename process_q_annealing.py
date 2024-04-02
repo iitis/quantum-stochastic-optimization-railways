@@ -172,7 +172,6 @@ if __name__ == "__main__":
     our_qubo = Input_timetable()
 
 
-        
     if args.simulation:
         q_par.method = "sim"
         for d_max in [2]:

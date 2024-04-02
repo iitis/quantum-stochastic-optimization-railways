@@ -285,7 +285,7 @@ class Analyze_qubo():
                 else:
                     key2swap[j] = [key]
 
-        deg_solutions = []    
+        deg_solutions = []
         E = self.energy(solution)
         for per_list in key2swap.values():
             inds = list(itertools.permutations(per_list))
@@ -470,4 +470,3 @@ def worst_feasible_state(solutions, qubo):
                 current_worst_objective = objective
                 current_worst_state = solution
     return current_worst_state, current_worst_objective
-

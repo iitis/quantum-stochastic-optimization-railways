@@ -177,7 +177,15 @@ def log_linear_fit(x, y, rmax):
 
 
 def get_series(q_par, delays, rmax):
-
+    """
+    returns a dict, of the output of DWave
+    "no_qubits" - list of the sizes of problems (logical qubits)
+    "no_physical" - list of the sizes of problems (physical qubits)
+    "no_qubo_terms"  - qubo size (n.o. terms / couplings)
+    "feasibility_perc" - pergentage of feasibility form DWave solutions
+    "x_lin"
+    "y_lin"  - linear fit to feasibility percentage vs. number of physical q-bits
+    """
     no_qubits = []
     no_physical_qubits = []
     no_qubo_terms = []
@@ -231,6 +239,11 @@ def csv_file_scaling(q_par, delay):
 
 
 def csv_write_scaling(file, file_fit_small, file_fit, d):
+    """
+    write to .csv a single result
+    - feasibility percentage
+    - scalling: feasibility percentage vs. number of physical q-bits
+    """
     with open(file, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ["size", "perc"]
         size = d["no_physical"]
@@ -255,7 +268,9 @@ def csv_write_scaling(file, file_fit_small, file_fit, d):
 
 
 def feasibility_percentage():
-
+    """
+    write down to .csv the output of series of experiments: feasibility percentage and scalling
+    """
     q_par = Comp_parameters()
     q_par.method = "real"
     delays_list = [{}, {1:5, 2:2, 4:5}]
@@ -323,6 +338,9 @@ def feasibility_percentage():
 
 
 def csv_write_embedding(embeddinq_dict, q_par, delay):
+    """
+    write to .csv the number of logical and physical (DWave) qubits 
+    """
     if delay == {}:
         disturbed = "notdisturbed"
     else:
@@ -366,7 +384,10 @@ def csv_write_embedding(embeddinq_dict, q_par, delay):
 
 
 def fit(x, y, rmax, order = 1):
-
+    """
+    returns the array of the points in linear (or quadratic) fit 
+    given initial data in x,y, tle limit of the output and the fitting order
+    """
     x_lin = np.array(list(range(0,rmax, 50)))
     if order == 1:
         a, b = np.polyfit(x, y, 1)
@@ -375,12 +396,11 @@ def fit(x, y, rmax, order = 1):
         a, b,c = np.polyfit(x, y, 2)
         y_lin = np.array(a*x_lin**2+b*x_lin+c)
 
-
     return x_lin, y_lin
 
 
 def embedding():
-
+    """" write down to .csv logical and physical (DWave) problem sizes from the series of computation """
     q_par = Comp_parameters()
     q_par.method = "real"
     q_par.ppair = 2.0

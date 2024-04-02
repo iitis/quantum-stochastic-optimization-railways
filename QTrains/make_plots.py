@@ -192,10 +192,9 @@ def train_path_data(v, p, exclude_st = "", initial_tt = False):
                         ys[j].append(time - p.stay)
 
                     xs[j].append(stations_loc[s])
-                    xs[j].append(stations_loc[s])   
+                    xs[j].append(stations_loc[s])
 
     return {"space": xs, "time":ys, "stations_loc": stations_loc}
-    
 
 
 def plot_train_diagrams(input_dict, file):

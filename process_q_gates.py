@@ -29,7 +29,7 @@ def gate_specifics_str(q_pars, trains_input, nolayers=1):
                     return "summary.two-layer.53."
             return "summary.two-layer.50."
 
-        elif trains_input.notrains == 2:
+        if trains_input.notrains == 2:
             if q_pars.ppair == 2.0 and q_pars.psum == 4.0 and trains_input.delays == {}:
                 return "summary.53."
             if q_pars.ppair == 20.0 and q_pars.psum == 40.0 and trains_input.delays == {}:
@@ -47,7 +47,7 @@ def gate_specifics_str(q_pars, trains_input, nolayers=1):
         return "summary.IBM.5."
     if q_pars.method == "IBMreal":
         return ""
-    
+
     return ""
 
 
@@ -227,4 +227,3 @@ if __name__ == "__main__":
                         analyze_and_plot_hists(args, trains_input, q_pars)
                     except:
                         print(f" does not work {q_pars.method}_notrains={trains_input.notrains}_ppair={q_pars.ppair}_psum={q_pars.psum}_dmax={q_pars.dmax}_delay={trains_input.delays}")
-
