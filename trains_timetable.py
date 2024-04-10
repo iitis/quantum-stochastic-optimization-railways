@@ -1,4 +1,4 @@
-
+""" module with input timetables of various trains scheduling problems """
 
 class Input_timetable():
     """ store railway parameters """
@@ -18,6 +18,7 @@ class Input_timetable():
 
 
     def instance_delay_string(self):
+        """ auxiliary function, returns string concerning scenario with initial delays """
         k = self.delays.keys()
         s1 = ''.join(map(str, k))
         v = self.delays.values()

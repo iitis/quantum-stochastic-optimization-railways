@@ -1,3 +1,4 @@
+""" test solving trains problems """
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
@@ -62,7 +63,10 @@ class Comp_parameters():
 
 
 def test_file_names():
-     # testing
+    """ 
+    test file name strings for saving results in subsequent steps of 
+    solving process
+    """
 
     trains_input = Input_timetable()
     trains_input.qubo1()
@@ -82,7 +86,10 @@ def test_file_names():
 
 
 def test_solving_process():
-
+    """
+    test solving process via ILP 
+    and steps of QUBO creation
+    """
     trains_input = Input_timetable()
     trains_input.qubo1()
     q_pars = Comp_parameters()
@@ -137,6 +144,7 @@ def test_solving_process():
     assert len(Q.keys()) == 306  # Number of non-zero couplings
 
 def test_solving_QUBO():
+    """ test solving QUBO """
     trains_input = Input_timetable()
     trains_input.qubo1()
     q_pars = Comp_parameters()
@@ -184,10 +192,8 @@ def test_solving_QUBO():
         assert no_physical > 50
 
 
-
-
-
 def test_qubo_analysis():
+    """ test the analysis of the QUBO opimisation results """
     trains_input = Input_timetable()
     trains_input.qubo1()
     q_pars = Comp_parameters()
@@ -207,7 +213,6 @@ def test_qubo_analysis():
     assert results["perc feasible"] > 0.95
     assert results["no qubits"] == 30
     assert results["no qubo terms"] == 306
-
 
     assert ground == 0.0
     assert np.min(hist_obj) == 0.0
@@ -251,6 +256,7 @@ def test_qubo_analysis():
 
 
 def test_plotting():
+    """ test trains plots """
     trains_input = Input_timetable()
     trains_input.qubo1()
     q_pars = Comp_parameters()
@@ -267,6 +273,10 @@ def test_plotting():
 
 
 def test_gates():
+    """ 
+    test auxiliary functions for quantum gates and 
+    analysis of quantum gate outputs 
+    """
     trains_input = Input_timetable()
     trains_input.qubo1()
     q_pars = Comp_parameters()
@@ -299,4 +309,3 @@ def test_gates():
 
     assert dict_read["ground_solutions"] == all_solutions
     assert dict_read["ground_energy"] == Q.energy(qubo_solution)
-
