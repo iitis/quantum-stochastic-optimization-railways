@@ -19,7 +19,7 @@ def test_auxiliary():
 
 
 def test_qubo_analyze():
-    """ test Analyze_qubo() class """
+    """ test Analyze_qubo() class single solution"""
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
     delays = {3:0}
 
@@ -58,6 +58,8 @@ def test_qubo_analyze():
     assert q.qbit_inds == { 0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3],
                          5: ['A', 3, 4], 6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4], 9: ['B', 3, 4],
                          10: ['B', 3, 5], 11: ['B', 3, 6]}
+    
+
 
     qubo_dict = q.store_in_dict(rail_input)
     qubo_to_analyze = Analyze_qubo(qubo_dict)
@@ -83,16 +85,15 @@ def test_qubo_analyze():
                                                                     [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
                                                                     [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]
     print(qubo_to_analyze.heuristics_degenerate(solution, "A"))
-    [s1, s2, s3] = qubo_to_analyze.heuristics_degenerate(solution, "A")
-    assert qubo_to_analyze.energy(s1) == qubo_to_analyze.energy(s2) == qubo_to_analyze.energy(s3)
+    s = qubo_to_analyze.heuristics_degenerate(solution, "A")
+    assert qubo_to_analyze.energy(s[0]) == qubo_to_analyze.energy(s[1]) == qubo_to_analyze.energy(s[2])
 
-    assert qubo_to_analyze.binary_vars2sjt(s1) == {('A', 1): 0, ('A', 3): 2, ('B', 1): 2, ('B', 3): 6}
-    assert qubo_to_analyze.binary_vars2sjt(s2) == {('A', 1): 0, ('A', 3): 3, ('B', 1): 2, ('B', 3): 6}
-    assert qubo_to_analyze.binary_vars2sjt(s3) == {('A', 1): 0, ('A', 3): 4, ('B', 1): 2, ('B', 3): 6}
+    assert qubo_to_analyze.binary_vars2sjt(s[0]) == {('A', 1): 0, ('A', 3): 2, ('B', 1): 2, ('B', 3): 6}
+    assert qubo_to_analyze.binary_vars2sjt(s[1]) == {('A', 1): 0, ('A', 3): 3, ('B', 1): 2, ('B', 3): 6}
+    assert qubo_to_analyze.binary_vars2sjt(s[2]) == {('A', 1): 0, ('A', 3): 4, ('B', 1): 2, ('B', 3): 6}
 
     assert qubo_to_analyze.heuristics_degenerate(solution, "B") == [[1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]]
     assert qubo_to_analyze.heuristics_degenerate(solution, "C") == [[1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]]
-
 
     file =  "tests/files/qubodiagram.pdf"
     input_dict = train_path_data(v, qubo_to_analyze)
@@ -104,20 +105,33 @@ def test_qubo_analyze():
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset
 
 
+def test_qubo_analyze_more():
+    """ test Analyze_qubo() class more solutions"""
+
+    timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
+    delays = {3:0}
+
+    p = Parameters(timetable, dmax = 2, headways = 1)
+    objective_stations = ["B"]
+    rail_input = Railway_input(p, objective_stations, delays)
+    q = QuboVars(rail_input)
+    q.make_qubo(rail_input)
+
+    qubo_dict = q.store_in_dict(rail_input)
+    qubo_to_analyze = Analyze_qubo(qubo_dict)
+
+
     solution = [1,0,0,1,0,0,1,0,0,0,0,0]
-    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2}
     assert qubo_to_analyze.count_broken_constrains(solution) == (1, 0, 0, 0)
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + qubo_to_analyze.psum
 
     solution = [1,0,0,1,0,0,0,0,0,0,0,0]
-    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2}
     assert qubo_to_analyze.count_broken_constrains(solution) == (2, 0, 0, 0)
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 2*qubo_to_analyze.psum
 
     solution = [1,0,0,1,0,0,1,0,0,1,1,1]
-    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 0, ('A',3): 2, ('B',1): 2, ('B',3): 4, ('B',3): 5, ('B',3): 6}
     # with to much variables it is more complicated
     assert qubo_to_analyze.count_broken_constrains(solution) == (4, 0, 0, 0)
@@ -125,13 +139,11 @@ def test_qubo_analyze():
 
      #          0,1,2,3,4,5,6,7,8,9,10,11
     solution = [0,0,1,1,0,0,0,0,1,0,0,1]
-    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 2, ('A',3): 2, ('B',1): 4, ('B',3): 6}
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 1, 0, 0)
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 2*qubo_to_analyze.ppair
 
     solution = [0,0,1,1,0,0,0,0,1,0,0,1]
-    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A', 1): 2, ('A', 3): 2, ('B', 1): 4, ('B', 3): 6}
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 1, 0, 0)
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 2*qubo_to_analyze.ppair
@@ -139,11 +151,32 @@ def test_qubo_analyze():
     #     0,1,2,3,4,5,6,7,8,9,10,11
     solution = [0,1,0,0,1,0,1,0,0,1,0,0]
     assert not is_feasible(solution, qubo_to_analyze)
-    solutions.append(solution)
     assert qubo_to_analyze.binary_vars2sjt(solution) == {('A',1): 1, ('A',3): 3, ('B',1): 2, ('B',3): 4}
     assert qubo_to_analyze.count_broken_constrains(solution) == (0, 0, 2, 0)
     assert qubo_to_analyze.broken_MO_conditions(solution) == 0
     assert qubo_to_analyze.energy(solution) == qubo_to_analyze.objective_val(solution) - qubo_to_analyze.sum_ofset + 4*qubo_to_analyze.ppair
+
+
+def test_qubo_analyze_filtering():
+    """ test filtering feasible and non feasible solutions"""
+
+    timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
+    delays = {3:0}
+
+    p = Parameters(timetable, dmax = 2, headways = 1)
+    objective_stations = ["B"]
+    rail_input = Railway_input(p, objective_stations, delays)
+    q = QuboVars(rail_input)
+    q.make_qubo(rail_input)
+
+    qubo_dict = q.store_in_dict(rail_input)
+    qubo_to_analyze = Analyze_qubo(qubo_dict)
+
+
+    solutions = [[1,0,0,1,0,0,1,0,0,0,0,1], [1,0,0,1,0,0,1,0,0,0,0,0], [1,0,0,1,0,0,0,0,0,0,0,0],
+                [1,0,0,1,0,0,1,0,0,1,1,1], [0,0,1,1,0,0,0,0,1,0,0,1], [0,0,1,1,0,0,0,0,1,0,0,1],
+                [0,1,0,0,1,0,1,0,0,1,0,0]
+                ]
 
     assert filter_feasible(solutions, qubo_to_analyze) == [[1,0,0,1,0,0,1,0,0,0,0,1]]
     assert filter_feasible(solutions, qubo_to_analyze, softern_pass_t = True) == [[1,0,0,1,0,0,1,0,0,0,0,1], [0,1,0,0,1,0,1,0,0,1,0,0]]
@@ -159,7 +192,8 @@ def test_qubo_analyze():
     assert worst_feasible_state(solutions, qubo_to_analyze) == ([1,0,0,1,0,0,1,0,0,0,0,1], 1)
 
 
-
+def test_qubo_analyze_specific():
+    """ test specific scenario on QUBO analysis """
     timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
     p = Parameters(timetable, dmax = 2, headways = 1)
     objective_stations = ["B"]
@@ -458,4 +492,3 @@ def test_2trains():
             assert el == q.qubo[k]
         else:
             assert el + objective[k] == q.qubo[k]
-
