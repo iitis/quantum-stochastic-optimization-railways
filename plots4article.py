@@ -446,7 +446,7 @@ def series_gates_simulations():
 
 
 def series_gates_real():
-    """ series of computation for real device """
+    """ series of results for real Quantum Gates device """
     for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
         for dmax in [2,4,6]:
             plot_gates(ppair,psum, nolayers=1,dmax=dmax, notrains = 1, real = True)
@@ -460,7 +460,7 @@ def series_gates_real():
 
 
 def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
-
+    """ result for real or simulated Quantum Gates device """
     trains_input = Input_timetable()
     q_par = Comp_parameters()
 
@@ -513,6 +513,9 @@ def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
 
 
 def csv_file_scaling_gates(q_par, delay, layers):
+    """ 
+    returns the string of csv file and dir of scaling of feasibility percentage on (simulated) gates computing
+    """
     if delay == {}:
         disturbed = "no"
     else:
@@ -523,6 +526,9 @@ def csv_file_scaling_gates(q_par, delay, layers):
     return file
 
 def csv_write_gates_scaling(file, d):
+    """
+    saves to csv results of scaling of feasibility percentage on (simulated) gates computing
+    """
     with open(file, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ['size', "perc"]
         size = d['no qubits']
@@ -533,7 +539,9 @@ def csv_write_gates_scaling(file, d):
 
 
 def gates_scalling_update(d, trains_input, q_par, data_file, nolayers):
-
+    """
+    updates list of number of qubits and feasibility percentage, for quantum gates results 
+    """
     _, csh = get_files_dirs(trains_input, q_par, data_file, nolayers)
     file_histogram = file_hist(trains_input, q_par)
     file_histogram = file_histogram.replace(csh[0], csh[1])
@@ -545,7 +553,6 @@ def gates_scalling_update(d, trains_input, q_par, data_file, nolayers):
 
 
 def gates_scaling_IonQ(delays, ppair, psum, nolayers):
-
     trains_input = Input_timetable()
     q_par = Comp_parameters()
 
@@ -626,7 +633,7 @@ def gates_scaling_IonQ_seq(layers=1):
 
 
 
-################## Real live data from MRL  ################################
+################## Real life data from MRL  ################################
 
 def real_data_dirs(part_of_day, direction):
 
@@ -650,8 +657,8 @@ def MLR_data(file):
     return{"count":our_h, "value":b_middle}
 
 
-def plot_real_live_MLR_2():
-
+def plot_real_life_MLR_2():
+    """ writes data from recorded real life trains passing time """
     print("real MLR")
 
     part_of_day = "morning afternoon"
@@ -688,6 +695,7 @@ def plot_real_live_MLR_2():
 
 
 def csv_write_train_diagram(file, train_d):
+    """ saves data for one train diagram """
     space = train_d["space"]
     time = train_d["time"]
     for j, route in space.items():
@@ -700,7 +708,7 @@ def csv_write_train_diagram(file, train_d):
 
 
 def train_diagrams():
-
+    """ Ggenerates and saves data for sequence of train diagrams """
     trains_input = Input_timetable()
     q_par = Comp_parameters()
 
@@ -768,7 +776,6 @@ def train_diagrams():
 
 
 if __name__ == "__main__":
-
     series_DWave_hist()
     embedding()
     series_gates_real()
@@ -776,6 +783,6 @@ if __name__ == "__main__":
     gates_scaling_IonQ_seq()
     gates_scaling_IBM(2.0,4.0, 1)
     gates_scaling_IBM(20.0,40.0, 1)
-    plot_real_live_MLR_2()
+    plot_real_life_MLR_2()
     feasibility_percentage()
     train_diagrams()
