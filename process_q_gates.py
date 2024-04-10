@@ -68,7 +68,10 @@ def get_files_dirs(trains_input, q_pars, data_file, nolayers):
 
 
 def read_aria_summary(args, our_key):
-
+    """ results the dict of Aria output, where:
+      our_key - key that encodes particular QUBO problem,
+      args - agruments that encodes number of layers and data file  
+    """
     datafile = args.datafile
 
     if args.nolayers == 1:
