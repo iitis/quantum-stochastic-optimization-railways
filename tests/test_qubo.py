@@ -58,7 +58,6 @@ def test_qubo_analyze():
     assert q.qbit_inds == { 0: ['A', 1, 0], 1: ['A', 1, 1], 2: ['A', 1, 2], 3: ['A', 3, 2], 4: ['A', 3, 3],
                          5: ['A', 3, 4], 6: ['B', 1, 2], 7: ['B', 1, 3], 8: ['B', 1, 4], 9: ['B', 3, 4],
                          10: ['B', 3, 5], 11: ['B', 3, 6]}
-    
 
 
     qubo_dict = q.store_in_dict(rail_input)
@@ -391,6 +390,22 @@ def test_qubo_vs_LP():
     assert vl['t_B_3'].value == 4
     assert prob.compute_objective(v, rail_input) == 0.0
 
+
+
+def test_qubo_vs_LP_advanced():
+    """  test comparison of QUBO output vs LP 
+    advanced with stochastic / dev version 
+    """
+    timetable = {"A": {1:0, 3:2}, "B": {1:2 , 3:4}}
+    delays = {3:0}
+
+    p = Parameters(timetable, dmax = 2, headways = 1)
+    objective_stations = ["B"]
+    rail_input = Railway_input(p, objective_stations, delays)
+
+    #QUBO
+    q = QuboVars(rail_input)
+    q.make_qubo(rail_input)
 
     #stochastic  LP
     v = Variables(rail_input)
