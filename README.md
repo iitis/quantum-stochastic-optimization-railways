@@ -67,6 +67,4 @@ Script ```plots4article.py``` creates csv files for high quality plots for the p
 
 # Funding
 
-Scientific work co-financed from the state budget under the program of the Minister of Education
-and Science, Poland (pl. Polska) under the name "Science for Society II" project number NdS-II/SP/0336/2024/01 funding amount ...  
-total value of the project ```1000000``` PLN 
+Scientific work co-financed from the state budget under the program of the Minister of Education and Science, Poland (pl. Polska) under the name "Science for Society II" project number NdS-II/SP/0336/2024/01 funding amount ... total value of the project ```1000000``` PLN 
