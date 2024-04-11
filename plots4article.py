@@ -176,7 +176,7 @@ def log_linear_fit(x, y, rmax):
     return x_lin, y_lin
 
 
-def get_series(q_par, delays, rmax):
+def DWave_series(q_par, delays, rmax):
     """
     returns a dict, of the output of DWave
     "no_qubits" - list of the sizes of problems (logical qubits)
@@ -225,24 +225,28 @@ def get_series(q_par, delays, rmax):
 
 
 def csv_file_scaling(q_par, delay):
-    """ returns strings, 3 names of files for scalling of quantum computation (both paradigms) """
+    """ returns strings: names and directories for 3 files (real data, linear fit, linear extrapolation)
+    where results of scaling of number of q-bits and feasibility percentage will be saved 
+    """
     if delay == {}:
         disturbed = "no"
     else:
         disturbed = "disturbed"
     file = f"article_plots/scaling/qubo{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
-    file_fit_small = f"article_plots/scaling/fitsmall{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
-    file_fit = f"article_plots/scaling/fit{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
+    file_fit = f"article_plots/scaling/fitsmall{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
+    file_extrapolation = f"article_plots/scaling/fit{q_par.annealing_time}_{q_par.ppair}_{q_par.psum}_{disturbed}.csv"
 
-    return file, file_fit_small, file_fit
+    return file, file_fit, file_extrapolation
 
 
 
-def csv_write_scaling(file, file_fit_small, file_fit, d):
+def csv_write_scaling(file, file_fit, file_extrapolation, d):
     """
-    write to .csv a single result
-    - feasibility percentage
-    - scalling: feasibility percentage vs. number of physical q-bits
+    write to .csv a result for single instance on DWave scalling: 
+    feasibility percentage vs. number of physical q-bits.
+    In particular:
+        - actual data
+        - linear fit and extrapolation
     """
     with open(file, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ["size", "perc"]
@@ -251,14 +255,14 @@ def csv_write_scaling(file, file_fit_small, file_fit, d):
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         for i,v in enumerate(size):
             writer.writerow({'size': v, 'perc': perc[i]})
-    with open(file_fit_small, 'w', newline='', encoding="utf-8") as csvfile:
+    with open(file_fit, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ["x_lin", "y_lin"]
         size = d["x_lin"][0:11]
         perc = d["y_lin"][0:11]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         for i,v in enumerate(size):
             writer.writerow({'x_lin': v, 'y_lin': perc[i]})
-    with open(file_fit, 'w', newline='', encoding="utf-8") as csvfile:
+    with open(file_extrapolation, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ["x_lin", "y_lin"]
         size = d["x_lin"]
         perc = d["y_lin"]
@@ -269,7 +273,8 @@ def csv_write_scaling(file, file_fit_small, file_fit, d):
 
 def feasibility_percentage():
     """
-    write down to .csv the output of series of experiments: feasibility percentage and scalling
+    saves to .csv results from the series of instances on DWave scalling: 
+    feasibility percentage vs. number of physical q-bits.
     """
     q_par = Comp_parameters()
     q_par.method = "real"
@@ -284,27 +289,27 @@ def feasibility_percentage():
     q_par.psum = 4.0
 
     delay = delays_list[0]
-    d = get_series(q_par, delay, rmax)
-    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit_small, file_fit, d)
+    d = DWave_series(q_par, delay, rmax)
+    file, file_fit, file_e = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, file_e, d)
 
     delay = delays_list[1]
-    d = get_series(q_par, delay, rmax)
-    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit_small, file_fit, d)
+    d = DWave_series(q_par, delay, rmax)
+    file, file_fit, file_e = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, file_e, d)
 
     q_par.ppair = 20.0
     q_par.psum = 40.0
 
     delay = delays_list[0]
-    d = get_series(q_par, delay, rmax)
-    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit_small, file_fit, d)
+    d = DWave_series(q_par, delay, rmax)
+    file, file_fit, file_e = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, file_e, d)
 
     delay = delays_list[1]
-    d = get_series(q_par, delay, rmax)
-    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit_small, file_fit, d)
+    d = DWave_series(q_par, delay, rmax)
+    file, file_fit, file_e = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, file_e, d)
 
     q_par.annealing_time = 1000
 
@@ -312,27 +317,27 @@ def feasibility_percentage():
     q_par.psum = 4.0
 
     delay = delays_list[0]
-    d = get_series(q_par, delay, rmax)
-    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit_small, file_fit, d)
+    d = DWave_series(q_par, delay, rmax)
+    file, file_fit, file_e = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, file_e, d)
 
     delay = delays_list[1]
-    d = get_series(q_par, delay, rmax)
-    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit_small, file_fit, d)
+    d = DWave_series(q_par, delay, rmax)
+    file, file_fit, file_e = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, file_e, d)
 
     q_par.ppair = 20.0
     q_par.psum = 40.0
 
     delay = delays_list[0]
-    d = get_series(q_par, delay, rmax)
-    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit_small, file_fit, d)
+    d = DWave_series(q_par, delay, rmax)
+    file, file_fit, file_e = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, file_e, d)
 
     delay = delays_list[1]
-    d = get_series(q_par, delay, rmax)
-    file, file_fit_small, file_fit = csv_file_scaling(q_par, delay)
-    csv_write_scaling(file, file_fit_small, file_fit, d)
+    d = DWave_series(q_par, delay, rmax)
+    file, file_fit, file_e = csv_file_scaling(q_par, delay)
+    csv_write_scaling(file, file_fit, file_e, d)
 
     print("..........................................")
 
@@ -362,7 +367,7 @@ def csv_write_embedding(embeddinq_dict, q_par, delay):
             physical.append(ph)
 
     order = 1
-    x_fit, y_fit = fit(logical, physical, 15000, order = order)
+    x_fit, y_fit = fit_polynomial(logical, physical, 15000, order = order)
 
     file_name = f"article_plots/noqbits/smallfit_order{order}_{q_par.dmax}_{disturbed}.csv"
     with open(file_name, 'w', newline='', encoding="utf-8") as csvfile:
@@ -383,7 +388,7 @@ def csv_write_embedding(embeddinq_dict, q_par, delay):
 
 
 
-def fit(x, y, rmax, order = 1):
+def fit_polynomial(x, y, rmax, order = 1):
     """
     returns the array of the points in linear (or quadratic) fit 
     given initial data in x,y, tle limit of the output and the fitting order
@@ -399,7 +404,7 @@ def fit(x, y, rmax, order = 1):
     return x_lin, y_lin
 
 
-def embedding():
+def embedding_statistics():
     """" write down to .csv logical and physical (DWave) problem sizes from the series of computation """
     q_par = Comp_parameters()
     q_par.method = "real"
@@ -436,31 +441,31 @@ def series_gates_simulations():
 
     for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
         for dmax in [2,4,6]:
-            plot_gates(ppair,psum, nolayers=1,dmax=dmax, notrains = 1)
-            plot_gates(ppair,psum, nolayers=2,dmax=dmax, notrains = 1)
+            save_results_gates(ppair,psum, nolayers=1,dmax=dmax, notrains = 1)
+            save_results_gates(ppair,psum, nolayers=2,dmax=dmax, notrains = 1)
 
     for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
-        plot_gates(ppair,psum, nolayers=1,dmax=2, notrains = 2)
-        plot_gates(ppair,psum, nolayers=2,dmax=2, notrains = 2)
+        save_results_gates(ppair,psum, nolayers=1,dmax=2, notrains = 2)
+        save_results_gates(ppair,psum, nolayers=2,dmax=2, notrains = 2)
 
 
 
 def series_gates_real():
-    """ series of results for real Quantum Gates device """
+    """ write down series of results for real Quantum Gates device """
     for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
         for dmax in [2,4,6]:
-            plot_gates(ppair,psum, nolayers=1,dmax=dmax, notrains = 1, real = True)
-            plot_gates(ppair,psum, nolayers=2,dmax=dmax, notrains = 1, real = True)
+            save_results_gates(ppair,psum, nolayers=1,dmax=dmax, notrains = 1, real = True)
+            save_results_gates(ppair,psum, nolayers=2,dmax=dmax, notrains = 1, real = True)
 
     for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
-        plot_gates(ppair,psum, nolayers=1,dmax=2, notrains = 2, real = True)
-        plot_gates(ppair,psum, nolayers=2,dmax=2, notrains = 2, real = True)
+        save_results_gates(ppair,psum, nolayers=1,dmax=2, notrains = 2, real = True)
+        save_results_gates(ppair,psum, nolayers=2,dmax=2, notrains = 2, real = True)
 
 
 
 
-def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
-    """ result for real or simulated Quantum Gates device """
+def save_results_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
+    """ save to .csv result from real or simulated Quantum Gates device """
     trains_input = Input_timetable()
     q_par = Comp_parameters()
 
@@ -514,7 +519,7 @@ def plot_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
 
 def csv_file_scaling_gates(q_par, delay, layers):
     """ 
-    returns the string of csv file and dir of scaling of feasibility percentage on (simulated) gates computing
+    returns the string of csv file and directory of scaling of feasibility percentage on (simulated) gates computing
     """
     if delay == {}:
         disturbed = "no"
@@ -553,10 +558,13 @@ def gates_scalling_update(d, trains_input, q_par, data_file, nolayers):
 
 
 def gates_scaling_IonQ(delays, ppair, psum, nolayers):
+    """
+    write down results from IonQ simulations: # qubits vs. feasibility percentage
+    """
     trains_input = Input_timetable()
     q_par = Comp_parameters()
 
-    print("IonQ simulation, 2 trains 18 qbits")
+    print("IonQ simulation")
 
     q_par.ppair = ppair
     q_par.psum = psum
@@ -590,10 +598,13 @@ def gates_scaling_IonQ(delays, ppair, psum, nolayers):
 
 
 def gates_scaling_IBM(ppair, psum, nolayers):
+    """
+    write down results from IBM simulations: # qubits vs. feasibility percentage
+    """
     trains_input = Input_timetable()
     q_par = Comp_parameters()
 
-    print("IonQ simulation, 2 trains 18 qbits")
+    print("IBM simulation")
 
     q_par.ppair = ppair
     q_par.psum = psum
@@ -622,7 +633,7 @@ def gates_scaling_IBM(ppair, psum, nolayers):
 
 
 def gates_scaling_IonQ_seq(layers=1):
-
+    """ write down series of results from IonQ simulations """
     delays_list = [{}, {1:5, 2:2, 4:5}]
 
     gates_scaling_IonQ(delays_list[0], 2.0, 4.0, layers)
@@ -636,7 +647,7 @@ def gates_scaling_IonQ_seq(layers=1):
 ################## Real life data from MRL  ################################
 
 def real_data_dirs(part_of_day, direction):
-
+    """ returs string: file name and directory where real live data are saved """
     assert part_of_day in ["morning ", "afternoon", "morning afternoon"]
     assert direction in ["north", "south"]
     days = "11-31"
@@ -645,6 +656,7 @@ def real_data_dirs(part_of_day, direction):
 
 
 def MLR_data(file):
+    """ returns dict, histogram of passing time of real trains' scenario """
     with open(file, 'rb') as fp:
         results = pickle.load(fp)
 
@@ -708,7 +720,7 @@ def csv_write_train_diagram(file, train_d):
 
 
 def train_diagrams():
-    """ Ggenerates and saves data for sequence of train diagrams """
+    """ generates and saves data for sequence of train diagrams """
     trains_input = Input_timetable()
     q_par = Comp_parameters()
 
@@ -777,7 +789,7 @@ def train_diagrams():
 
 if __name__ == "__main__":
     series_DWave_hist()
-    embedding()
+    embedding_statistics()
     series_gates_real()
     series_gates_simulations()
     gates_scaling_IonQ_seq()

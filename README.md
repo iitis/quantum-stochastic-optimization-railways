@@ -63,3 +63,10 @@ Prepared QUBOs for ```2``` trains problems and save them in ```QUBOs/gates/2trai
 #### Preparing plots for article
 
 Script ```plots4article.py``` creates csv files for high quality plots for the purpose of article, and save them in ```article_plots``` folder.
+
+
+# Funding
+
+Scientific work co-financed from the state budget under the program of the Minister of Education
+and Science, Poland (pl. Polska) under the name "Science for Society II" project number NdS-II/SP/0336/2024/01 funding amount ...  
+total value of the project ```1000000``` PLN 
