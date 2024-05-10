@@ -55,7 +55,8 @@ def energies_histograms(file_hist):
     hist_feas = results["energies feasible"]
     hist_notfeas = results["energies notfeasible"]
     ground = results["lp objective"] - results["q ofset"]
-
+    # to exclude numerical errors 
+    hist_feas = list(np.around(np.array(hist_feas),5))
     xs_f = list(set(hist_feas))
     xs_f = np.sort(xs_f)
     ys_f = [hist_feas.count(x) for x in xs_f]
