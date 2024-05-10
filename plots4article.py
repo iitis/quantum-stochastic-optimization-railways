@@ -464,7 +464,16 @@ def series_gates_real():
 
 
 
-def save_results_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False):
+def series_gates_simulations_ibm():
+    """ series of computation for IBM simulator """
+
+    for (ppair,psum) in[(2.0, 4.0), (20.0,40.0)]:
+        for dmax in [2,4,6]:
+            save_results_gates(ppair,psum, nolayers=1,dmax=dmax, notrains = 1, device = "IBM")
+
+
+
+def save_results_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False,  device = "Aria"):
     """ save to .csv result from real or simulated Quantum Gates device """
     trains_input = Input_timetable()
     q_par = Comp_parameters()
@@ -474,12 +483,16 @@ def save_results_gates(ppair, psum, nolayers, dmax=2, notrains = 2, real = False
     q_par.ppair = ppair
     q_par.psum = psum
 
-    if real:
-        data_file = "QAOA Results/IonQ Aria Experiments/"
-        q_par.method = "IonQreal"
-    else:
-        data_file = "QAOA Results/IonQ Simulations/"
-        q_par.method = "IonQsim"
+    if device == "Aria":
+        if real:
+            data_file = "QAOA Results/IonQ Aria Experiments/"
+            q_par.method = "IonQreal"
+        else:
+            data_file = "QAOA Results/IonQ Simulations/"
+            q_par.method = "IonQsim"
+    if device == "IBM":
+        q_par.method = "IBMsim"
+        data_file = "QAOA Results/IBM Simulations/"
 
 
     delays_list = [{}, {1:5, 2:2, 4:5}]
@@ -792,6 +805,7 @@ if __name__ == "__main__":
     embedding_statistics()
     series_gates_real()
     series_gates_simulations()
+    series_gates_simulations_ibm()
     gates_scaling_IonQ_seq()
     gates_scaling_IBM(2.0,4.0, 1)
     gates_scaling_IBM(20.0,40.0, 1)
