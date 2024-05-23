@@ -2,12 +2,27 @@
 import pickle
 import os.path
 import argparse
+from dimod import utilities
 
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
-from QTrains import display_prec_feasibility, plot_hist_pass_obj, approx_no_physical_qbits
+from QTrains import display_prec_feasibility, plot_hist_pass_obj, approx_no_physical_qbits, Analyze_qubo
 
 from trains_timetable import Input_timetable, Comp_parameters
+
+
+
+def prepare_Ising(trains_input, q_pars):
+    qubo_file = file_QUBO(trains_input, q_pars)
+
+    with open(qubo_file, 'rb') as fp:
+        dict_read = pickle.load(fp)
+
+    qubo_to_analyze = Analyze_qubo(dict_read)
+    Q = qubo_to_analyze.qubo
+
+    Ising = utilities.qubo_to_ising(Q, offset=0.0)
+    print(Ising)
 
 
 
@@ -19,6 +34,7 @@ def process(trains_input, q_pars):
     lp_file = file_LP_output(trains_input, q_pars)
     qubo_output_file = file_QUBO_comp(trains_input, q_pars)
     hist_file = file_hist(trains_input, q_pars)
+
 
     if not os.path.isfile(qubo_file):
         prepare_qubo(trains_input, q_pars, qubo_file)
@@ -134,7 +150,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--mode",
         type=int,
-        help="process mode: 0: prepare only QUBO, 1: make computation (ILP and annealing), 2: analyze outputs, 3: count q-bits ",
+        help="process mode: 0: prepare only QUBO, 1: make computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: save Ising ",
         default=2,
     )
 
@@ -162,7 +178,7 @@ if __name__ == "__main__":
     q_par.compute = False  # make computations / optimisation
     q_par.analyze = False  # Analyze results
 
-    assert args.mode in [0,1,2,3]
+    assert args.mode in [0,1,2,3,4]
     if args.mode in [1, 3]:
         q_par.compute = True   # make computations / optimisation
     elif args.mode == 2:
@@ -191,6 +207,24 @@ if __name__ == "__main__":
 
         with open("solutions/embedding.json", 'wb') as fp:
             pickle.dump(no_qbits, fp)
+
+    elif args.mode == 4:
+
+        q_pars = Comp_parameters()
+        our_qubo = Input_timetable()
+
+        delays_list = [{}, {1:5, 2:2, 4:5}]
+        delays = delays_list[0]
+
+        our_qubo.qubo_real_1t(delays)
+
+        q_pars.compute = False  # make computations / optimisation
+        q_pars.analyze = False
+        q_pars.dmax = 2
+        q_pars.ppair = 2.0
+        q_pars.psum = 4.0
+
+        prepare_Ising(our_qubo, q_pars)
 
     else:
         q_par.method = "real"

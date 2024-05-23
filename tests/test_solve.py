@@ -10,6 +10,8 @@ from QTrains import display_prec_feasibility, plot_hist_pass_obj
 from QTrains import plot_title, _ax_hist_passing_times, _ax_objective, passing_time_histigrams, objective_histograms, energies_histograms
 from QTrains import analyze_QUBO_outputs, get_solutions_from_dmode, save_qubo_4gates_comp, first_with_given_objective
 
+
+
 # input
 
 class Input_timetable():
