@@ -22,7 +22,15 @@ def prepare_Ising(trains_input, q_pars):
     Q = qubo_to_analyze.qubo
 
     Ising = utilities.qubo_to_ising(Q, offset=0.0)
-    print(Ising)
+    print("compute")
+
+    ising_file = qubo_file.replace("qubo_", "ising_").replace("QUBOs", "Ising").replace(".json", ".pkl")
+
+    if not os.path.isfile(ising_file):
+        print("save")
+
+        with open(ising_file, 'wb') as fp:
+            pickle.dump(Ising, fp)
 
 
 
@@ -213,18 +221,26 @@ if __name__ == "__main__":
         q_pars = Comp_parameters()
         our_qubo = Input_timetable()
 
-        delays_list = [{}, {1:5, 2:2, 4:5}]
-        delays = delays_list[0]
-
-        our_qubo.qubo_real_1t(delays)
-
         q_pars.compute = False  # make computations / optimisation
         q_pars.analyze = False
-        q_pars.dmax = 2
+        q_pars.dmax = 6
         q_pars.ppair = 2.0
         q_pars.psum = 4.0
 
-        prepare_Ising(our_qubo, q_pars)
+        delays_list = [{}, {1:5, 2:2, 4:5}]
+        for delays in delays_list:
+        
+            our_qubo.qubo_real_2t(delays)
+            prepare_Ising(our_qubo, q_pars)
+
+            our_qubo.qubo_real_6t(delays)
+            prepare_Ising(our_qubo, q_pars)
+
+            our_qubo.qubo_real_11t(delays)
+            prepare_Ising(our_qubo, q_pars)
+
+
+
 
     else:
         q_par.method = "real"
