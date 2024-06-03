@@ -1,16 +1,16 @@
 # quantum-stochastic-optimization-railways
-Application of quantum computation for stochastic optimization on example of railway/tramway network in Baltimore.
+Application of quantum computation for stochastic optimization on the example of railway/tramway network in Baltimore.
 
 Files:
 
 1. ```QTrains``` - source code
 2. ```tests``` - testing source code
 
-3. ```solutions``` - stored solutions of railway problems, if for particular parameters setting computations has already been stored, new computation will not be performed and the particluar file will not be overwritten
+3. ```solutions``` - stored solutions of railway problems, if for particular parameters setting computations have already been stored, new computation will not be performed and the particular file will not be overwritten
 4. ```QUBOs``` - qubos of railway problems
 5. ```QAOA Results``` - results of quantum gate computing via QAOA
 6. ```histograms``` - histograms from data analysis
-7. ```histograms_soft``` - histograms from data analysis with soften check of minimal passing time constrain.
+7. ```histograms_soft``` - histograms from data analysis with a soft check of minimal passing time constrain.
 
 
 #### Quantum annealing 
@@ -19,9 +19,9 @@ In ```process_q_annealing.py ``` trains scheduling problems are solved via Integ
 
 Arguments:
 
-- --mode MODE: process mode: 0: prepare only QUBO, 1: make, computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: prepare Ising model - by dafault: ```2```
-- --simulation SIMULATION: if True solve / analyze output of simulated annealing (via DWave software), if False real annealing - by default: False
-- --softern_pass SOFTERN_PASS: if true analyze output without feasibility check on minimal passing time constrain - by default: False
+- --mode MODE: process mode: 0: prepare only QUBO, 1: make, computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: prepare Ising model - by default: ```2```
+- --simulation SIMULATION: if True solve/analyze output of simulated annealing (via DWave software), if False real annealing - by default: False
+- --softern_pass SOFTERN_PASS: if true analyze output without feasibility check on a minimal passing time constrain - by default: False
 
 
 Example usage:
@@ -40,12 +40,12 @@ Solve the series of problems by real D-Wave annealing (does not perform calculat
 
 #### Quantum gate computing
 
-Script ```process_q_gates.py``` saves QUBO and ground state as well as analyses output dedicated to gates computing.
+Script ```process_q_gates.py``` saves QUBO and the ground state as well as analyses output dedicated to gates computing.
 
 Arguments:
 
 - --notrains NOTRAINS  number of trains, 1,2,4 are supported, by default: ``2``
-- --savequbo SAVEQUBO  if True prepare qubo else analyze outputs, by default: False
+- --savequbo SAVEQUBO  if True prepare qubo else to analyze outputs, by default: False
 - --nolayers NOLAYERS  number of layers of QAOA in analyzed data, by default: ```1```
 - --datafile DATAFILE  file with data, by default:  ```"QAOA Results/IonQ Simulations/"```
 
@@ -60,11 +60,11 @@ Analyzes ```2``` trains results in ```"QAOA Results/IonQ Simulations/" ``` where
 
 Prepared QUBOs for ```2``` trains problems and save them in ```QUBOs/gates/2trains/```
 
-#### Preparing plots for article
+#### Preparing plots for the article
 
-Script ```plots4article.py``` creates csv files for high quality plots for the purpose of article, and save them in ```article_plots``` folder.
+Script ```plots4article.py``` creates .csv files for high-quality plots for article, and saves them in the ```article_plots``` folder.
 
 
 # Funding
 
-Scientific work co-financed from the state budget under the program of the Minister of Education and Science, Poland (pl. Polska) under the name "Science for Society II" project number NdS-II/SP/0336/2024/01 funding amount ... total value of the project ```1000000``` PLN 
+Scientific work co-financed from the state budget under the program of the Minister of Education and Science, Poland (pl. Polska) under the name "Science for Society II" project number NdS-II/SP/0336/2024/01 funding amount ```1000000``` PLN total value of the project ```1000000``` PLN 
