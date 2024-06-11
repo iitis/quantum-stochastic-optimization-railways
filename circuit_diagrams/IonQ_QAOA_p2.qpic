@@ -1,0 +1,61 @@
+MIXGATES 0
+a W |0\rangle
+b W |0\rangle
+c W |0\rangle
+d W |0\rangle
+e W |0\rangle
+f W |0\rangle
+a H
+a G $RZ$ width=20
+b H
+a b G $ZZ$ width=20
+b G $RZ$ width=20
+c H
+a b c G $ZZ$ width=20
+a G $RX$ width=20
+a G $RZ$ width=20
+c G $RZ$ width=20
+b c G $ZZ$ width=20
+d H
+b c d G $ZZ$ width=20
+b G $RX$ width=20
+a b G $ZZ$ width=20
+b G $RZ$ width=20
+d G $RZ$ width=20
+c d G $ZZ$ width=20
+e H
+c d e G $ZZ$ width=20
+c G $RX$ width=20
+a b c G $ZZ$ width=20
+a G $RX$ width=20
+c G $RZ$ width=20
+b c G $ZZ$ width=20
+e G $RZ$ width=20
+d e G $ZZ$ width=20
+f H
+d e f G $ZZ$ width=20
+d G $RX$ width=20
+b c d G $ZZ$ width=20
+b G $RX$ width=20
+d G $RZ$ width=20
+c d G $ZZ$ width=20
+f G $RZ$ width=20
+e f G $ZZ$ width=20
+e G $RX$ width=20
+c d e G $ZZ$ width=20
+c G $RX$ width=20
+e G $RZ$ width=20
+d e G $ZZ$ width=20
+f G $RX$ width=20
+d e f G $ZZ$ width=20
+d G $RX$ width=20
+f G $RZ$ width=20
+e f G $ZZ$ width=20
+e G $RX$ width=20
+f G $RX$ width=20
+a M
+b M
+c M
+d M
+e M
+f M
