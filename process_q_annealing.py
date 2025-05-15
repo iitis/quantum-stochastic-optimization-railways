@@ -321,6 +321,8 @@ if __name__ == "__main__":
             trains_input = Input_timetable()
             q_par.method = "real"
 
+            all_results = {}
+
             for d_max in [2, 6]:
                 q_par.dmax = d_max
                 for q_par.annealing_time in [10, 1000]:
@@ -357,6 +359,16 @@ if __name__ == "__main__":
 
 
                         print(result)
+
+                    
+                if len(delays) == 0:
+                    all_results[f"no_delays_dmax{d_max}_at{q_par.annealing_time}"] = result
+                else:
+                    all_results[f"delays_dmax{d_max}_at{q_par.annealing_time}"] = result
+                
+        print(all_results)
+        #with open('solutions/chain_strength.json', 'w') as json_file:
+            #json.dump(all_results, json_file, indent=4)
 
 
 
