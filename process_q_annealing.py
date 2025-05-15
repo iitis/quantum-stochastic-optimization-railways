@@ -130,6 +130,7 @@ def series_of_computation(qubo, parameters):
 
     for delays in delays_list:
 
+
         qubo.qubo_real_1t(delays)
         process(qubo, parameters)
 
@@ -153,7 +154,7 @@ def series_of_computation(qubo, parameters):
 
         qubo.qubo_real_12t(delays)
         process(qubo, parameters)
-
+        
 
 if __name__ == "__main__":
 
@@ -252,30 +253,44 @@ if __name__ == "__main__":
         for d_max in [2]:
             q_par.dmax = d_max
 
+            all_results = {}
+
             delays_list = [{}, {1:5, 2:2, 4:5}]
             for delays in delays_list:
 
+                results = {}
+
                 trains_input.qubo_real_1t(delays)
-                classical_benchmark(trains_input, q_par)
+                classical_benchmark(trains_input, q_par, results)
 
                 trains_input.qubo_real_2t(delays)
-                classical_benchmark(trains_input, q_par)
+                classical_benchmark(trains_input, q_par, results)
 
                 trains_input.qubo_real_4t(delays)
-                classical_benchmark(trains_input, q_par)
+                classical_benchmark(trains_input, q_par, results)
 
 
                 trains_input.qubo_real_6t(delays)
-                classical_benchmark(trains_input, q_par)
+                classical_benchmark(trains_input, q_par, results)
 
                 trains_input.qubo_real_8t(delays)
-                classical_benchmark(trains_input, q_par)
+                classical_benchmark(trains_input, q_par, results)
 
                 trains_input.qubo_real_10t(delays)
-                classical_benchmark(trains_input, q_par)
+                classical_benchmark(trains_input, q_par, results)
 
                 trains_input.qubo_real_11t(delays)
-                classical_benchmark(trains_input, q_par)
+                classical_benchmark(trains_input, q_par, results)
+
+                trains_input.qubo_real_12t(delays)
+                classical_benchmark(trains_input, q_par, results)
+
+                if len(delays) == 0:
+                    all_results["no_delays"] = results
+                else:
+                    all_results["delays"] = results
+                
+            print(all_results)
 
 
     else:

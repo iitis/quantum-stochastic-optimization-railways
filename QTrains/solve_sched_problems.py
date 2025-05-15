@@ -2,7 +2,10 @@
 import pickle
 import itertools
 import time
-import cplex
+try:
+    import cplex
+except:
+    print("no CPLEX")
 
 from scipy.optimize import linprog
 import neal
@@ -88,7 +91,7 @@ def solve_on_LP(trains_input, q_pars, output_file):
         pickle.dump(d, fp)
 
 
-def classical_benchmark(trains_input, q_pars):
+def classical_benchmark(trains_input, q_pars, results:dict):
 
     """ solve the problem using LP, and save results """
     stay = trains_input.stay
@@ -119,13 +122,11 @@ def classical_benchmark(trains_input, q_pars):
 
     assert solution.objective_value - problem.obj_ofset == cplex_obj
 
-    print("...................")
-    print("n.o. trains", trains_input.notrains, "initial cond", trains_input.delays)
-    print("model engine", model.get_engine().name)
-    print("CPLEX Python API version:", cplex.__version__)
-    print("Comp time", end - start, "seconds")
-    print("Solution status:", solution.solve_status)
-    print("Objective value:",  cplex_obj)
+    results[trains_input.notrains] = {"model engine": model.get_engine().name, 
+                                      "CPLEX Python API version": cplex.__version__,
+                                      "Comp time [seconds]": end - start,
+                                      "Objective value":  cplex_obj
+                                      }
 
     check = True
 
