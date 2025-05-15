@@ -19,7 +19,7 @@ In ```process_q_annealing.py ``` trains scheduling problems are solved via Integ
 
 Arguments:
 
-- --mode MODE: process mode: 0: prepare only QUBO, 1: make, computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: prepare Ising model - by default: ```2```
+- --mode MODE: process mode: 0: prepare only QUBO, 1: make, computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: prepare Ising model 5: CPLEX benchmark  - by default: ```2```
 - --simulation SIMULATION: if True solve/analyze output of simulated annealing (via DWave software), if False real annealing - by default: False
 - --softern_pass SOFTERN_PASS: if true analyze output without feasibility check on a minimal passing time constrain - by default: False
 
