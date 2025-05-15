@@ -163,8 +163,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--mode",
         type=int,
-        help="process mode: 0: prepare only QUBO, 1: make computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: save Ising  5: asses comp time",
-        default=5,
+        help="process mode: 0: prepare only QUBO, 1: make computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: save Ising  5: CPLEX benchmark",
+        default=2,
     )
 
     parser.add_argument(

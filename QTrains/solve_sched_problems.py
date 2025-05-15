@@ -119,7 +119,8 @@ def classical_benchmark(trains_input, q_pars):
     assert solution.objective_value - problem.obj_ofset == cplex_obj
 
     print("...................")
-    print("n.o. trains", trains_input.notrains)
+    print("n.o. trains", trains_input.notrains, "initial cond", trains_input.delays)
+    print("model engine", model.get_engine().name)
     print("CPLEX Python API version:", cplex.__version__)
     print("Comp time", e - s, "seconds")
     print("Solution status:", solution.solve_status)
