@@ -2,11 +2,14 @@
 import pickle
 import os.path
 import argparse
+
+
 from dimod import utilities
 
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
 from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
 from QTrains import display_prec_feasibility, plot_hist_pass_obj, approx_no_physical_qbits, Analyze_qubo
+from QTrains import classical_benchmark
 
 from trains_timetable import Input_timetable, Comp_parameters
 
@@ -31,6 +34,8 @@ def prepare_Ising(trains_input, q_pars):
 
         with open(ising_file, 'wb') as fp:
             pickle.dump(Ising, fp)
+
+
 
 
 
@@ -158,8 +163,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--mode",
         type=int,
-        help="process mode: 0: prepare only QUBO, 1: make computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: save Ising ",
-        default=2,
+        help="process mode: 0: prepare only QUBO, 1: make computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: save Ising  5: asses comp time",
+        default=5,
     )
 
     parser.add_argument(
@@ -186,7 +191,7 @@ if __name__ == "__main__":
     q_par.compute = False  # make computations / optimisation
     q_par.analyze = False  # Analyze results
 
-    assert args.mode in [0,1,2,3,4]
+    assert args.mode in [0,1,2,3,4,5]
     if args.mode in [1, 3]:
         q_par.compute = True   # make computations / optimisation
     elif args.mode == 2:
@@ -239,7 +244,38 @@ if __name__ == "__main__":
             our_qubo.qubo_real_11t(delays)
             prepare_Ising(our_qubo, q_pars)
 
+    elif args.mode == 5:
 
+        q_par = Comp_parameters()
+        trains_input = Input_timetable()
+
+        for d_max in [2]:
+            q_par.dmax = d_max
+
+            delays_list = [{}, {1:5, 2:2, 4:5}]
+            for delays in delays_list:
+
+                trains_input.qubo_real_1t(delays)
+                classical_benchmark(trains_input, q_par)
+
+                trains_input.qubo_real_2t(delays)
+                classical_benchmark(trains_input, q_par)
+
+                trains_input.qubo_real_4t(delays)
+                classical_benchmark(trains_input, q_par)
+
+
+                trains_input.qubo_real_6t(delays)
+                classical_benchmark(trains_input, q_par)
+
+                trains_input.qubo_real_8t(delays)
+                classical_benchmark(trains_input, q_par)
+
+                trains_input.qubo_real_10t(delays)
+                classical_benchmark(trains_input, q_par)
+
+                trains_input.qubo_real_11t(delays)
+                classical_benchmark(trains_input, q_par)
 
 
     else:

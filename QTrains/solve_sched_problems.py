@@ -1,6 +1,9 @@
 """ execution module for solving trains scheduling problem  """
 import pickle
 import itertools
+import time
+import cplex
+
 from scipy.optimize import linprog
 import neal
 from dwave.system import (
@@ -12,7 +15,7 @@ from minorminer import find_embedding
 
 
 from .parameters import (Parameters, Railway_input)
-from .LP_problem import (Variables, LinearPrograming)
+from .LP_problem import (Variables, LinearPrograming, make_ilp_docplex)
 from .make_qubo import (QuboVars, Analyze_qubo, update_hist, is_feasible)
 
 
@@ -83,6 +86,60 @@ def solve_on_LP(trains_input, q_pars, output_file):
 
     with open(output_file, 'wb') as fp:
         pickle.dump(d, fp)
+
+
+def classical_benchmark(trains_input, q_pars):
+
+    """ solve the problem using LP, and save results """
+    stay = trains_input.stay
+    headways = trains_input.headways
+    preparation_t = trains_input.preparation_t
+
+    timetable = trains_input.timetable
+    objective_stations = trains_input.objective_stations
+    dmax = q_pars.dmax
+
+    pars = Parameters(timetable, stay=stay, headways=headways,
+                   preparation_t=preparation_t, dmax=dmax, circulation=trains_input.circ)
+    rail_input = Railway_input(pars, objective_stations, delays = trains_input.delays)
+    v = Variables(rail_input)
+    bounds, integrality = v.bonds_and_integrality()
+    problem = LinearPrograming(v, rail_input, M = q_pars.M)
+    model = make_ilp_docplex(problem, v)
+
+    s = time.process_time()
+    solution = model.solve()
+    e = time.process_time() # end time
+
+    v.docplex2vars(model, solution)
+    v.check_clusters()
+
+    cplex_obj = problem.compute_objective(v, rail_input)
+
+    assert solution.objective_value - problem.obj_ofset == cplex_obj
+
+    print("...................")
+    print("n.o. trains", trains_input.notrains)
+    print("CPLEX Python API version:", cplex.__version__)
+    print("Comp time", e - s, "seconds")
+    print("Solution status:", solution.solve_status)
+    print("Objective value:",  cplex_obj)
+
+    check = True
+
+    if check:
+
+        v = Variables(rail_input)
+        bounds, integrality = v.bonds_and_integrality()
+        problem = LinearPrograming(v, rail_input, M = q_pars.M)
+
+        opt = linprog(c=problem.obj, A_ub=problem.lhs_ineq,
+                    b_ub=problem.rhs_ineq, bounds=bounds, method='highs',
+                    integrality = integrality)
+        v.linprog2vars(opt)
+        v.check_clusters()
+
+        assert  cplex_obj == problem.compute_objective(v, rail_input) 
 
 
 #####  QUBO handling ######
