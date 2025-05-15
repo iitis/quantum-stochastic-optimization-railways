@@ -3,12 +3,13 @@ import pickle
 import os.path
 import argparse
 import json
+import numpy as np
 
 
 from dimod import utilities
 
 from QTrains import file_LP_output, file_QUBO, file_QUBO_comp, file_hist
-from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave
+from QTrains import solve_on_LP, prepare_qubo, solve_qubo, analyze_qubo_Dwave ,analyze_chain_strength
 from QTrains import display_prec_feasibility, plot_hist_pass_obj, approx_no_physical_qbits, Analyze_qubo
 from QTrains import classical_benchmark
 
@@ -74,6 +75,21 @@ def process(trains_input, q_pars):
             print(" XXXXXXXXXXXXXXXXXXXXXX  ")
             print( f"not working for {qubo_output_file}" )
             print(f"{e}")
+
+
+
+def chain_strength(trains_input, q_pars, result):
+    """ the sequence of calculation  makes computation if results has not been saved already"""
+
+    qubo_output_file = file_QUBO_comp(trains_input, q_pars)
+
+    broken_fraction = analyze_chain_strength(qubo_output_file)
+
+    hist = np.histogram(broken_fraction)
+
+    result[trains_input.notrains] = {"min": np.min(broken_fraction), "max": np.max(broken_fraction), "histogram": hist}
+
+
 
 
 def get_no_physical_qbits(ret_dict, trains_input, q_pars, trains):
@@ -165,7 +181,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--mode",
         type=int,
-        help="process mode: 0: prepare only QUBO, 1: make computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: save Ising  5: CPLEX benchmark",
+        help="process mode: 0: prepare only QUBO, 1: make computation (ILP and annealing), 2: analyze outputs, 3: count q-bits, 4: save Ising  5: CPLEX benchmark ^: analyze chain strength",
         default=2,
     )
 
@@ -193,7 +209,7 @@ if __name__ == "__main__":
     q_par.compute = False  # make computations / optimisation
     q_par.analyze = False  # Analyze results
 
-    assert args.mode in [0,1,2,3,4,5]
+    assert args.mode in [0,1,2,3,4,5,6]
     if args.mode in [1, 3]:
         q_par.compute = True   # make computations / optimisation
     elif args.mode == 2:
@@ -250,12 +266,13 @@ if __name__ == "__main__":
 
         q_par = Comp_parameters()
         trains_input = Input_timetable()
+        all_results = {}
 
-        for d_max in [2]:
+
+        for d_max in [2, 6]:
             q_par.dmax = d_max
 
-            all_results = {}
-
+            
             delays_list = [{}, {1:5, 2:2, 4:5}]
             for delays in delays_list:
 
@@ -287,13 +304,60 @@ if __name__ == "__main__":
                 classical_benchmark(trains_input, q_par, results)
 
                 if len(delays) == 0:
-                    all_results["no_delays"] = results
+                    all_results[f"no_delays_dmax{d_max}"] = results
                 else:
-                    all_results["delays"] = results
+                    all_results[f"delays_dmax{d_max}"] = results
                 
             #print(all_results)
-            with open('solutions/cplex_benchmarks.json', 'w') as json_file:
-                json.dump(all_results, json_file, indent=4)
+        with open('solutions/cplex_benchmarks.json', 'w') as json_file:
+            json.dump(all_results, json_file, indent=4)
+
+    
+    if args.mode == 6:
+        if not args.simulation:
+            
+
+            q_par = Comp_parameters()
+            trains_input = Input_timetable()
+            q_par.method = "real"
+
+            for d_max in [2, 6]:
+                q_par.dmax = d_max
+                for q_par.annealing_time in [10, 1000]:
+
+                    print(f"###############  annealing time {q_par.annealing_time}")
+
+
+                    delays_list = [{}, {1:5, 2:2, 4:5}]
+                    for delays in delays_list:
+
+                        result = {}
+
+                        trains_input.qubo_real_1t(delays)
+                        chain_strength(trains_input, q_par, result)
+
+                        trains_input.qubo_real_2t(delays)
+                        chain_strength(trains_input, q_par, result)
+
+                        trains_input.qubo_real_4t(delays)
+                        chain_strength(trains_input, q_par, result)
+
+
+                        trains_input.qubo_real_6t(delays)
+                        chain_strength(trains_input, q_par, result)
+
+                        trains_input.qubo_real_8t(delays)
+                        chain_strength(trains_input, q_par, result)
+
+                        trains_input.qubo_real_10t(delays)
+                        chain_strength(trains_input, q_par, result)
+
+                        trains_input.qubo_real_11t(delays)
+                        chain_strength(trains_input, q_par, result)
+
+
+                        print(result)
+
 
 
     else:

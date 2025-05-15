@@ -2,6 +2,8 @@
 import pickle
 import itertools
 import time
+import pytest
+import numpy as np
 try:
     import cplex
 except:
@@ -120,7 +122,8 @@ def classical_benchmark(trains_input, q_pars, results:dict):
 
     cplex_obj = problem.compute_objective(v, rail_input)
 
-    assert solution.objective_value - problem.obj_ofset == cplex_obj
+
+    assert pytest.approx( solution.objective_value - problem.obj_ofset) == cplex_obj
 
     results[trains_input.notrains] = {"model engine": model.get_engine().name, 
                                       "CPLEX Python API version": cplex.__version__,
@@ -237,6 +240,7 @@ def solve_qubo(q_pars, input_file, output_file):
 def get_solutions_from_dmode(samplesets, q_pars):
     """ from dmode imput return a series of QUBO solutions as [sol1, sol2, ...] """
     solutions = []
+    broken_chains = []
     for sampleset in samplesets.values():
         if q_pars.method == "sim":
             for (sol, _, occ) in sampleset.record:  # not used energy in the middle
@@ -247,6 +251,7 @@ def get_solutions_from_dmode(samplesets, q_pars):
                 for _ in range(occ):
                     solutions.append(sol)
     assert len(solutions) == q_pars.num_all_runs
+
     return solutions
 
 
@@ -318,6 +323,29 @@ def analyze_QUBO_outputs(qubo, stations, our_solutions, lp_solution, softernpass
     results["energies feasible"] = energy_feasible
     results["energies notfeasible"] = energy_notfeasible
     return results
+
+
+
+def analyze_chain_strength(qubo_output_file):
+    """ analyze results of computation on QUBO and comparison with LP """
+
+
+    with open(qubo_output_file, 'rb') as fp:
+        samplesets = pickle.load(fp)
+
+
+    solutions = []
+    broken_fraction = []
+    for sampleset in samplesets.values():
+        for (sol,energy, occ, chain_break_fraction) in sampleset.record:
+            for _ in range(occ):
+                solutions.append(sol)
+                broken_fraction.append(chain_break_fraction)
+
+    return broken_fraction
+
+
+
 
 ######## gates  #######
 
