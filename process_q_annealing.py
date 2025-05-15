@@ -2,6 +2,7 @@
 import pickle
 import os.path
 import argparse
+import json
 
 
 from dimod import utilities
@@ -290,7 +291,9 @@ if __name__ == "__main__":
                 else:
                     all_results["delays"] = results
                 
-            print(all_results)
+            #print(all_results)
+            with open('solutions/cplex_benchmarks.json', 'w') as json_file:
+                json.dump(all_results, json_file, indent=4)
 
 
     else:
