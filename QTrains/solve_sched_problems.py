@@ -107,9 +107,10 @@ def classical_benchmark(trains_input, q_pars):
     problem = LinearPrograming(v, rail_input, M = q_pars.M)
     model = make_ilp_docplex(problem, v)
 
-    s = time.process_time()
+    start = time.time()
     solution = model.solve()
-    e = time.process_time() # end time
+    end = time.time()
+
 
     v.docplex2vars(model, solution)
     v.check_clusters()
@@ -122,7 +123,7 @@ def classical_benchmark(trains_input, q_pars):
     print("n.o. trains", trains_input.notrains, "initial cond", trains_input.delays)
     print("model engine", model.get_engine().name)
     print("CPLEX Python API version:", cplex.__version__)
-    print("Comp time", e - s, "seconds")
+    print("Comp time", end - start, "seconds")
     print("Solution status:", solution.solve_status)
     print("Objective value:",  cplex_obj)
 
